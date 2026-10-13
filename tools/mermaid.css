@@ -1,0 +1,3 @@
+/* mermaid-cli で画像にするときのフォント（HTML 版と同じ BIZ UDPGothic） */
+@import url("https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap");
+svg { -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }

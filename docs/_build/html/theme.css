@@ -1,0 +1,132 @@
+/* 研修資料の HTML 版・PDF 版の見た目（tools/scripts/build_docs.py が各ページに読み込ませる）
+   墨色と紺鼠の2色に絞り、文字はすべてゴシック。線は細く少なく */
+@import url("https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=BIZ+UDGothic:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap");
+
+:root {
+  --ink: #2b2b2b;
+  --muted: #6b6b6b;
+  --faint: #9a9a9a;
+  --line: #d9d6d0;
+  --rule: #2b2b2b;
+  --accent: #3d5468;
+  --paper: #fdfcfa;
+  --code-bg: #f3f1ed;
+  --pre-bg: #2f3437;
+  --pre-ink: #eceae6;
+  --head-bg: #f6f4f0;
+  --font: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic UI", "WenQuanYi Zen Hei", sans-serif;
+  /* 英数字は JetBrains Mono（- と _ や 0 と O が見分けやすい）、日本語は BIZ UDGothic */
+  --mono: "JetBrains Mono", "BIZ UDGothic", "Cascadia Mono", Consolas, monospace;
+}
+
+html { color: var(--ink); background: var(--paper); font-family: var(--font); line-height: 1.8; letter-spacing: 0.02em; }
+body { margin: 0; }
+a { color: var(--accent); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent); text-underline-offset: 0.2em; }
+a:hover { text-decoration-color: var(--accent); }
+strong { font-weight: 700; }
+
+h1, h2, h3, h4 { font-weight: 700; line-height: 1.45; letter-spacing: 0.04em; }
+h1 { font-size: 1.75em; margin: 0.4em 0 1.2em; padding-bottom: 0.5em; border-bottom: 1px solid var(--rule); }
+h2 { font-size: 1.3em; margin-top: 2.2em; padding-bottom: 0.25em; border-bottom: 1px solid var(--line); }
+h3 { font-size: 1.22em; margin-top: 2.6em; padding-bottom: 0.3em; color: var(--accent); border-bottom: 2px solid var(--accent); }
+/* h4 は第1回のステップ（🖋）の見出し。帯と太い線で、ステップの区切りがひと目で分かるようにする */
+h4 {
+  font-size: 1.05em; margin: 2.4em 0 0.8em; padding: 0.5em 0.8em;
+  background: var(--head-bg); border-left: 5px solid var(--accent); border-radius: 0 4px 4px 0;
+}
+img { max-width: 100%; height: auto; }
+figcaption { font-size: 0.85em; color: var(--muted); text-align: center; }
+hr { border: none; border-top: 1px solid var(--line); margin: 2em 0; }
+blockquote { margin: 1.2em 0; padding: 0.1em 1.2em; border-left: 2px solid var(--accent); color: var(--muted); }
+
+/* 表は上下の罫線と見出しの下の線だけ */
+table { border-collapse: collapse; margin: 1.2em 0; font-size: 0.9em; border-top: 1.5px solid var(--rule); border-bottom: 1.5px solid var(--rule); }
+th, td { padding: 0.4em 0.8em; vertical-align: top; text-align: left; }
+th { font-weight: 700; border-bottom: 1px solid var(--rule); }
+td:first-child { white-space: nowrap; }
+td code { white-space: nowrap; }
+td { border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: none; }
+
+code { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 3px; padding: 0.1em 0.35em; letter-spacing: 0; }
+/* コードブロックは暗い背景にして本文と区別し、文字を大きめ・行間を広めにする */
+pre { position: relative; background: var(--pre-bg); color: var(--pre-ink); border-radius: 6px; padding: 1em 1.3em; overflow-x: auto; line-height: 1.75; }
+pre code { background: none; padding: 0; font-size: 0.92em; color: inherit; }
+
+/* VFM（Prism）のシンタックスハイライト。彩度を落とす */
+/* 暗い背景の上の色。コメントは斜体にせず、色を落として命令と区別する */
+pre .token.comment { color: #9aa3a8; }
+pre .token.string, pre .token.attr-value { color: #b5cea8; }
+pre .token.keyword, pre .token.builtin { color: #e6b98a; }
+pre .token.function { color: #9cc4e4; }
+pre .token.number, pre .token.boolean { color: #d7a8d8; }
+pre .token.operator, pre .token.punctuation { color: #c9c6c0; }
+pre .token.variable { color: #f0d58c; }
+
+/* 各ページのナビ（目次・全体概要・タグ一覧、HTML 版は戻るも） */
+.page-nav { display: flex; gap: 1.6em; font-size: 0.8em; letter-spacing: 0.08em; }
+.page-nav a, .page-nav button { color: var(--muted); text-decoration: none; }
+.page-nav a:hover, .page-nav button:hover { color: var(--ink); }
+
+@media screen {
+  body { max-width: 50em; margin: 0 auto; padding: 2.5em 1.8em 5em; }
+  .page-nav {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+    justify-content: center; padding: 0.7em 1em;
+    background: color-mix(in srgb, var(--paper) 94%, transparent); backdrop-filter: blur(4px);
+    border-top: 1px solid var(--line);
+  }
+  .page-nav button { font: inherit; letter-spacing: inherit; background: none; border: none; padding: 0; cursor: pointer; }
+  .copy-button {
+    position: absolute; top: 0.5em; right: 0.5em;
+    font: 0.72em var(--font); letter-spacing: 0.05em; color: #c9c6c0;
+    background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 3px; padding: 0.15em 0.7em;
+    cursor: pointer; opacity: 0; transition: opacity 0.15s;
+  }
+  pre:hover .copy-button, .copy-button:focus { opacity: 1; }
+  .copy-button:hover { color: #fff; border-color: rgba(255, 255, 255, 0.6); }
+}
+@media screen and (hover: none) {
+  .copy-button { opacity: 1; }
+}
+
+/* PDF 版（Vivliostyle）。ナビは各ページの下の余白に出す */
+@page {
+  size: A4;
+  margin: 20mm 18mm 22mm;
+  @bottom-left { content: element(page-nav); vertical-align: top; padding-top: 4mm; }
+  @bottom-right { content: counter(page); font-size: 9pt; color: #9a9a9a; vertical-align: top; padding-top: 4mm; }
+}
+@media print {
+  html { font-size: 9.5pt; background: #fff; }
+  .page-nav { position: running(page-nav); font-size: 8pt; }
+  th, td { padding: 0.35em 0.5em; }
+  .copy-button { display: none; }
+  pre { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--code-bg); color: var(--ink); border-left: 3px solid var(--accent); border-radius: 0; }
+  /* 印刷では明るい背景に戻し、色も濃くする */
+  pre .token.comment { color: #6b6b6b; }
+  pre .token.string, pre .token.attr-value { color: #4a5e3a; }
+  pre .token.keyword, pre .token.builtin { color: #7a4b2c; }
+  pre .token.function { color: #3d5468; }
+  pre .token.number, pre .token.boolean, pre .token.variable { color: #6e4a6f; }
+  pre .token.operator, pre .token.punctuation { color: #2b2b2b; }
+  h1, h2, h3 { break-after: avoid; }
+  tr, pre, img { break-inside: avoid; }
+}
+
+/* 目次（build_docs.py が生成する index.html）。子のページは親の下に小さく横に並べる */
+nav#toc ol { list-style: none; padding-left: 0; }
+nav#toc > ol > li { padding: 0.35em 0; border-bottom: 1px dotted var(--line); }
+nav#toc a { color: var(--ink); text-decoration: none; }
+nav#toc a:hover { color: var(--accent); }
+nav#toc li ol { display: flex; flex-wrap: wrap; gap: 0.1em 1.1em; margin: 0.25em 0 0.1em 1.2em; font-size: 0.82em; }
+nav#toc li ol a { color: var(--muted); }
+
+/* Mermaid の図（build_docs.py が SVG にして埋め込む） */
+figure.mermaid, figure.plantuml { margin: 1.2em 0; text-align: center; }
+figure.mermaid svg, figure.plantuml svg { max-width: 100%; height: auto; }
+/* 本文の字間（letter-spacing）が図の文字に効くと、図を描いたときに測った幅より長くなってはみ出すので戻す */
+figure.mermaid svg, figure.plantuml svg { letter-spacing: normal; line-height: normal; }
+/* gitGraph のブランチ名は、図を描いたときに測った幅より少し長く表示されるので、枠に収まるよう少し小さくする */
+figure.mermaid .branchLabel text { font-size: 88%; }
+@media print { figure.mermaid, figure.plantuml { break-inside: avoid; } }

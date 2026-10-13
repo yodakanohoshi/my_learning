@@ -1,0 +1,104 @@
+<!DOCTYPE html><html lang="ja"><head>
+    <meta charset="utf-8">
+    <title>環境構築手順</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../../theme.css">
+<script src="../../docs.js" defer></script>
+</head>
+  <body>
+<nav class="page-nav"><a href="../../index.html">目次</a><a href="../../README.html">全体概要</a><a href="../../tags.html">タグ一覧</a></nav>
+    <section class="level1" aria-labelledby="環境構築手順">
+      <h1 id="環境構築手順">環境構築手順</h1>
+      <p>WSL の Ubuntu に mise と uv を入れ、<code>mise run hello</code> が動くところまでの手順です。</p><!-- 第4回のハンズオンで、各節の「（書く）」を自分の言葉とコマンドで埋める。手順7で隣の人がこの手順書だけで再現する。第5回でこのディレクトリをリポジトリにする -->
+      <ul>
+        <li>対象: （書く。例: WSL の Ubuntu 26.04）</li>
+        <li>所要時間: （書く）</li>
+        <li>前提: 第2回の環境設定手順書（PATH・プロキシ）が済んでいること。社内ネットワークでは <code>mise.run</code>・<code>github.com</code>・<code>pypi.org</code> にプロキシ経由で届くこと</li>
+      </ul>
+      <section class="level2" aria-labelledby="1-mise-を入れるpc-ごとに1回だけ">
+        <h2 id="1-mise-を入れるpc-ごとに1回だけ">1. mise を入れる（PC ごとに1回だけ）</h2>
+        <pre class="language-sh"><code class="language-sh"><span class="token function">（書く:</span> インストール → .bashrc のコピー → activate の行を追記 → 読み直す）</code></pre>
+        <p>確認: （書く: 何が表示されれば次に進んでよいか）</p>
+      </section>
+      <section class="level2" aria-labelledby="2-python-と-uv-を入れる">
+        <h2 id="2-python-と-uv-を入れる">2. Python と uv を入れる</h2>
+        <pre class="language-sh"><code class="language-sh"><span class="token function">（書く:</span> このディレクトリに移る → mise.toml の中身を見て信頼する → 入れる）</code></pre>
+        <p>確認: （書く: <code>mise ls --current</code> の表示）</p>
+      </section>
+      <section class="level2" aria-labelledby="3-依存パッケージを入れる">
+        <h2 id="3-依存パッケージを入れる">3. 依存パッケージを入れる</h2>
+        <pre class="language-sh"><code class="language-sh"><span class="token function">（書く）</span></code></pre>
+        <p>確認: （書く）</p>
+      </section>
+      <section class="level2" aria-labelledby="4-動かす">
+        <h2 id="4-動かす">4. 動かす</h2>
+        <pre class="language-sh"><code class="language-sh"><span class="token function">（書く）</span></code></pre>
+        <p>確認: （書く: 最後の行に出る Python の場所）</p>
+      </section>
+      <section class="level2" aria-labelledby="渡すファイルと渡さないファイル">
+        <h2 id="渡すファイルと渡さないファイル">渡すファイルと渡さないファイル</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ファイル</th>
+              <th>役割</th>
+              <th>渡すか</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>mise.toml</code></td>
+              <td>（書く）</td>
+              <td>（書く）</td>
+            </tr>
+            <tr>
+              <td><code>pyproject.toml</code></td>
+              <td>（書く）</td>
+              <td>（書く）</td>
+            </tr>
+            <tr>
+              <td><code>uv.lock</code></td>
+              <td>（書く）</td>
+              <td>（書く）</td>
+            </tr>
+            <tr>
+              <td><code>main.py</code></td>
+              <td>動作確認用のプログラム</td>
+              <td>渡す</td>
+            </tr>
+            <tr>
+              <td><code>.venv/</code></td>
+              <td>（書く）</td>
+              <td>（書く）</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="level2" aria-labelledby="うまくいかないとき">
+        <h2 id="うまくいかないとき">うまくいかないとき</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>症状（表示）</th>
+              <th>原因</th>
+              <th>対処</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>（書く）</td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="level2" aria-labelledby="元に戻す方法">
+        <h2 id="元に戻す方法">元に戻す方法</h2>
+        <pre class="language-sh"><code class="language-sh"><span class="token function">（書く:</span> .bashrc を mise を入れる前に戻す）</code></pre>
+        <p>確認: （書く）</p>
+      </section>
+    </section>
+  
+
+</body></html>

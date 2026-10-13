@@ -1,0 +1,35 @@
+# TODO アプリの開発環境
+# Python は mise が入れたものを使い、依存パッケージは uv が pyproject.toml / uv.lock で管理する
+[tools]
+python = "3.12"
+uv = "0.9"
+
+[env]
+# uv が独自に Python をダウンロードしないようにする（mise が入れた Python だけを使う）
+UV_PYTHON_DOWNLOADS = "never"
+# .venv を作り、このディレクトリに入ったら自動で有効にする
+_.python.venv = { path = ".venv", create = true }
+
+[tasks.setup]
+description = "依存パッケージを uv.lock どおりにインストール"
+run = "uv sync --locked"
+
+[tasks.test]
+description = "自動テスト（pytest）"
+run = "pytest"
+
+[tasks.lint]
+description = "ruff でリントとフォーマットを確かめる"
+run = ["ruff check .", "ruff format --check ."]
+
+[tasks.fmt]
+description = "ruff でフォーマットし、直せるリントを直す"
+run = ["ruff format .", "ruff check --fix ."]
+
+[tasks.typecheck]
+description = "mypy で型を確かめる"
+run = "mypy"
+
+[tasks.check]
+description = "PR を出す前の確認（リント・型・テスト）"
+depends = ["lint", "typecheck", "test"]

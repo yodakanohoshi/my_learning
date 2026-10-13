@@ -1,0 +1,57 @@
+[project]
+name = "todo-app"
+version = "0.1.0"
+description = "TODO・タスク管理アプリ"
+# 上限も付けて 3.12 に固定する（mise を通さずにほかの Python で動かしてしまうのを防ぐ）
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+# uv run todo ... で todo.cli の main() を呼ぶ
+[project.scripts]
+todo = "todo.cli:main"
+
+[dependency-groups]
+dev = [
+    "mypy",
+    "pytest",
+    "ruff",
+]
+
+[build-system]
+requires = ["uv_build>=0.9,<0.10"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "todo"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+# ---- コーディング規約（自動で確かめられるものは ruff と mypy に任せる） ----
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle（PEP 8 の書き方）
+    "W",    # pycodestyle の警告
+    "F",    # pyflakes（未使用の import・変数など）
+    "I",    # import の並び順
+    "N",    # 命名規則（pep8-naming）
+    "UP",   # 新しい書き方への置き換え（pyupgrade）
+    "B",    # バグになりやすい書き方（flake8-bugbear）
+    "SIM",  # もっと簡単に書ける箇所
+    "E722", # 例外の種類を書かない except（握りつぶし）
+]
+
+[tool.ruff.lint.per-file-ignores]
+# テスト関数名には確かめたいことを日本語で書く。N802 は英小文字以外を指摘するため外す
+"tests/**" = ["N802"]
+
+[tool.mypy]
+python_version = "3.12"
+# 型ヒントのない関数や Any の混入も指摘する
+strict = true
+files = ["src", "tests"]

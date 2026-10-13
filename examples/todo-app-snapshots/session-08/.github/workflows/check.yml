@@ -1,0 +1,28 @@
+# PR を出す前の確認（mise run check）を GitHub 上でも自動で実行する
+name: check
+
+# どのブランチへの push でも、PR の作成・更新でも動かす
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      # リポジトリの mise.toml を信頼済みとして扱う（ローカルの mise trust に当たる）
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+    steps:
+      # リポジトリのコードを取り出す
+      - uses: actions/checkout@v5
+
+      # mise を入れ、mise.toml の Python と uv を入れる（ローカルの mise install に当たる）
+      - uses: jdx/mise-action@v3
+        with:
+          version: 2026.10.7
+
+      # 依存パッケージを uv.lock どおりに入れる
+      - run: mise run setup
+
+      # リント（ruff）・型チェック（mypy）・テスト（pytest）
+      - run: mise run check

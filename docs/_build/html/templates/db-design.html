@@ -1,0 +1,141 @@
+<!DOCTYPE html><html lang="ja"><head>
+    <meta charset="utf-8">
+    <title>DB設計書</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../theme.css">
+<script src="../docs.js" defer></script>
+</head>
+  <body>
+<nav class="page-nav"><a href="../index.html">目次</a><a href="../README.html">全体概要</a><a href="../tags.html">タグ一覧</a></nav>
+    <section class="level1" aria-labelledby="db設計書">
+      <h1 id="db設計書">DB設計書</h1><!--
+      合格基準: 実装者が質問せずに作れるか。
+      必須記載事項: テーブル定義（カラム・型・NULL可否・キー）、制約。
+      主な図: ER図。
+      NULL を許すカラムは「NULL が何を意味するか」も書く。計算で求められる値（状態など）はテーブルに持たない。
+      置き場所: docs/design/db.md
+      見本: examples/todo-app-snapshots/session-10/docs/design/db.md
+      -->
+      <p>合格基準: 実装者が質問せずに作れるか</p>
+      <table>
+        <thead>
+          <tr>
+            <th>項目</th>
+            <th>内容</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>版</td>
+            <td>1.0（第10回）</td>
+          </tr>
+          <tr>
+            <td>DBMS</td>
+            <td>SQLite 3</td>
+          </tr>
+          <tr>
+            <td>DB の場所</td>
+            <td><!-- 例: 環境変数 TODO_DB_PATH。既定は var/todo.db --></td>
+          </tr>
+          <tr>
+            <td>関連</td>
+            <td><a href="../../../requirements.md">要件メモ</a>、<a href="../../../templates/api.md">API設計書</a></td>
+          </tr>
+        </tbody>
+      </table>
+      <section class="level2" aria-labelledby="1-er図">
+        <h2 id="1-er図">1. ER図</h2><!-- テーブル名・カラム名は英字。説明は "..." の中に日本語で -->
+        <figure class="mermaid"><svg id="mermaid-72" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="erDiagram" style="max-width: 312.941px; background-color: transparent;" viewBox="0 0 312.94140625 155" role="graphics-document document" aria-roledescription="er"><style>#mermaid-72{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;fill:#2b2b2b;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-72 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-72 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-72 .error-icon{fill:#fdfcfa;}#mermaid-72 .error-text{fill:#020305;stroke:#020305;}#mermaid-72 .edge-thickness-normal{stroke-width:1px;}#mermaid-72 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-72 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-72 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-72 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-72 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-72 .marker{fill:#6b6b6b;stroke:#6b6b6b;}#mermaid-72 .marker.cross{stroke:#6b6b6b;}#mermaid-72 svg{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;}#mermaid-72 p{margin:0;}#mermaid-72 .entityBox{fill:#f6f4f0;stroke:#3d5468;}#mermaid-72 .relationshipLabelBox{fill:#fdfcfa;opacity:0.7;background-color:#fdfcfa;}#mermaid-72 .relationshipLabelBox rect{opacity:0.5;}#mermaid-72 .labelBkg{background-color:rgba(253, 252, 250, 0.5);}#mermaid-72 .edgeLabel{background-color:#eef1f4;}#mermaid-72 .edgeLabel .label rect{fill:#eef1f4;}#mermaid-72 .edgeLabel .label text{fill:#2b2b2b;}#mermaid-72 .edgeLabel .label{fill:#3d5468;font-size:14px;}#mermaid-72 .label{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;color:#2b2b2b;}#mermaid-72 .edge-pattern-dashed{stroke-dasharray:8,8;}#mermaid-72 .node rect,#mermaid-72 .node circle,#mermaid-72 .node ellipse,#mermaid-72 .node polygon{fill:#f6f4f0;stroke:#3d5468;stroke-width:1px;}#mermaid-72 .relationshipLine{stroke:#6b6b6b;stroke-width:1px;fill:none;}#mermaid-72 .marker{fill:none!important;stroke:#6b6b6b!important;stroke-width:1;}#mermaid-72 [data-look=neo].labelBkg{background-color:rgba(253, 252, 250, 0.5);}#mermaid-72 .cluster rect{fill:#fbfaf7;stroke:#c9c5bd;stroke-width:1px;}#mermaid-72 .cluster text{fill:#020305;}#mermaid-72 .cluster-label text{fill:#020305;}#mermaid-72 .node .neo-node{stroke:#3d5468;}#mermaid-72 [data-look="neo"].node rect,#mermaid-72 [data-look="neo"].cluster rect,#mermaid-72 [data-look="neo"].node polygon{stroke:url(#mermaid-72-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-72 [data-look="neo"].swimlane.cluster rect{filter:none;}#mermaid-72 [data-look="neo"].node path{stroke:url(#mermaid-72-gradient);stroke-width:1px;}#mermaid-72 [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-72 [data-look="neo"].node .neo-line path{stroke:#3d5468;filter:none;}#mermaid-72 [data-look="neo"].node circle{stroke:url(#mermaid-72-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-72 [data-look="neo"].node circle .state-start{fill:#000000;}#mermaid-72 [data-look="neo"].icon-shape .icon{fill:url(#mermaid-72-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-72 [data-look="neo"].icon-shape .icon-neo path{stroke:url(#mermaid-72-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-72 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><defs><marker id="mermaid-72_er-onlyOneStart" class="marker onlyOne er" refX="0" refY="9" markerWidth="18" markerHeight="18" orient="auto"><path d="M9,0 L9,18 M15,0 L15,18"/></marker></defs><defs><marker id="mermaid-72_er-onlyOneEnd" class="marker onlyOne er" refX="18" refY="9" markerWidth="18" markerHeight="18" orient="auto"><path d="M3,0 L3,18 M9,0 L9,18"/></marker></defs><defs><marker id="mermaid-72_er-zeroOrOneStart" class="marker zeroOrOne er" refX="0" refY="9" markerWidth="30" markerHeight="18" orient="auto"><circle fill="white" cx="21" cy="9" r="6"/><path d="M9,0 L9,18"/></marker></defs><defs><marker id="mermaid-72_er-zeroOrOneEnd" class="marker zeroOrOne er" refX="30" refY="9" markerWidth="30" markerHeight="18" orient="auto"><circle fill="white" cx="9" cy="9" r="6"/><path d="M21,0 L21,18"/></marker></defs><defs><marker id="mermaid-72_er-oneOrMoreStart" class="marker oneOrMore er" refX="18" refY="18" markerWidth="45" markerHeight="36" orient="auto"><path d="M0,18 Q 18,0 36,18 Q 18,36 0,18 M42,9 L42,27"/></marker></defs><defs><marker id="mermaid-72_er-oneOrMoreEnd" class="marker oneOrMore er" refX="27" refY="18" markerWidth="45" markerHeight="36" orient="auto"><path d="M3,9 L3,27 M9,18 Q27,0 45,18 Q27,36 9,18"/></marker></defs><defs><marker id="mermaid-72_er-zeroOrMoreStart" class="marker zeroOrMore er" refX="18" refY="18" markerWidth="57" markerHeight="36" orient="auto"><circle fill="white" cx="48" cy="18" r="6"/><path d="M0,18 Q18,0 36,18 Q18,36 0,18"/></marker></defs><defs><marker id="mermaid-72_er-zeroOrMoreEnd" class="marker zeroOrMore er" refX="39" refY="18" markerWidth="57" markerHeight="36" orient="auto"><circle fill="white" cx="9" cy="18" r="6"/><path d="M21,18 Q39,0 57,18 Q39,36 21,18"/></marker></defs><g class="root"><g class="clusters"/><g class="edgePaths"/><g class="edgeLabels"/><g class="nodes"><g class="node default" id="mermaid-72-entity-tasks-0" data-look="classic" transform="translate(156.470703125, 77.5)"><g class="outer-path" style=""><path d="M-148.470703125 -69.49999856948853 L148.470703125 -69.49999856948853 L148.470703125 69.49999856948853 L-148.470703125 69.49999856948853" stroke="none" stroke-width="0" fill="#f6f4f0"/><path d="M-148.470703125 -69.49999856948853 C-36.50696685298011 -69.49999856948853, 75.45676941903977 -69.49999856948853, 148.470703125 -69.49999856948853 M-148.470703125 -69.49999856948853 C-44.34567798400114 -69.49999856948853, 59.779347156997716 -69.49999856948853, 148.470703125 -69.49999856948853 M148.470703125 -69.49999856948853 C148.470703125 -24.94616507204814, 148.470703125 19.607668425392248, 148.470703125 69.49999856948853 M148.470703125 -69.49999856948853 C148.470703125 -23.741500655435722, 148.470703125 22.01699725861708, 148.470703125 69.49999856948853 M148.470703125 69.49999856948853 C84.84559321954315 69.49999856948853, 21.220483314086295 69.49999856948853, -148.470703125 69.49999856948853 M148.470703125 69.49999856948853 C38.6715712378995 69.49999856948853, -71.127560649201 69.49999856948853, -148.470703125 69.49999856948853 M-148.470703125 69.49999856948853 C-148.470703125 41.55966436703644, -148.470703125 13.619330164584355, -148.470703125 -69.49999856948853 M-148.470703125 69.49999856948853 C-148.470703125 25.93934935333396, -148.470703125 -17.621299862820607, -148.470703125 -69.49999856948853" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-odd"><path d="M-148.470703125 -34.749998569488525 L148.470703125 -34.749998569488525 L148.470703125 4.76837158203125e-7 L-148.470703125 4.76837158203125e-7" stroke="none" stroke-width="0" fill="hsl(40, 25%, 100%)"/><path d="M-148.470703125 -34.749998569488525 C-48.44656568677489 -34.749998569488525, 51.57757175145022 -34.749998569488525, 148.470703125 -34.749998569488525 M-148.470703125 -34.749998569488525 C-54.80709262316381 -34.749998569488525, 38.85651787867238 -34.749998569488525, 148.470703125 -34.749998569488525 M148.470703125 -34.749998569488525 C148.470703125 -22.801993732799225, 148.470703125 -10.853988896109922, 148.470703125 4.76837158203125e-7 M148.470703125 -34.749998569488525 C148.470703125 -26.090057842662485, 148.470703125 -17.430117115836445, 148.470703125 4.76837158203125e-7 M148.470703125 4.76837158203125e-7 C52.04988102568818 4.76837158203125e-7, -44.37094107362364 4.76837158203125e-7, -148.470703125 4.76837158203125e-7 M148.470703125 4.76837158203125e-7 C69.58580089806343 4.76837158203125e-7, -9.29910132887315 4.76837158203125e-7, -148.470703125 4.76837158203125e-7 M-148.470703125 4.76837158203125e-7 C-148.470703125 -11.92239932983445, -148.470703125 -23.844799136506058, -148.470703125 -34.749998569488525 M-148.470703125 4.76837158203125e-7 C-148.470703125 -13.263742788179332, -148.470703125 -26.527486053195823, -148.470703125 -34.749998569488525" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-even"><path d="M-148.470703125 4.76837158203125e-7 L148.470703125 4.76837158203125e-7 L148.470703125 34.74999952316284 L-148.470703125 34.74999952316284" stroke="none" stroke-width="0" fill="hsl(40, 25%, 100%)"/><path d="M-148.470703125 4.76837158203125e-7 C-42.47441514956756 4.76837158203125e-7, 63.521872825864875 4.76837158203125e-7, 148.470703125 4.76837158203125e-7 M-148.470703125 4.76837158203125e-7 C-30.287719694884828 4.76837158203125e-7, 87.89526373523034 4.76837158203125e-7, 148.470703125 4.76837158203125e-7 M148.470703125 4.76837158203125e-7 C148.470703125 13.165730046140858, 148.470703125 26.331459615444558, 148.470703125 34.74999952316284 M148.470703125 4.76837158203125e-7 C148.470703125 13.115244327970833, 148.470703125 26.23048817910451, 148.470703125 34.74999952316284 M148.470703125 34.74999952316284 C70.57362266886247 34.74999952316284, -7.323457787275061 34.74999952316284, -148.470703125 34.74999952316284 M148.470703125 34.74999952316284 C76.45510557877881 34.74999952316284, 4.439508032557626 34.74999952316284, -148.470703125 34.74999952316284 M-148.470703125 34.74999952316284 C-148.470703125 27.411660835331997, -148.470703125 20.073322147501152, -148.470703125 4.76837158203125e-7 M-148.470703125 34.74999952316284 C-148.470703125 26.5512147029172, -148.470703125 18.352429882671554, -148.470703125 4.76837158203125e-7" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-odd"><path d="M-148.470703125 34.74999952316284 L148.470703125 34.74999952316284 L148.470703125 69.49999856948853 L-148.470703125 69.49999856948853" stroke="none" stroke-width="0" fill="hsl(40, 25%, 100%)"/><path d="M-148.470703125 34.74999952316284 C-39.26918868061196 34.74999952316284, 69.93232576377608 34.74999952316284, 148.470703125 34.74999952316284 M-148.470703125 34.74999952316284 C-55.541028259358896 34.74999952316284, 37.38864660628221 34.74999952316284, 148.470703125 34.74999952316284 M148.470703125 34.74999952316284 C148.470703125 42.33554336411689, 148.470703125 49.92108720507094, 148.470703125 69.49999856948853 M148.470703125 34.74999952316284 C148.470703125 48.353702742054395, 148.470703125 61.95740596094594, 148.470703125 69.49999856948853 M148.470703125 69.49999856948853 C35.03424307136851 69.49999856948853, -78.40221698226298 69.49999856948853, -148.470703125 69.49999856948853 M148.470703125 69.49999856948853 C63.11842673517802 69.49999856948853, -22.23384965464396 69.49999856948853, -148.470703125 69.49999856948853 M-148.470703125 69.49999856948853 C-148.470703125 57.552016794249454, -148.470703125 45.60403501901038, -148.470703125 34.74999952316284 M-148.470703125 69.49999856948853 C-148.470703125 57.407477488792225, -148.470703125 45.31495640809593, -148.470703125 34.74999952316284" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="label name" transform="translate(-16.34375, -60.124998569488525)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">tasks</tspan></tspan></text></g><g class="label attribute-type" transform="translate(-135.970703125, -25.374998569488525)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">INTEGER</tspan></tspan></text></g><g class="label attribute-name" transform="translate(-48.736328125, -25.374998569488525)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">id</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(-0.1640625, -25.374998569488525)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">PK</tspan></tspan></text></g><g class="label attribute-comment" transform="translate(44.173828125, -25.374998569488525)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">連番</tspan></tspan></text></g><g class="label attribute-type" transform="translate(-135.970703125, 9.375000476837158)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">TEXT</tspan></tspan></text></g><g class="label attribute-name" transform="translate(-48.736328125, 9.375000476837158)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">title</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(-0.1640625, 9.375000476837158)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-comment" transform="translate(44.173828125, 9.375000476837158)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">タイトル</tspan></tspan></text></g><g class="label attribute-type" transform="translate(-135.970703125, 44.12499952316284)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">TEXT</tspan></tspan></text></g><g class="label attribute-name" transform="translate(-48.736328125, 44.12499952316284)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">due</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(-0.1640625, 44.12499952316284)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-comment" transform="translate(44.173828125, 44.12499952316284)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">期限。NULL可</tspan></tspan></text></g><g class="divider"><path d="M-148.470703125 -34.75004856948853 L-148.470703125 -34.749948569488524 L148.470703125 -34.749948569488524 L148.470703125 -34.75004856948853" stroke="none" stroke-width="0" fill="#f6f4f0" fill-rule="evenodd"/><path d="M-148.470703125 -34.75004856948853 C-148.470703125 -34.750019230529524, -148.470703125 -34.74998989157053, -148.470703125 -34.749948569488524 M-148.470703125 -34.75004856948853 C-148.470703125 -34.75001614728234, -148.470703125 -34.74998372507615, -148.470703125 -34.749948569488524 M-148.470703125 -34.749948569488524 C-46.64804523410184 -34.749948569488524, 55.17461265679631 -34.749948569488524, 148.470703125 -34.749948569488524 M-148.470703125 -34.749948569488524 C-60.33066354518748 -34.749948569488524, 27.809376034625046 -34.749948569488524, 148.470703125 -34.749948569488524 M148.470703125 -34.749948569488524 C148.470703125 -34.749975455918914, 148.470703125 -34.75000234234931, 148.470703125 -34.75004856948853 M148.470703125 -34.749948569488524 C148.470703125 -34.74997152140958, 148.470703125 -34.74999447333064, 148.470703125 -34.75004856948853 M148.470703125 -34.75004856948853 C63.31638221875744 -34.75004856948853, -21.83793868748512 -34.75004856948853, -148.470703125 -34.75004856948853 M148.470703125 -34.75004856948853 C59.38004812783066 -34.75004856948853, -29.710606869338676 -34.75004856948853, -148.470703125 -34.75004856948853" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M-61.236378125 -34.749998569488525 L-61.236278125 -34.749998569488525 L-61.236278125 69.49999856948853 L-61.236378125 69.49999856948853" stroke="none" stroke-width="0" fill="#f6f4f0" fill-rule="evenodd"/><path d="M-61.236378125 -34.749998569488525 C-61.23635025969075 -34.749998569488525, -61.23632239438151 -34.749998569488525, -61.236278125 -34.749998569488525 M-61.236378125 -34.749998569488525 C-61.23634609526535 -34.749998569488525, -61.2363140655307 -34.749998569488525, -61.236278125 -34.749998569488525 M-61.236278125 -34.749998569488525 C-61.236278125 -1.6388648498224683, -61.236278125 31.47226886984359, -61.236278125 69.49999856948853 M-61.236278125 -34.749998569488525 C-61.236278125 2.056759798683885, -61.236278125 38.863518166856295, -61.236278125 69.49999856948853 M-61.236278125 69.49999856948853 C-61.236309046765655 69.49999856948853, -61.23633996853132 69.49999856948853, -61.236378125 69.49999856948853 M-61.236278125 69.49999856948853 C-61.236315221303485 69.49999856948853, -61.236352317606965 69.49999856948853, -61.236378125 69.49999856948853 M-61.236378125 69.49999856948853 C-61.236378125 45.33785375427055, -61.236378125 21.17570893905257, -61.236378125 -34.749998569488525 M-61.236378125 69.49999856948853 C-61.236378125 43.37951843076188, -61.236378125 17.259038292035235, -61.236378125 -34.749998569488525" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M-12.6641125 -34.749998569488525 L-12.6640125 -34.749998569488525 L-12.6640125 69.49999856948853 L-12.6641125 69.49999856948853" stroke="none" stroke-width="0" fill="#f6f4f0" fill-rule="evenodd"/><path d="M-12.6641125 -34.749998569488525 C-12.664089012608114 -34.749998569488525, -12.664065525216229 -34.749998569488525, -12.6640125 -34.749998569488525 M-12.6641125 -34.749998569488525 C-12.664091354408239 -34.749998569488525, -12.664070208816476 -34.749998569488525, -12.6640125 -34.749998569488525 M-12.6640125 -34.749998569488525 C-12.6640125 -4.918150680690438, -12.6640125 24.91369720810765, -12.6640125 69.49999856948853 M-12.6640125 -34.749998569488525 C-12.6640125 -13.589231907040531, -12.6640125 7.571534755407463, -12.6640125 69.49999856948853 M-12.6640125 69.49999856948853 C-12.664035157373945 69.49999856948853, -12.664057814747888 69.49999856948853, -12.6641125 69.49999856948853 M-12.6640125 69.49999856948853 C-12.664047522006651 69.49999856948853, -12.664082544013304 69.49999856948853, -12.6641125 69.49999856948853 M-12.6641125 69.49999856948853 C-12.6641125 31.13830310279164, -12.6641125 -7.223392363905248, -12.6641125 -34.749998569488525 M-12.6641125 69.49999856948853 C-12.6641125 38.85038189223362, -12.6641125 8.200765214978716, -12.6641125 -34.749998569488525" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M31.673778125 -34.749998569488525 L31.673878125 -34.749998569488525 L31.673878125 69.49999856948853 L31.673778125 69.49999856948853" stroke="none" stroke-width="0" fill="#f6f4f0" fill-rule="evenodd"/><path d="M31.673778125 -34.749998569488525 C31.673813153970762 -34.749998569488525, 31.673848182941523 -34.749998569488525, 31.673878125 -34.749998569488525 M31.673778125 -34.749998569488525 C31.67380735979158 -34.749998569488525, 31.67383659458316 -34.749998569488525, 31.673878125 -34.749998569488525 M31.673878125 -34.749998569488525 C31.673878125 -12.413130447239247, 31.673878125 9.923737675010031, 31.673878125 69.49999856948853 M31.673878125 -34.749998569488525 C31.673878125 1.0423460108224845, 31.673878125 36.834690591133494, 31.673878125 69.49999856948853 M31.673878125 69.49999856948853 C31.67385738829927 69.49999856948853, 31.673836651598542 69.49999856948853, 31.673778125 69.49999856948853 M31.673878125 69.49999856948853 C31.67384813402479 69.49999856948853, 31.67381814304958 69.49999856948853, 31.673778125 69.49999856948853 M31.673778125 69.49999856948853 C31.673778125 41.02729122305337, 31.673778125 12.554583876618217, 31.673778125 -34.749998569488525 M31.673778125 69.49999856948853 C31.673778125 39.817448821095525, 31.673778125 10.134899072702524, 31.673778125 -34.749998569488525" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M-148.470703125 -34.75004856948853 L-148.470703125 -34.749948569488524 L148.470703125 -34.749948569488524 L148.470703125 -34.75004856948853" stroke="none" stroke-width="0" fill="#f6f4f0" fill-rule="evenodd"/><path d="M-148.470703125 -34.75004856948853 C-148.470703125 -34.75002637696524, -148.470703125 -34.750004184441956, -148.470703125 -34.749948569488524 M-148.470703125 -34.75004856948853 C-148.470703125 -34.75001925819751, -148.470703125 -34.749989946906496, -148.470703125 -34.749948569488524 M-148.470703125 -34.749948569488524 C-80.9340950339919 -34.749948569488524, -13.39748694298379 -34.749948569488524, 148.470703125 -34.749948569488524 M-148.470703125 -34.749948569488524 C-79.65801352776425 -34.749948569488524, -10.845323930528508 -34.749948569488524, 148.470703125 -34.749948569488524 M148.470703125 -34.749948569488524 C148.470703125 -34.74998567659819, 148.470703125 -34.75002278370786, 148.470703125 -34.75004856948853 M148.470703125 -34.749948569488524 C148.470703125 -34.74997855672662, 148.470703125 -34.750008543964704, 148.470703125 -34.75004856948853 M148.470703125 -34.75004856948853 C84.20291385213443 -34.75004856948853, 19.93512457926886 -34.75004856948853, -148.470703125 -34.75004856948853 M148.470703125 -34.75004856948853 C47.6300174565482 -34.75004856948853, -53.210668211903595 -34.75004856948853, -148.470703125 -34.75004856948853" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g></g></g></g></g><defs><filter id="mermaid-72-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="mermaid-72-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><linearGradient id="mermaid-72-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#3d5468" stop-opacity="1"/><stop offset="100%" stop-color="hsl(210, 0%, 84.5098039216%)" stop-opacity="1"/></linearGradient><style>/* mermaid-cli で画像にするときのフォント（HTML 版と同じ BIZ UDPGothic） */
+@import url("https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&amp;display=swap");
+svg { -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+</style></svg></figure>
+      </section>
+      <section class="level2" aria-labelledby="2-テーブル定義">
+        <h2 id="2-テーブル定義">2. テーブル定義</h2>
+        <section class="level3">
+          <h3 id="">&lt;テーブル名&gt;（&lt;日本語の名前&gt;）</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>カラム</th>
+                <th>型</th>
+                <th>NULL</th>
+                <th>キー・既定値</th>
+                <th>説明</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>id</td>
+                <td>INTEGER</td>
+                <td>不可</td>
+                <td>PK、AUTOINCREMENT</td>
+                <td>連番</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td>可／不可</td>
+                <td></td>
+                <td><!-- NULL 可なら、NULL の意味 --></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+      <section class="level2" aria-labelledby="3-制約">
+        <h2 id="3-制約">3. 制約</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>制約</th>
+              <th>内容</th>
+              <th>理由</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>NOT NULL</td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>DEFAULT</td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>CHECK</td>
+              <td><!-- 例: done は 0 か 1 --></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="level2" aria-labelledby="4-db-に持たず計算で求める値">
+        <h2 id="4-db-に持たず計算で求める値">4. DB に持たず計算で求める値</h2><!-- 状態など、記録から計算するもの。条件を不等号まで正確に書く（境目の当日を含むか） -->
+        <table>
+          <thead>
+            <tr>
+              <th>値</th>
+              <th>条件</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="level2" aria-labelledby="5-並び順">
+        <h2 id="5-並び順">5. 並び順</h2><!-- 一覧で使う順序。期限なしの扱い、同じ値のときの順 -->
+        <ul>
+          <li></li>
+        </ul>
+      </section>
+    </section>
+  
+
+</body></html>

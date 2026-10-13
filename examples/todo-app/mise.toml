@@ -1,0 +1,45 @@
+# TODO アプリの開発環境
+# Python は mise が入れたものを使い、依存パッケージは uv が pyproject.toml / uv.lock で管理する
+[tools]
+python = "3.12"
+uv = "0.9"
+
+[env]
+# uv が独自に Python をダウンロードしないようにする（mise が入れた Python だけを使う）
+UV_PYTHON_DOWNLOADS = "never"
+# .venv を作り、このディレクトリに入ったら自動で有効にする
+_.python.venv = { path = ".venv", create = true }
+# Web 版の DB の場所（docs/design/architecture.md 5章）
+TODO_DB_PATH = "{{config_root}}/var/todo.db"
+
+[tasks.setup]
+description = "依存パッケージを uv.lock どおりにインストール"
+run = "uv sync --locked"
+
+[tasks.dev]
+description = "開発用サーバを起動（http://127.0.0.1:8000）"
+run = "uvicorn todo.web:app --reload --host 127.0.0.1 --port 8000"
+
+[tasks.db-reset]
+description = "開発用 DB を消す（次にページを開いたときに空の DB を作る）"
+run = "rm -f var/todo.db"
+
+[tasks.test]
+description = "自動テスト（pytest）"
+run = "pytest"
+
+[tasks.lint]
+description = "ruff でリントとフォーマットを確かめる"
+run = ["ruff check .", "ruff format --check ."]
+
+[tasks.fmt]
+description = "ruff でフォーマットし、直せるリントを直す"
+run = ["ruff format .", "ruff check --fix ."]
+
+[tasks.typecheck]
+description = "mypy で型を確かめる"
+run = "mypy"
+
+[tasks.check]
+description = "PR を出す前の確認（リント・型・テスト）"
+depends = ["lint", "typecheck", "test"]

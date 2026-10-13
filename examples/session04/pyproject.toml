@@ -1,0 +1,11 @@
+[project]
+name = "hello-todo"
+version = "0.1.0"
+description = "第4回の見本: タスク一覧を表示する"
+readme = "README.md"
+# 上限も付けて 3.12 に固定する。">=3.12" だけだと、mise を通さずに実行したとき
+# システムの新しい Python（3.13 以降）でも動いてしまい、環境の違いに気づけない
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "rich>=15.0.0",
+]

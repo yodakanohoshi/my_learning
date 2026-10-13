@@ -1,0 +1,303 @@
+2026-04-02 08:00:00 INFO  [app] started
+2026-04-02 08:31:42 INFO  [web] GET / 200 7ms user=U023
+2026-04-02 08:34:53 INFO  [task] task created id=409 user=U030
+2026-04-02 08:37:33 INFO  [task] task created id=469 user=U015
+2026-04-02 08:38:08 INFO  [web] GET / 200 45ms user=U022
+2026-04-02 08:38:51 WARN  [task] overdue id=123 user=U001 days=6
+2026-04-02 08:40:29 INFO  [web] GET / 200 69ms user=U031
+2026-04-02 08:42:11 INFO  [web] GET / 200 13ms user=U013
+2026-04-02 08:42:47 INFO  [task] task created id=291 user=U010
+2026-04-02 08:46:02 INFO  [web] GET / 200 33ms user=U013
+2026-04-02 08:48:40 INFO  [web] GET /?overdue=1 200 39ms user=U009
+2026-04-02 08:52:04 WARN  [task] overdue id=137 user=U009 days=10
+2026-04-02 08:53:52 INFO  [web] GET / 200 30ms user=U021
+2026-04-02 08:54:20 INFO  [web] GET /help/error-codes 200 40ms user=U022
+2026-04-02 08:55:36 INFO  [web] GET / 200 16ms user=U024
+2026-04-02 08:59:25 INFO  [web] GET / 200 32ms user=U011
+2026-04-02 09:02:25 INFO  [web] GET /help/error-codes 200 76ms user=U040
+2026-04-02 09:04:05 INFO  [task] task done id=431 user=U002
+2026-04-02 09:06:18 INFO  [web] GET / 200 9ms user=U007
+2026-04-02 09:08:50 INFO  [task] task done id=198 user=U016
+2026-04-02 09:10:34 INFO  [task] task created id=384 user=U001
+2026-04-02 09:13:30 INFO  [web] GET / 200 41ms user=U013
+2026-04-02 09:15:50 INFO  [web] GET / 200 58ms user=U006
+2026-04-02 09:19:15 ERROR [db] database is locked
+2026-04-02 09:20:15 INFO  [task] task created id=189 user=U038
+2026-04-02 09:22:45 INFO  [web] GET / 200 16ms user=U004
+2026-04-02 09:24:26 INFO  [task] task done id=318 user=U033
+2026-04-02 09:25:05 INFO  [task] task done id=98 user=U037
+2026-04-02 09:25:25 INFO  [task] task created id=193 user=U029
+2026-04-02 09:26:36 INFO  [web] GET / 200 22ms user=U038
+2026-04-02 09:29:17 INFO  [web] GET / 200 63ms user=U008
+2026-04-02 09:30:35 INFO  [web] GET / 200 46ms user=U007
+2026-04-02 09:34:07 INFO  [task] task done id=209 user=U038
+2026-04-02 09:35:20 INFO  [web] GET / 200 16ms user=U006
+2026-04-02 09:35:54 WARN  [task] overdue id=375 user=U017 days=5
+2026-04-02 09:36:48 WARN  [task] overdue id=45 user=U035 days=16
+2026-04-02 09:40:39 INFO  [web] GET / 200 70ms user=U031
+2026-04-02 09:43:07 WARN  [task] overdue id=52 user=U031 days=18
+2026-04-02 09:46:10 INFO  [web] GET / 200 73ms user=U003
+2026-04-02 09:47:39 WARN  [task] overdue id=298 user=U004 days=5
+2026-04-02 09:49:09 INFO  [web] GET / 200 73ms user=U036
+2026-04-02 09:52:03 INFO  [web] GET /help/error-codes 200 73ms user=U029
+2026-04-02 09:53:17 INFO  [web] GET / 200 5ms user=U020
+2026-04-02 09:54:48 INFO  [web] GET / 200 8ms user=U018
+2026-04-02 09:57:43 INFO  [web] GET / 200 64ms user=U022
+2026-04-02 10:01:19 INFO  [web] GET /help/error-codes 200 31ms user=U031
+2026-04-02 10:03:43 INFO  [task] task done id=151 user=U023
+2026-04-02 10:06:12 INFO  [task] task created id=469 user=U014
+2026-04-02 10:08:20 INFO  [web] GET /?overdue=1 200 13ms user=U021
+2026-04-02 10:09:12 INFO  [web] GET / 200 9ms user=U017
+2026-04-02 10:11:45 INFO  [web] GET / 200 64ms user=U018
+2026-04-02 10:13:06 INFO  [web] GET / 200 32ms user=U014
+2026-04-02 10:13:44 ERROR [web] POST /tasks/44/done 404 task not found user=U006
+2026-04-02 10:15:55 INFO  [web] GET / 200 34ms user=U038
+2026-04-02 10:16:41 INFO  [web] GET /?overdue=1 200 71ms user=U018
+2026-04-02 10:19:56 INFO  [task] task done id=484 user=U009
+2026-04-02 10:22:50 INFO  [web] GET / 200 39ms user=U010
+2026-04-02 10:24:25 INFO  [web] GET / 200 37ms user=U028
+2026-04-02 10:27:20 INFO  [task] task done id=496 user=U012
+2026-04-02 10:27:44 INFO  [task] task created id=165 user=U028
+2026-04-02 10:31:12 ERROR [mail] SMTP connection timed out host=mail.example.com
+2026-04-02 10:32:14 INFO  [task] task done id=397 user=U028
+2026-04-02 10:34:54 INFO  [web] GET / 200 32ms user=U020
+2026-04-02 10:35:22 INFO  [web] GET / 200 32ms user=U039
+2026-04-02 10:36:16 INFO  [task] task created id=424 user=U033
+2026-04-02 10:40:07 INFO  [web] GET / 200 59ms user=U011
+2026-04-02 10:41:50 INFO  [web] GET /help/error-codes 200 23ms user=U036
+2026-04-02 10:43:37 INFO  [web] GET / 200 40ms user=U030
+2026-04-02 10:45:34 INFO  [web] GET / 200 3ms user=U004
+2026-04-02 10:47:02 INFO  [web] GET / 200 32ms user=U036
+2026-04-02 10:50:22 INFO  [web] GET / 200 50ms user=U029
+2026-04-02 10:53:16 INFO  [web] GET / 200 48ms user=U027
+2026-04-02 10:54:36 INFO  [web] GET /?overdue=1 200 5ms user=U037
+2026-04-02 10:57:27 INFO  [web] GET /?overdue=1 200 37ms user=U035
+2026-04-02 10:58:04 INFO  [web] GET / 200 76ms user=U016
+2026-04-02 10:58:58 INFO  [web] GET / 200 16ms user=U038
+2026-04-02 11:02:41 INFO  [web] GET / 200 26ms user=U004
+2026-04-02 11:04:47 INFO  [task] task created id=239 user=U040
+2026-04-02 11:05:24 INFO  [web] GET / 200 30ms user=U012
+2026-04-02 11:07:27 INFO  [web] GET / 200 48ms user=U020
+2026-04-02 11:10:46 INFO  [web] GET /?overdue=1 200 22ms user=U033
+2026-04-02 11:11:48 INFO  [task] task created id=417 user=U002
+2026-04-02 11:14:08 INFO  [task] task created id=2 user=U008
+2026-04-02 11:17:41 INFO  [task] task created id=68 user=U010
+2026-04-02 11:21:33 ERROR [web] POST /tasks/364/done 404 task not found user=U023
+2026-04-02 11:25:33 INFO  [task] task done id=93 user=U026
+2026-04-02 11:27:51 INFO  [task] task done id=233 user=U032
+2026-04-02 11:30:20 INFO  [web] GET / 200 73ms user=U034
+2026-04-02 11:31:25 INFO  [web] GET / 200 73ms user=U039
+2026-04-02 11:33:10 INFO  [web] GET / 200 12ms user=U021
+2026-04-02 11:34:06 INFO  [web] GET / 200 80ms user=U038
+2026-04-02 11:34:30 INFO  [task] task created id=494 user=U022
+2026-04-02 11:35:21 INFO  [web] GET / 200 76ms user=U039
+2026-04-02 11:36:29 INFO  [web] GET / 200 56ms user=U033
+2026-04-02 11:37:49 INFO  [web] GET / 200 69ms user=U032
+2026-04-02 11:39:17 INFO  [web] GET /?overdue=1 200 26ms user=U021
+2026-04-02 11:42:18 INFO  [web] GET /?overdue=1 200 66ms user=U037
+2026-04-02 11:45:12 INFO  [web] GET / 200 14ms user=U005
+2026-04-02 11:48:26 INFO  [web] GET / 200 51ms user=U014
+2026-04-02 11:51:37 INFO  [web] GET /?overdue=1 200 7ms user=U015
+2026-04-02 11:52:16 ERROR [web] POST /tasks/224/done 404 task not found user=U015
+2026-04-02 11:52:56 INFO  [task] task done id=419 user=U024
+2026-04-02 11:54:46 INFO  [web] GET / 200 78ms user=U012
+2026-04-02 11:55:44 INFO  [task] task done id=135 user=U030
+2026-04-02 11:57:22 WARN  [db] database is locked, retrying (1/3)
+2026-04-02 11:59:36 INFO  [task] task created id=158 user=U001
+2026-04-02 12:01:12 INFO  [web] GET / 200 68ms user=U010
+2026-04-02 12:04:01 ERROR [db] database is locked
+2026-04-02 12:05:03 INFO  [web] GET / 200 5ms user=U037
+2026-04-02 12:06:37 INFO  [task] task done id=148 user=U018
+2026-04-02 12:09:57 INFO  [web] GET / 200 65ms user=U025
+2026-04-02 12:13:06 INFO  [task] task created id=105 user=U011
+2026-04-02 12:14:27 INFO  [task] task created id=262 user=U001
+2026-04-02 12:16:01 INFO  [task] task done id=438 user=U035
+2026-04-02 12:17:24 INFO  [task] task created id=332 user=U012
+2026-04-02 12:21:07 INFO  [web] GET / 200 18ms user=U025
+2026-04-02 12:22:31 INFO  [web] GET / 200 73ms user=U003
+2026-04-02 12:23:36 INFO  [web] GET / 200 30ms user=U026
+2026-04-02 12:25:05 INFO  [web] GET / 200 23ms user=U026
+2026-04-02 12:27:39 INFO  [web] GET / 200 63ms user=U002
+2026-04-02 12:29:51 INFO  [task] task created id=155 user=U019
+2026-04-02 12:30:56 INFO  [web] GET /help/error-codes 200 14ms user=U015
+2026-04-02 12:34:11 INFO  [task] task created id=267 user=U014
+2026-04-02 12:36:01 INFO  [task] task done id=435 user=U033
+2026-04-02 12:38:16 WARN  [task] overdue id=152 user=U001 days=5
+2026-04-02 12:39:16 INFO  [task] task done id=127 user=U038
+2026-04-02 12:40:27 INFO  [web] GET / 200 36ms user=U037
+2026-04-02 12:42:30 INFO  [web] GET /help/error-codes 200 11ms user=U014
+2026-04-02 12:43:23 INFO  [task] task created id=139 user=U003
+2026-04-02 12:47:17 INFO  [task] task created id=143 user=U038
+2026-04-02 12:49:48 INFO  [web] GET / 200 75ms user=U025
+2026-04-02 12:52:26 ERROR [mail] SMTP connection timed out host=mail.example.com
+2026-04-02 12:53:34 WARN  [task] overdue id=255 user=U017 days=19
+2026-04-02 12:54:43 INFO  [task] task created id=37 user=U015
+2026-04-02 12:56:07 INFO  [web] GET / 200 36ms user=U021
+2026-04-02 12:59:45 INFO  [task] task done id=133 user=U016
+2026-04-02 13:02:05 INFO  [web] GET /?overdue=1 200 35ms user=U040
+2026-04-02 13:03:30 INFO  [web] GET /?overdue=1 200 34ms user=U016
+2026-04-02 13:06:22 INFO  [web] GET / 200 64ms user=U005
+2026-04-02 13:08:27 INFO  [task] task created id=378 user=U024
+2026-04-02 13:11:37 INFO  [web] GET / 200 30ms user=U017
+2026-04-02 13:12:51 INFO  [web] GET /?overdue=1 200 27ms user=U038
+2026-04-02 13:16:28 INFO  [web] GET /?overdue=1 200 32ms user=U027
+2026-04-02 13:19:53 INFO  [web] GET / 200 54ms user=U029
+2026-04-02 13:23:52 WARN  [db] database is locked, retrying (1/3)
+2026-04-02 13:27:08 INFO  [web] GET / 200 76ms user=U008
+2026-04-02 13:28:06 INFO  [task] task created id=158 user=U002
+2026-04-02 13:29:29 INFO  [web] GET / 200 59ms user=U033
+2026-04-02 13:33:17 INFO  [web] GET / 200 54ms user=U004
+2026-04-02 13:35:43 INFO  [web] GET / 200 25ms user=U037
+2026-04-02 13:37:57 INFO  [task] task created id=79 user=U037
+2026-04-02 13:41:47 INFO  [web] GET /?overdue=1 200 14ms user=U033
+2026-04-02 13:44:02 INFO  [web] GET / 200 77ms user=U004
+2026-04-02 13:45:33 INFO  [web] GET / 200 7ms user=U016
+2026-04-02 13:47:15 INFO  [web] GET / 200 16ms user=U027
+2026-04-02 13:49:56 INFO  [web] GET / 200 44ms user=U001
+2026-04-02 13:50:29 INFO  [web] GET /?overdue=1 200 57ms user=U001
+2026-04-02 13:53:16 INFO  [task] task created id=78 user=U023
+2026-04-02 13:57:10 INFO  [web] GET / 200 56ms user=U026
+2026-04-02 14:01:03 ERROR [db] database is locked
+2026-04-02 14:01:47 INFO  [task] task created id=179 user=U039
+2026-04-02 14:05:17 WARN  [task] overdue id=465 user=U012 days=13
+2026-04-02 14:09:14 INFO  [web] GET / 200 26ms user=U006
+2026-04-02 14:12:27 WARN  [db] database is locked, retrying (1/3)
+2026-04-02 14:13:43 INFO  [web] GET /?overdue=1 200 20ms user=U023
+2026-04-02 14:16:12 INFO  [web] GET / 200 53ms user=U003
+2026-04-02 14:16:53 INFO  [task] task created id=260 user=U033
+2026-04-02 14:20:20 INFO  [task] task created id=185 user=U014
+2026-04-02 14:20:50 INFO  [web] GET / 200 60ms user=U003
+2026-04-02 14:23:08 INFO  [web] GET / 200 14ms user=U003
+2026-04-02 14:23:57 INFO  [task] task done id=157 user=U011
+2026-04-02 14:26:06 INFO  [task] task done id=205 user=U003
+2026-04-02 14:27:42 INFO  [web] GET / 200 68ms user=U022
+2026-04-02 14:30:26 INFO  [web] GET / 200 40ms user=U020
+2026-04-02 14:30:52 INFO  [web] GET / 200 42ms user=U019
+2026-04-02 14:31:40 INFO  [web] GET /help/error-codes 200 8ms user=U034
+2026-04-02 14:34:04 INFO  [task] task done id=193 user=U030
+2026-04-02 14:36:08 INFO  [web] GET / 200 59ms user=U037
+2026-04-02 14:39:53 INFO  [web] GET / 200 6ms user=U016
+2026-04-02 14:43:38 ERROR [mail] SMTP connection timed out host=mail.example.com
+2026-04-02 14:44:05 INFO  [web] GET / 200 12ms user=U032
+2026-04-02 14:47:39 INFO  [task] task done id=281 user=U028
+2026-04-02 14:51:06 INFO  [web] GET / 200 4ms user=U014
+2026-04-02 14:51:33 INFO  [task] task done id=281 user=U004
+2026-04-02 14:55:16 INFO  [web] GET / 200 7ms user=U019
+2026-04-02 14:57:06 WARN  [db] database is locked, retrying (1/3)
+2026-04-02 14:59:32 INFO  [web] GET / 200 50ms user=U002
+2026-04-02 15:00:07 WARN  [db] database is locked, retrying (1/3)
+2026-04-02 15:00:35 INFO  [web] GET / 200 50ms user=U007
+2026-04-02 15:02:48 INFO  [web] GET / 200 70ms user=U033
+2026-04-02 15:03:11 INFO  [web] GET /?overdue=1 200 65ms user=U034
+2026-04-02 15:03:34 INFO  [web] GET / 200 23ms user=U012
+2026-04-02 15:04:00 INFO  [web] GET / 200 10ms user=U001
+2026-04-02 15:06:08 INFO  [web] GET / 200 27ms user=U021
+2026-04-02 15:07:53 INFO  [web] GET / 200 47ms user=U014
+2026-04-02 15:11:26 INFO  [task] task done id=340 user=U004
+2026-04-02 15:11:52 WARN  [task] overdue id=318 user=U020 days=6
+2026-04-02 15:15:30 WARN  [task] overdue id=189 user=U023 days=9
+2026-04-02 15:18:39 INFO  [task] task created id=423 user=U039
+2026-04-02 15:22:18 INFO  [task] task done id=300 user=U008
+2026-04-02 15:25:11 INFO  [task] task created id=305 user=U003
+2026-04-02 15:27:36 INFO  [web] GET / 200 17ms user=U038
+2026-04-02 15:30:19 INFO  [web] GET / 200 69ms user=U027
+2026-04-02 15:33:01 INFO  [web] GET / 200 75ms user=U005
+2026-04-02 15:33:59 INFO  [web] GET /?overdue=1 200 6ms user=U036
+2026-04-02 15:34:21 INFO  [web] GET / 200 59ms user=U007
+2026-04-02 15:35:49 INFO  [task] task created id=286 user=U027
+2026-04-02 15:39:14 INFO  [web] GET / 200 26ms user=U027
+2026-04-02 15:41:10 INFO  [web] GET / 200 41ms user=U034
+2026-04-02 15:42:24 ERROR [db] database is locked
+2026-04-02 15:43:05 ERROR [mail] SMTP connection timed out host=mail.example.com
+2026-04-02 15:44:23 INFO  [web] GET / 200 24ms user=U022
+2026-04-02 15:45:14 INFO  [web] GET / 200 57ms user=U001
+2026-04-02 15:48:44 INFO  [web] GET / 200 29ms user=U009
+2026-04-02 15:50:31 WARN  [task] overdue id=180 user=U001 days=10
+2026-04-02 15:53:40 INFO  [web] GET /?overdue=1 200 49ms user=U025
+2026-04-02 15:55:09 INFO  [task] task created id=158 user=U010
+2026-04-02 15:57:09 INFO  [web] GET /?overdue=1 200 66ms user=U019
+2026-04-02 15:58:49 INFO  [task] task done id=447 user=U037
+2026-04-02 16:00:05 INFO  [task] task created id=162 user=U029
+2026-04-02 16:03:09 INFO  [task] task done id=338 user=U017
+2026-04-02 16:04:19 INFO  [web] GET / 200 45ms user=U008
+2026-04-02 16:05:00 INFO  [web] GET /help/error-codes 200 22ms user=U014
+2026-04-02 16:07:35 INFO  [web] GET / 200 10ms user=U018
+2026-04-02 16:08:44 INFO  [web] GET /?overdue=1 200 30ms user=U008
+2026-04-02 16:12:02 INFO  [web] GET / 200 28ms user=U003
+2026-04-02 16:14:03 INFO  [task] task created id=343 user=U008
+2026-04-02 16:15:37 INFO  [task] task created id=485 user=U005
+2026-04-02 16:16:30 INFO  [web] GET / 200 47ms user=U037
+2026-04-02 16:18:12 INFO  [task] task created id=251 user=U035
+2026-04-02 16:21:01 INFO  [web] GET / 200 14ms user=U022
+2026-04-02 16:24:21 INFO  [task] task created id=380 user=U005
+2026-04-02 16:27:03 ERROR [web] POST /tasks/369/done 404 task not found user=U013
+2026-04-02 16:29:59 WARN  [task] overdue id=85 user=U023 days=14
+2026-04-02 16:32:38 INFO  [web] GET / 200 7ms user=U011
+2026-04-02 16:36:10 INFO  [task] task done id=197 user=U009
+2026-04-02 16:39:15 INFO  [task] task created id=399 user=U031
+2026-04-02 16:39:48 INFO  [task] task created id=341 user=U036
+2026-04-02 16:40:29 WARN  [task] overdue id=228 user=U020 days=9
+2026-04-02 16:41:04 INFO  [web] GET / 200 73ms user=U007
+2026-04-02 16:43:05 INFO  [task] task done id=418 user=U015
+2026-04-02 16:43:29 INFO  [web] GET /?overdue=1 200 75ms user=U019
+2026-04-02 16:44:08 INFO  [task] task done id=230 user=U006
+2026-04-02 16:47:47 INFO  [web] GET / 200 32ms user=U005
+2026-04-02 16:48:38 INFO  [task] task done id=97 user=U033
+2026-04-02 16:52:16 INFO  [web] GET / 200 77ms user=U015
+2026-04-02 16:55:02 INFO  [task] task created id=379 user=U010
+2026-04-02 16:57:10 ERROR [web] POST /tasks/170/done 404 task not found user=U019
+2026-04-02 16:58:40 INFO  [web] GET / 200 40ms user=U037
+2026-04-02 17:02:24 INFO  [web] GET / 200 79ms user=U031
+2026-04-02 17:05:04 INFO  [web] GET /?overdue=1 200 73ms user=U019
+2026-04-02 17:06:34 INFO  [web] GET /?overdue=1 200 41ms user=U008
+2026-04-02 17:09:31 INFO  [web] GET /?overdue=1 200 4ms user=U010
+2026-04-02 17:11:52 WARN  [task] overdue id=21 user=U029 days=10
+2026-04-02 17:15:27 INFO  [web] GET /?overdue=1 200 18ms user=U028
+2026-04-02 17:16:10 INFO  [task] task done id=453 user=U011
+2026-04-02 17:19:03 INFO  [web] GET / 200 28ms user=U015
+2026-04-02 17:20:36 INFO  [web] GET /?overdue=1 200 62ms user=U012
+2026-04-02 17:22:03 INFO  [task] task done id=107 user=U033
+2026-04-02 17:23:16 INFO  [web] GET /?overdue=1 200 56ms user=U040
+2026-04-02 17:25:59 INFO  [web] GET /help/error-codes 200 9ms user=U029
+2026-04-02 17:29:21 INFO  [task] task done id=88 user=U007
+2026-04-02 17:32:45 INFO  [task] task done id=180 user=U038
+2026-04-02 17:33:26 INFO  [web] GET / 200 62ms user=U012
+2026-04-02 17:34:33 INFO  [web] GET / 200 10ms user=U030
+2026-04-02 17:35:06 INFO  [web] GET / 200 78ms user=U024
+2026-04-02 17:38:15 INFO  [web] GET / 200 50ms user=U040
+2026-04-02 17:38:44 INFO  [web] GET / 200 59ms user=U011
+2026-04-02 17:39:40 WARN  [task] overdue id=280 user=U026 days=15
+2026-04-02 17:43:30 INFO  [web] GET / 200 6ms user=U018
+2026-04-02 17:45:58 INFO  [web] GET /help/error-codes 200 47ms user=U038
+2026-04-02 17:48:19 INFO  [web] GET / 200 21ms user=U037
+2026-04-02 17:51:42 INFO  [web] GET / 200 77ms user=U021
+2026-04-02 17:53:45 INFO  [web] GET / 200 6ms user=U034
+2026-04-02 17:54:40 INFO  [web] GET / 200 17ms user=U024
+2026-04-02 17:57:06 INFO  [web] GET / 200 74ms user=U007
+2026-04-02 18:01:06 INFO  [web] GET / 200 22ms user=U008
+2026-04-02 18:04:32 INFO  [web] GET / 200 38ms user=U027
+2026-04-02 18:07:09 WARN  [task] overdue id=77 user=U016 days=1
+2026-04-02 18:10:49 INFO  [web] GET / 200 56ms user=U030
+2026-04-02 18:13:59 INFO  [web] GET / 200 32ms user=U026
+2026-04-02 18:14:35 INFO  [web] GET / 200 3ms user=U036
+2026-04-02 18:15:00 INFO  [web] GET / 200 17ms user=U033
+2026-04-02 18:18:43 INFO  [web] GET /?overdue=1 200 42ms user=U021
+2026-04-02 18:21:24 INFO  [web] GET / 200 32ms user=U010
+2026-04-02 18:24:22 INFO  [web] GET / 200 59ms user=U017
+2026-04-02 18:25:51 INFO  [web] GET / 200 30ms user=U007
+2026-04-02 18:28:14 INFO  [task] task created id=452 user=U004
+2026-04-02 18:28:43 INFO  [task] task done id=490 user=U004
+2026-04-02 18:32:30 INFO  [task] task created id=157 user=U024
+2026-04-02 18:33:49 INFO  [web] GET /help/error-codes 200 31ms user=U040
+2026-04-02 18:35:46 INFO  [task] task done id=10 user=U009
+2026-04-02 18:39:04 INFO  [web] GET / 200 13ms user=U003
+2026-04-02 18:39:57 WARN  [task] overdue id=296 user=U023 days=13
+2026-04-02 18:42:16 INFO  [web] GET / 200 21ms user=U016
+2026-04-02 18:43:09 INFO  [web] GET / 200 69ms user=U025
+2026-04-02 18:46:41 INFO  [web] GET / 200 68ms user=U021
+2026-04-02 18:47:16 INFO  [task] task created id=102 user=U011
+2026-04-02 18:49:33 INFO  [task] task done id=132 user=U028
+2026-04-02 18:52:08 INFO  [web] GET / 200 12ms user=U011
+2026-04-02 18:54:57 ERROR [web] POST /tasks/192/done 404 task not found user=U034
+2026-04-02 18:58:36 INFO  [web] GET / 200 56ms user=U012
+2026-04-02 19:01:52 WARN  [task] overdue id=361 user=U037 days=15

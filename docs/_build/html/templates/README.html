@@ -1,0 +1,119 @@
+<!DOCTYPE html><html lang="ja"><head>
+    <meta charset="utf-8">
+    <title>テンプレート</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../theme.css">
+<script src="../docs.js" defer></script>
+</head>
+  <body>
+<nav class="page-nav"><a href="../index.html">目次</a><a href="../README.html">全体概要</a><a href="../tags.html">タグ一覧</a></nav>
+    <section class="level1" aria-labelledby="テンプレート">
+      <h1 id="テンプレート">テンプレート</h1>
+      <p>研修で使うひな形です。自分のアプリのリポジトリ（<code>~/handsoff/workspace/todo-app/</code>）にコピーして使います。見本は <code>examples/todo-app-snapshots/</code> の各回のフォルダにあります。</p>
+      <p>アジャイルで設計書を少なくする前提です。何を作るかはユーザーストーリー（Issue）と受け入れ条件で決め、細かい振る舞いは TDD のテストで示します（画面設計書とテスト仕様書は作りません）。設計書は「実装者が質問せずに作れるか」を合格基準にします。図は Mermaid で Markdown に書き、Git で差分を追えるようにします。</p>
+      <p>各ファイルの先頭の <code># </code>の見出しは、資料の目次に出すためのものです。Issue・PR の本文に使うときは、見出しの行を消してかまいません。</p>
+      <section class="level2" aria-labelledby="要件と設計書">
+        <h2 id="要件と設計書">要件と設計書</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ファイル</th>
+              <th>使う回</th>
+              <th>内容</th>
+              <th>見本</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a href="issue_story.html">issue_story.md</a></td>
+              <td>9</td>
+              <td>ユーザーストーリーの Issue（「〜として、〜したい。なぜなら〜」、受け入れ条件、見積の幅と根拠、関連）</td>
+              <td><code>session-09/docs/stories.md</code>（Issue の控え）</td>
+            </tr>
+            <tr>
+              <td><a href="requirements.html">requirements.md</a></td>
+              <td>9</td>
+              <td>要件メモ（目的・背景、業務フロー図、状態遷移図、非機能要件、制約、対象外、ストーリー一覧へのリンク）</td>
+              <td><code>session-09/docs/requirements.md</code></td>
+            </tr>
+            <tr>
+              <td><a href="api-design.html">api-design.md</a></td>
+              <td>10</td>
+              <td>API設計書（エンドポイント、リクエスト・レスポンス例、ステータスコード、入力チェックとエラー表示の文言、シーケンス図、設計レビューで出た質問）</td>
+              <td><code>session-10/docs/design/api.md</code></td>
+            </tr>
+            <tr>
+              <td><a href="db-design.html">db-design.md</a></td>
+              <td>10</td>
+              <td>DB設計書（ER図、テーブル定義、制約、計算で求める値）</td>
+              <td><code>session-10/docs/design/db.md</code></td>
+            </tr>
+            <tr>
+              <td><a href="architecture.html">architecture.md</a></td>
+              <td>10</td>
+              <td>システム構成図（構成要素、通信経路とポート、ミドルウェアとバージョン、環境変数）</td>
+              <td><code>session-10/docs/design/architecture.md</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <p>「見本」は <code>examples/todo-app-snapshots/</code> の下のパスです。</p>
+      </section>
+      <section class="level2" aria-labelledby="issue-と-pr">
+        <h2 id="issue-と-pr">Issue と PR</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ファイル</th>
+              <th>使う回</th>
+              <th>内容</th>
+              <th>見本</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a href="pull_request.html">pull_request.md</a></td>
+              <td>5 以降</td>
+              <td>PR の説明（目的・変更点・確認方法・セルフチェック）</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><a href="issue_task.html">issue_task.md</a></td>
+              <td>5 以降</td>
+              <td>タスクの Issue（目的・やること・完了条件、第9回以降は見積の幅）</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><a href="bug-report.html">bug-report.md</a></td>
+              <td>12</td>
+              <td>不具合票（再現手順・期待結果・実際の結果）</td>
+              <td><code>session-12/docs/bugs/BUG-001.md</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <p>GitHub・GitLab では、次の場所に置いたテンプレートが自動で使われます。</p>
+        <table>
+          <thead>
+            <tr>
+              <th>ホスティング</th>
+              <th>PR のテンプレート</th>
+              <th>Issue のテンプレート</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>GitHub</td>
+              <td><code>.github/pull_request_template.md</code></td>
+              <td><code>.github/ISSUE_TEMPLATE/story.md</code>・<code>task.md</code>・<code>bug.md</code></td>
+            </tr>
+            <tr>
+              <td>GitLab</td>
+              <td><code>.gitlab/merge_request_templates/Default.md</code></td>
+              <td><code>.gitlab/issue_templates/story.md</code>・<code>task.md</code>・<code>bug.md</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+  
+
+</body></html>

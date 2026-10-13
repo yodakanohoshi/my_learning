@@ -1,0 +1,12 @@
+[project]
+name = "todo-app"
+version = "0.1.0"
+description = "TODO・タスク管理アプリ（第6回: 1ファイルの CLI）"
+# 上限も付けて 3.12 に固定する（mise を通さずにほかの Python で動かしてしまうのを防ぐ）
+requires-python = ">=3.12,<3.13"
+# 標準ライブラリだけで書くので、依存パッケージはまだない
+dependencies = []
+
+[tool.uv]
+# パッケージにせず、todo.py をそのまま実行する（第7回でパッケージにする）
+package = false

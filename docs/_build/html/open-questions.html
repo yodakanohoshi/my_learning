@@ -1,0 +1,198 @@
+<!DOCTYPE html><html lang="ja"><head>
+    <meta charset="utf-8">
+    <title>未確定事項</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="theme.css">
+<script src="docs.js" defer></script>
+</head>
+  <body>
+<nav class="page-nav"><a href="index.html">目次</a><a href="README.html">全体概要</a><a href="tags.html">タグ一覧</a></nav>
+    <section class="level1" aria-labelledby="未確定事項">
+      <h1 id="未確定事項">未確定事項</h1>
+      <p>社内での確認が終わっていない事項の一覧です。資料では値を推測で埋めず、下の「プレースホルダー」の形で書いています。決まったら、この表の「決定内容」を埋め、プレースホルダーを置き換えてください。</p>
+      <p>置き換え漏れは次のコマンドで探せます（研修ディレクトリのルートで実行）。</p>
+      <pre class="language-sh"><code class="language-sh"><span class="token function">grep</span> -rn --include='*.md' --include='*.toml' --include='*.py' -e '&lt;社内' -e '&lt;プロキシ' -e '&lt;Git' -e '&lt;リポジトリ' -e '&lt;研修' docs examples workspace tools | grep -v open-questions.md</code></pre>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>事項</th>
+            <th>プレースホルダー</th>
+            <th>影響する回</th>
+            <th>決定内容</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Q1</td>
+            <td>社内プロキシのアドレスと認証の有無</td>
+            <td><code>&lt;社内プロキシのアドレス&gt;</code>（<code>http://&lt;ホスト&gt;:&lt;ポート&gt;</code> の形を想定）、<code>&lt;社内プロキシのホスト:ポート&gt;</code>（認証ありの場合に <code>ユーザー名:パスワード@</code> を挟むため）、<code>&lt;プロキシ認証の有無&gt;</code></td>
+            <td>2〜4</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Q2</td>
+            <td>受講者 PC で WSL を有効化できるか（管理者権限・情報システム部門の許可）</td>
+            <td>—</td>
+            <td>1〜4（全回の前提）</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Q3</td>
+            <td>社内 CA 証明書の入手方法</td>
+            <td><code>&lt;社内CA証明書の入手方法&gt;</code>、<code>&lt;社内CA証明書のファイル名&gt;</code></td>
+            <td>2〜4</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Q4</td>
+            <td>Git ホスティング（GitHub か GitLab か）、アカウントの発行方法、認証方式</td>
+            <td><code>&lt;Gitホスティング&gt;</code>、<code>&lt;リポジトリのURL&gt;</code></td>
+            <td>5〜12</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Q5</td>
+            <td>mise・uv・PyPI へプロキシ越しにアクセスできるか</td>
+            <td>—</td>
+            <td>4 以降</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Q6</td>
+            <td>受講者の人数（グループ分けは不要。2026-10-12 に全回を個人で進めることにした）</td>
+            <td>—</td>
+            <td>12（発表の持ち時間）</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Q7</td>
+            <td>週2回（全24回）に拡張するか</td>
+            <td>—</td>
+            <td>—</td>
+            <td>拡張しない。2026-10-12 の見直しで拡張案をなくした（週1回×全12回）。拡張案のテーマの教材は作らない</td>
+          </tr>
+          <tr>
+            <td>Q8</td>
+            <td>研修ディレクトリ一式の配布方法と、受講者 PC での置き場所</td>
+            <td><code>&lt;研修ディレクトリの配布方法&gt;</code>。置き場所は資料上 <code>~/handsoff</code> としている</td>
+            <td>1 以降</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Q9</td>
+            <td>（不要になった）模範リポジトリのコミット作者名</td>
+            <td>—</td>
+            <td>—</td>
+            <td>2026-10-12 に見本のアプリ（<code>examples/todo-app/</code>）を git を使わないフォルダにしたので不要</td>
+          </tr>
+          <tr>
+            <td>Q10</td>
+            <td>受講者 PC の Ubuntu のバージョンと、WSL が Windows のプロキシ設定を引き継ぐか</td>
+            <td>—</td>
+            <td>2〜4</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Q11</td>
+            <td>GitHub Actions（GitLab なら Runner）が受講者のリポジトリで使えるか</td>
+            <td>—</td>
+            <td>8 以降</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Q12</td>
+            <td>受講者 PC（WSL）で Docker が使えるか（Docker Desktop のライセンス、または WSL 内の Docker Engine の導入可否）</td>
+            <td>—</td>
+            <td>1</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+      <section class="level2" aria-labelledby="補足">
+        <h2 id="補足">補足</h2>
+        <section class="level3" aria-labelledby="q1q3-社内プロキシと-ca-証明書">
+          <h3 id="q1q3-社内プロキシと-ca-証明書">Q1・Q3 社内プロキシと CA 証明書</h3>
+          <ul>
+            <li>認証付きのプロキシの場合、<code>HTTP_PROXY</code> に ID とパスワードを書くことになる。第2回で「秘密情報をファイルや履歴に残さない」扱い（<code>read -s</code> で入力するなど）を教えている</li>
+            <li>第3回では、Windows のブラウザから WSL のデモのサーバ（<code>127.0.0.1:8000</code>・<code>localhost:8001</code>）を開くので、Windows のプロキシ設定の例外に <code>127.0.0.1;localhost</code> が要る</li>
+            <li>社内 CA 証明書の配布形式（PEM か DER か）によって、Ubuntu への登録手順（<code>update-ca-certificates</code>）が変わる</li>
+            <li>uv は既定では OS の証明書ストアを使わない。社内 CA を読ませるには <code>UV_NATIVE_TLS=1</code>（または <code>SSL_CERT_FILE</code>）が要る（第2・4回の資料に記載）</li>
+          </ul>
+        </section>
+        <section class="level3" aria-labelledby="q4-git-ホスティング">
+          <h3 id="q4-git-ホスティング">Q4 Git ホスティング</h3>
+          <ul>
+            <li>決まるまで、PR・Issue・ブランチ保護の説明はどちらでも読める書き方にし、固有の操作は「GitHub の場合」「GitLab の場合」に分けて書く</li>
+            <li>用語の違い: Pull Request（GitHub）／Merge Request（GitLab）。資料では「PR」と書き、初出で両方を併記する</li>
+            <li>カリキュラムには「GitHub の Issue ラベル」とあるが、GitLab でもラベル機能で同じ運用ができる</li>
+            <li>認証方式（HTTPS とトークンか、SSH 鍵か）とトークンの保存方法を決める必要がある。<code>git config credential.helper store</code> はトークンを平文で保存するため、社内規定の確認が要る</li>
+            <li>受講者に自分のリポジトリを作る権限があるか（第5回で手順書のリポジトリ、第6回で TODO アプリのリポジトリを作る）</li>
+            <li>受講者に Issue ラベルを作る権限があるか（第9回以降、ストーリーの Issue にタグ名のラベルを付ける）</li>
+            <li>ブランチ保護（main への直接 push の禁止）は、第5回では講師が画面で見せるだけにした（講師用資料の「講師が見せる補足」）。GitHub の無料プランの非公開リポジトリでは使えず、GitLab ではプランによって設定できる範囲が違う</li>
+          </ul>
+        </section>
+        <section class="level3" aria-labelledby="q5-miseuvpypi-へのアクセス">
+          <h3 id="q5-miseuvpypi-へのアクセス">Q5 mise・uv・PyPI へのアクセス</h3>
+          <p>研修の環境構築では、次の通信が発生します。プロキシで止められていないかを、事前に講師が確認してください。</p>
+          <table>
+            <thead>
+              <tr>
+                <th>通信先</th>
+                <th>用途</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>mise.run</code>、<code>mise.jdx.dev</code></td>
+                <td>mise のインストール</td>
+              </tr>
+              <tr>
+                <td><code>github.com</code>、<code>objects.githubusercontent.com</code></td>
+                <td>mise が Python（python-build-standalone）と uv を取得する</td>
+              </tr>
+              <tr>
+                <td><code>pypi.org</code>、<code>files.pythonhosted.org</code></td>
+                <td>uv がパッケージを取得する</td>
+              </tr>
+              <tr>
+                <td><code>archive.ubuntu.com</code>、<code>security.ubuntu.com</code>、<code>esm.ubuntu.com</code></td>
+                <td>apt（第2回）。<code>esm.ubuntu.com</code> は https で接続する</td>
+              </tr>
+              <tr>
+                <td><code>untrusted-root.badssl.com</code></td>
+                <td>第2回の演習で、証明書エラーの見え方を確かめる</td>
+              </tr>
+              <tr>
+                <td><code>jsonplaceholder.typicode.com</code></td>
+                <td>第3回の演習で、公開 API をプロキシ越しに呼ぶ（通らなければ講師の画面で見せる）</td>
+              </tr>
+              <tr>
+                <td><code>registry.npmjs.org</code>、<code>nodejs.org</code></td>
+                <td>第4回で講師が見せる補足（mise で Node.js を入れる）と、資料の HTML 版・PDF 版を作る tools の docs タスクで使う</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>htmx（第12回で講師が見せる補足）を CDN から読み込む場合は、その CDN（<code>unpkg.com</code> など）への通信も要ります。</p>
+        </section>
+        <section class="level3" aria-labelledby="q8-研修ディレクトリの配布">
+          <h3 id="q8-研修ディレクトリの配布">Q8 研修ディレクトリの配布</h3>
+          <ul>
+            <li>研修ディレクトリのルートは git 管理しない方針なので、配布は zip などのファイル共有になる想定</li>
+            <li>配る一式は <code>tools/</code> の <code>mise run dist -- &lt;出力先&gt;</code> で作る。<code>.git</code> はすべて含めず、各回の <code>instructor.md</code>（講師用）、<code>handoff.md</code>、<code>docs/_template/</code> も除く。HTML 版・PDF 版（<code>docs/_build/</code>）は含める</li>
+            <li>見本の TODO アプリ（<code>examples/todo-app/</code> と各回終了時点の <code>examples/todo-app-snapshots/session-NN/</code>）は git を使わない普通のフォルダなので、そのままコピーする。遅れた受講者はそのフォルダを <code>workspace/</code> にコピーして追いつく（<a href="../../../examples/README.md">examples/README.md</a>）</li>
+            <li>見本にはコミット履歴がない。TDD の順序やコミットの分け方は、講師が画面で見せる</li>
+          </ul>
+        </section>
+        <section class="level3" aria-labelledby="q10-ubuntu-のバージョンと-wsl">
+          <h3 id="q10-ubuntu-のバージョンと-wsl">Q10 Ubuntu のバージョンと WSL</h3>
+          <ul>
+            <li>Ubuntu のバージョンによって sudo の実装が違い、<code>sudo -E</code> で環境変数を引き継げないことがある（第2回の資料を作るときに Ubuntu 26.04 の sudo-rs で確認）。第2回では <code>sudo --preserve-env=変数名</code> を使う形で書いている</li>
+            <li>WSL が Windows のプロキシ設定を自動で引き継ぐ設定になっているかで、第2回の手順の一部が不要になる</li>
+          </ul>
+        </section>
+      </section>
+    </section>
+  
+
+</body></html>

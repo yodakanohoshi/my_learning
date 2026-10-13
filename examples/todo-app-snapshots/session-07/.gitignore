@@ -1,0 +1,8 @@
+# 仮想環境とキャッシュ（mise.toml と uv.lock から作り直せる）
+.venv/
+__pycache__/
+.mypy_cache/
+.ruff_cache/
+
+# 自分のタスクのデータ（コードではないのでリポジトリに入れない）
+tasks.json

@@ -1,0 +1,712 @@
+<!DOCTYPE html><html lang="ja"><head>
+    <meta charset="utf-8">
+    <title>第9回 要件と図</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../theme.css">
+<script src="../docs.js" defer></script>
+</head>
+  <body>
+<nav class="page-nav"><a href="../index.html">目次</a><a href="../README.html">全体概要</a><a href="../tags.html">タグ一覧</a></nav>
+    <section class="level1" aria-labelledby="第9回-要件と図">
+      <h1 id="第9回-要件と図">第9回 要件と図</h1>
+      <p>tag: 設計-要件, pm-見積, pm-進捗<br>前提タグ: python-構文, test-自動, git-github<br>所要: 座学15分 / ハンズオン45分</p>
+      <section class="level2" aria-labelledby="ゴール">
+        <h2 id="ゴール">ゴール</h2>
+        <ul>
+          <li>伝えたいことに合わせて図の種類を選び、Mermaid で Markdown に書いてプレビューできる</li>
+          <li>曖昧な依頼から質問で「なぜ・誰が・何を・どのくらい」を引き出し、要件メモ（業務フロー図・状態遷移図・非機能要件・対象外）に書ける</li>
+          <li>ユーザーストーリーと、確かめられる形の受け入れ条件を書ける</li>
+          <li>ストーリーをタスクに分けて幅で見積もり、Issue・ラベル・マイルストーンで管理できる</li>
+        </ul>
+      </section>
+      <section class="level2" aria-labelledby="事前準備">
+        <h2 id="事前準備">事前準備</h2>
+        <ul>
+          <li>第8回のハンズオンの最後（手順8のマージ）まで済み、<code>~/handsoff/workspace/todo-app</code> の main で <code>mise run check</code> が通る</li>
+          <li>遅れた人: <a href="../../../../examples/todo-app-snapshots/session-08/README.md">session-08/</a> を <a href="../../../../examples/README.md#%E9%81%85%E3%82%8C%E3%81%9F%E4%BA%BA%E3%81%8C%E8%BF%BD%E3%81%84%E3%81%A4%E3%81%8F%E6%96%B9%E6%B3%95">examples/README.md</a> の手順でコピーし、push してから始める</li>
+          <li>VS Code で Markdown の Mermaid をプレビューできる（拡張機能 Markdown Preview Mermaid Support）。入れられなければ GitHub に push して画面で見る</li>
+        </ul>
+      </section>
+      <section class="level2" aria-labelledby="まとめ">
+        <h2 id="まとめ">まとめ</h2>
+        <p>冒頭の座学で使います。ハンズオンでは、Mermaid を CLI の図で練習してから、講師の依頼「<strong>CLI の TODO を Web でも使いたい</strong>」を要件メモとストーリーにし、Issue に登録します。</p>
+        <section class="level3" aria-labelledby="設計書の考え方">
+          <h3 id="設計書の考え方">設計書の考え方</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>項目</th>
+                <th>内容</th>
+                <th>参照</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>設計書の役割</td>
+                <td>作る前に「何を・どう作るか」を決め、残す</td>
+                <td>SE基礎 4章</td>
+              </tr>
+              <tr>
+                <td>合格基準</td>
+                <td><strong>実装者が質問せずに作れるか</strong></td>
+                <td>SE基礎 4章</td>
+              </tr>
+              <tr>
+                <td>書くもの</td>
+                <td>ストーリー（Issue）・要件メモ（第9回）、API・DB設計書・システム構成図（第10回）</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>書かないもの</td>
+                <td>画面設計書・テスト仕様書。細かい振る舞いは TDD のテストで示す</td>
+                <td>SE基礎 5章</td>
+              </tr>
+              <tr>
+                <td>置き場所</td>
+                <td>リポジトリの <code>docs/</code> に Markdown で置く。図も Mermaid の文字で書くので、PR で差分を読める</td>
+                <td>Mermaid 公式</td>
+              </tr>
+              <tr>
+                <td>社外サービスに貼らない</td>
+                <td>mermaid.live などに社内の内容を貼らない。プレビューは手元の VS Code か社内の GitHub</td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="図の種類と使い分け">
+          <h3 id="図の種類と使い分け">図の種類と使い分け</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>伝えたいこと</th>
+                <th>図</th>
+                <th>Mermaid</th>
+                <th>書く設計書（回）</th>
+                <th>参照</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>誰が・どの順に・何を。分かれ道</td>
+                <td>業務フロー図・処理の流れ</td>
+                <td><code>flowchart</code></td>
+                <td>要件メモ（第9回）</td>
+                <td>SE基礎 4章</td>
+              </tr>
+              <tr>
+                <td>状態と、変わるきっかけ</td>
+                <td>状態遷移図</td>
+                <td><code>stateDiagram-v2</code></td>
+                <td>要件メモ（第9回）</td>
+                <td>SE基礎 4章</td>
+              </tr>
+              <tr>
+                <td>誰と誰が何をどの順にやり取りするか</td>
+                <td>シーケンス図</td>
+                <td><code>sequenceDiagram</code></td>
+                <td>API設計書（第10回）、第11〜12回</td>
+                <td>SE基礎 4章</td>
+              </tr>
+              <tr>
+                <td>データの持ち方と関係</td>
+                <td>ER図</td>
+                <td><code>erDiagram</code></td>
+                <td>DB設計書（第10回）</td>
+                <td>SE基礎 4章</td>
+              </tr>
+              <tr>
+                <td>部品・通信経路・ポート</td>
+                <td>構成図</td>
+                <td><code>flowchart</code>（<code>subgraph</code>）</td>
+                <td>システム構成図（第10回）</td>
+                <td>SE基礎 9章</td>
+              </tr>
+              <tr>
+                <td>クラスと依存の向き</td>
+                <td>クラス図</td>
+                <td><code>classDiagram</code></td>
+                <td>（第7回で見た）</td>
+                <td>SE基礎 4章</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="mermaid-の書き方">
+          <h3 id="mermaid-の書き方">Mermaid の書き方</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>書き方</th>
+                <th>意味</th>
+                <th>参照</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>```mermaid</code> 〜 <code>```</code></td>
+                <td>Markdown の中に図を書く。1行目で図の種類を決める</td>
+                <td>Mermaid 公式 Syntax Reference</td>
+              </tr>
+              <tr>
+                <td><code>flowchart TD</code> / <code>A[文字]</code> / <code>B{文字}</code></td>
+                <td>上から下へ（<code>LR</code> は左から右）／四角（処理）／菱形（分かれ道）</td>
+                <td>Mermaid 公式 Flowcharts</td>
+              </tr>
+              <tr>
+                <td><code>A --&gt; B</code> / <code>A -- はい --&gt; B</code> / <code>A -.-&gt; B</code></td>
+                <td>矢印／ラベル付き／点線</td>
+                <td>Mermaid 公式 Flowcharts</td>
+              </tr>
+              <tr>
+                <td><code>A["記号(あり)"]</code>、<code>&lt;br/&gt;</code></td>
+                <td>記号を含む文字は <code>"</code> で囲む。長い文字は <code>&lt;br/&gt;</code> で折る</td>
+                <td>Mermaid 公式 Flowcharts</td>
+              </tr>
+              <tr>
+                <td><code>subgraph 利用者</code> 〜 <code>end</code></td>
+                <td>枠（人ごとのレーン、部品のまとまり）</td>
+                <td>Mermaid 公式 Flowcharts</td>
+              </tr>
+              <tr>
+                <td><code>participant C as cli</code> / <code>C-&gt;&gt;M: 呼ぶ</code> / <code>M--&gt;&gt;C: 返す</code></td>
+                <td>シーケンス図の登場人物／呼び出し／戻り</td>
+                <td>Mermaid 公式 Sequence diagrams</td>
+              </tr>
+              <tr>
+                <td><code>[*] --&gt; TODO : 追加する</code></td>
+                <td>状態遷移図の開始と、きっかけ付きの遷移</td>
+                <td>Mermaid 公式 State diagrams</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="図のレビュー観点">
+          <h3 id="図のレビュー観点">図のレビュー観点</h3>
+          <ul>
+            <li>1つの図に1つの目的。何を伝える図か、図の上の1文で言える</li>
+            <li>名前が設計書の中で一貫している（「完了」と「済み」が混ざらない）</li>
+            <li>分かれ道・矢印のきっかけが、質問せずに読める</li>
+          </ul>
+        </section>
+        <section class="level3" aria-labelledby="ユーザーストーリーと受け入れ条件">
+          <h3 id="ユーザーストーリーと受け入れ条件">ユーザーストーリーと受け入れ条件</h3>
+          <pre class="language-text"><code class="language-text">&lt;利用者&gt;として、&lt;したいこと&gt;したい。なぜなら&lt;理由&gt;から。
+受け入れ条件:
+- [ ] (1) &lt;前提&gt;のとき、&lt;操作&gt;すると、&lt;結果（数字・文言・境目）&gt;</code></pre>
+          <table>
+            <thead>
+              <tr>
+                <th>項目</th>
+                <th>内容・例</th>
+                <th>参照</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>ストーリー</td>
+                <td>利用者として、ブラウザでタスクを追加したい。なぜなら、ターミナルを開かずに書き留めたいから</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>受け入れ条件</td>
+                <td>全部満たせば完了、という条件。数字・文言・境目で書く（「101文字以上なら追加せず『…』と出る」）</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>番号</td>
+                <td>(1)〜(15) は全ストーリーの通し番号。1つの条件が第11回でテスト1本以上になり、テスト名の頭に番号を付ける</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>Issue</td>
+                <td>1ストーリー = 1 Issue。タイトルは <code>S-01 タスクを追加する</code>、ラベル <code>ストーリー</code>（<a href="../templates/issue_story.html">テンプレート</a>）</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>確かめる観点</td>
+                <td>誰が嬉しいか言える／作り方まで決めていない／確かめられる／半日〜1日で終わる大きさ</td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="要件メモテンプレート">
+          <h3 id="要件メモテンプレート">要件メモ（<a href="../templates/requirements.html">テンプレート</a>）</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>項目</th>
+                <th>書くこと</th>
+                <th>例</th>
+                <th>参照</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>目的・背景</td>
+                <td>何に困り、何を解決するか。業務フロー図・状態遷移図</td>
+                <td>ターミナルを開かないとタスクを見られない</td>
+                <td>SE基礎 4章</td>
+              </tr>
+              <tr>
+                <td>非機能要件</td>
+                <td><strong>どのくらい</strong> よくあるべきか（性能・セキュリティ・運用）を数字や確かめられる形で</td>
+                <td>1,000件で一覧を1秒以内</td>
+                <td>SE基礎 9章</td>
+              </tr>
+              <tr>
+                <td>制約</td>
+                <td>変えられない前提</td>
+                <td>Python 3.12・FastAPI・SQLite</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>対象外</td>
+                <td><strong>今回やらないこと</strong> と理由</td>
+                <td>ログイン（自分の PC だけで使う）</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>ストーリー一覧</td>
+                <td>Issue の一覧へのリンクと控え（<code>docs/stories.md</code>）</td>
+                <td>—</td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="見積pm-見積">
+          <h3 id="見積pm-見積">見積（pm-見積）</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>考え方</th>
+                <th>ひとことで</th>
+                <th>参照</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>タスクに分ける</td>
+                <td>ストーリーを半日以内の作業に分ける（土台・保存・画面・入力チェックなど）</td>
+                <td>達人プログラマー 見積もり</td>
+              </tr>
+              <tr>
+                <td>幅で見積もる</td>
+                <td>見積は約束ではなく予測。「2〜4時間」のように幅で書く。幅が広いところが不確かなところ</td>
+                <td>達人プログラマー 見積もり</td>
+              </tr>
+              <tr>
+                <td>根拠を一言</td>
+                <td>「CLI の add と同じ」「初めてなので上を広く」など</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>記録しない</td>
+                <td>実績との比較はしない。見積の根拠を言葉にする練習</td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="issue-での管理pm-進捗">
+          <h3 id="issue-での管理pm-進捗">Issue での管理（pm-進捗）</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>道具</th>
+                <th>使い方</th>
+                <th>参照</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Issue</td>
+                <td>ストーリー1件・タスク1件ずつ（<a href="../templates/issue_story.html">ストーリー用</a>／<a href="../templates/issue_task.html">タスク用</a>）</td>
+                <td>Pro Git 6.2</td>
+              </tr>
+              <tr>
+                <td>ラベル</td>
+                <td>種類で絞り込む: <code>ストーリー</code>・<code>タスク</code>（第12回で <code>不具合</code>）</td>
+                <td>GitHub Docs ラベルを管理する</td>
+              </tr>
+              <tr>
+                <td>マイルストーン</td>
+                <td>期日までに閉じる Issue の束。<code>Web 版</code>（期日は第12回）。進み具合が閉じた数で見える</td>
+                <td>GitHub Docs マイルストーンについて</td>
+              </tr>
+              <tr>
+                <td>閉じ方</td>
+                <td>PR の本文に <code>Closes #番号</code>。マージで閉じる（ストーリーは第11回の PR #16 で閉じる）</td>
+                <td>Pro Git 6.2</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+      <section class="level2" aria-labelledby="ハンズオン">
+        <h2 id="ハンズオン">ハンズオン</h2>
+        <p>1ステップ1コマンド。各ステップは「🖋 やること → 📚 参考書・公式資料の節 → 📒 説明 → コマンドや書くもの」。作業場所は <code>~/handsoff/workspace/todo-app/</code>。見本は <a href="../../../../examples/todo-app-snapshots/session-09/README.md">session-09/</a>（<a href="../../../../examples/session09/README.md">examples/session09/</a>）。</p>
+        <section class="level3" aria-labelledby="1-issue-とブランチを作る3分">
+          <h3 id="1-issue-とブランチを作る3分">1. Issue とブランチを作る（3分）</h3>
+          <section class="level4" aria-labelledby="-issue-を立てるブラウザ">
+            <h4 id="-issue-を立てるブラウザ">🖋 Issue を立てる（ブラウザ）</h4>
+            <p>📚 Pro Git 6.2 プロジェクトへの貢献</p>
+            <p>📒 第8回の PR が #6 なので、この Issue は #7 になる（GitLab では出た番号を使う）。本文は<a href="../templates/issue_task.html">タスク用テンプレート</a>で書き、見積に「1〜2時間（要件を書くのは初めて）」のように幅と根拠を入れる</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Issue</th>
+                  <th>タイトル</th>
+                  <th>目的</th>
+                  <th>完了条件</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>#7</td>
+                  <td>Web 版の要件メモとストーリーを書く</td>
+                  <td>作る前に、何を作るかを依頼人と合わせる</td>
+                  <td><code>docs/requirements.md</code>・<code>docs/stories.md</code> が main にあり、ストーリーが Issue に登録されている</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+          <section class="level4" aria-labelledby="-ブランチを作る">
+            <h4 id="-ブランチを作る">🖋 ブランチを作る</h4>
+            <p>📒 今日は文書を書くだけで、コードは変えない。今日の要件メモとストーリーをもとに、第10回で設計書を、第11回でテストを書く</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cd</span> ~/handsoff/workspace/todo-app
+<span class="token function">git</span> switch main; git pull; git switch -c issue-7-requirements</code></pre>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="2-mermaid-の基本-cli-を図にする7分">
+          <h3 id="2-mermaid-の基本-cli-を図にする7分">2. Mermaid の基本: CLI を図にする（7分）</h3>
+          <section class="level4" aria-labelledby="-練習のファイルを開く">
+            <h4 id="-練習のファイルを開く">🖋 練習のファイルを開く</h4>
+            <p>📚 Mermaid 公式 Flowcharts Syntax</p>
+            <p>📒 練習はリポジトリの外のファイルで行う。図は <code>```mermaid</code> のコードブロックに書き、<code>Ctrl+Shift+V</code>（横に並べるなら <code>Ctrl+K V</code>）でプレビューする</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mkdir</span> -p ~/handsoff/workspace/session09; code ~/handsoff/workspace/session09/practice.md</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-処理の流れを-flowchart-で書く">
+            <h4 id="-処理の流れを-flowchart-で書く">🖋 処理の流れを flowchart で書く</h4>
+            <p>📒 <code>uv run todo add</code> の流れ。四角が処理、菱形が分かれ道、矢印のラベルが分かれる条件。下を書いてプレビューし、図のように描かれるのを確かめる</p>
+            <pre class="language-markdown"><code class="language-markdown"><span class="token code"><span class="token punctuation">```</span><span class="token code-language">mermaid</span>
+<span class="token code-block language-mermaid"><span class="token keyword">flowchart</span> TD
+  A<span class="token text string">[uv run todo add]</span> <span class="token arrow operator">--&gt;</span> B<span class="token text string">{タイトルは1〜100文字か}</span>
+  B <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">はい</span> <span class="token arrow operator">--&gt;</span></span> C<span class="token text string">[tasks.json に保存]</span>
+  B <span class="token inter-arrow-label"><span class="token arrow-head arrow operator">--</span> <span class="token label property">いいえ</span> <span class="token arrow operator">--&gt;</span></span> D<span class="token text string">[エラーを表示終了コード 1]</span></span>
+<span class="token punctuation">```</span></span></code></pre>
+            <figure class="mermaid"><svg id="mermaid-45" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="flowchart" style="max-width: 355.453px; background-color: transparent;" viewBox="0 0 355.453125 374.28436279296875" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#mermaid-45{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;fill:#2b2b2b;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-45 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-45 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-45 .error-icon{fill:#fdfcfa;}#mermaid-45 .error-text{fill:#020305;stroke:#020305;}#mermaid-45 .edge-thickness-normal{stroke-width:1px;}#mermaid-45 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-45 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-45 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-45 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-45 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-45 .marker{fill:#6b6b6b;stroke:#6b6b6b;}#mermaid-45 .marker.cross{stroke:#6b6b6b;}#mermaid-45 svg{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;}#mermaid-45 p{margin:0;}#mermaid-45 .label{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;color:#2b2b2b;}#mermaid-45 .cluster-label text{fill:#020305;}#mermaid-45 .cluster-label span{color:#020305;}#mermaid-45 .cluster-label span p{background-color:transparent;}#mermaid-45 .label text,#mermaid-45 span{fill:#2b2b2b;color:#2b2b2b;}#mermaid-45 .node rect,#mermaid-45 .node circle,#mermaid-45 .node ellipse,#mermaid-45 .node polygon,#mermaid-45 .node path{fill:#f6f4f0;stroke:#3d5468;stroke-width:1px;}#mermaid-45 .rough-node .label text,#mermaid-45 .node .label text,#mermaid-45 .image-shape .label,#mermaid-45 .icon-shape .label{text-anchor:middle;}#mermaid-45 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mermaid-45 .rough-node .label,#mermaid-45 .node .label,#mermaid-45 .image-shape .label,#mermaid-45 .icon-shape .label{text-align:center;}#mermaid-45 .node.clickable{cursor:pointer;}#mermaid-45 .root .anchor path{fill:#6b6b6b!important;stroke-width:0;stroke:#6b6b6b;}#mermaid-45 .arrowheadPath{fill:#0b0b0b;}#mermaid-45 .edgePaths .path{stroke:#6b6b6b;stroke-width:1px;}#mermaid-45 .flowchart-link{stroke:#6b6b6b;fill:none;}#mermaid-45 .edgeLabel{background-color:#eef1f4;text-align:center;}#mermaid-45 .edgeLabel p{background-color:#eef1f4;}#mermaid-45 .edgeLabel rect{opacity:0.5;background-color:#eef1f4;fill:#eef1f4;}#mermaid-45 .labelBkg{background-color:rgba(238, 241, 244, 0.5);}#mermaid-45 .cluster rect{fill:#fbfaf7;stroke:#c9c5bd;stroke-width:1px;}#mermaid-45 .cluster text{fill:#020305;}#mermaid-45 .cluster span{color:#020305;}#mermaid-45 .node .collapsed-indicator{fill:#c9c5bd;stroke:none;opacity:0.6;}#mermaid-45 .node .collapsed-separator{stroke:#c9c5bd;stroke-width:0.75px;}#mermaid-45 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:12px;background:#fdfcfa;border:1px solid hsl(40, 2.8571428571%, 88.6274509804%);border-radius:2px;pointer-events:none;z-index:100;}#mermaid-45 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#2b2b2b;}#mermaid-45 rect.text{fill:none;stroke-width:0;}#mermaid-45 .icon-shape,#mermaid-45 .image-shape{background-color:#eef1f4;text-align:center;}#mermaid-45 .icon-shape p,#mermaid-45 .image-shape p{background-color:#eef1f4;padding:2px;}#mermaid-45 .icon-shape .label rect,#mermaid-45 .image-shape .label rect{opacity:0.5;background-color:#eef1f4;fill:#eef1f4;}#mermaid-45 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#mermaid-45 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#mermaid-45 .node .neo-node{stroke:#3d5468;}#mermaid-45 [data-look="neo"].node rect,#mermaid-45 [data-look="neo"].cluster rect,#mermaid-45 [data-look="neo"].node polygon{stroke:url(#mermaid-45-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-45 [data-look="neo"].swimlane.cluster rect{filter:none;}#mermaid-45 [data-look="neo"].node path{stroke:url(#mermaid-45-gradient);stroke-width:1px;}#mermaid-45 [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-45 [data-look="neo"].node .neo-line path{stroke:#3d5468;filter:none;}#mermaid-45 [data-look="neo"].node circle{stroke:url(#mermaid-45-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-45 [data-look="neo"].node circle .state-start{fill:#000000;}#mermaid-45 [data-look="neo"].icon-shape .icon{fill:url(#mermaid-45-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-45 [data-look="neo"].icon-shape .icon-neo path{stroke:url(#mermaid-45-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-45 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker id="mermaid-45_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-45_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-45_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-45_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-45_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-45_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-45_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5" refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-45_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-45_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-45_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-45_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"/></marker><marker id="mermaid-45_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5; stroke-dasharray: 1, 0;"/></marker><g class="root"><g class="clusters"/><g class="edgePaths"><path d="M183.598,48L183.598,52.167C183.598,56.333,183.598,64.667,183.598,72.333C183.598,80,183.598,87,183.598,90.5L183.598,94" id="mermaid-45-L_A_B_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_A_B_0" data-points="W3sieCI6MTgzLjU5NzY1NjI1LCJ5Ijo0OH0seyJ4IjoxODMuNTk3NjU2MjUsInkiOjczfSx7IngiOjE4My41OTc2NTYyNSwieSI6OTh9XQ==" data-look="classic" marker-end="url(#mermaid-45_flowchart-v2-pointEnd)"/><path d="M149.468,206.755L138.929,218.276C128.39,229.798,107.312,252.841,96.773,270.813C86.234,288.784,86.234,301.684,86.234,308.134L86.234,314.584" id="mermaid-45-L_B_C_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_B_C_0" data-points="W3sieCI6MTQ5LjQ2NzgyODA1MTk4NTYsInkiOjIwNi43NTQ1NDA2OTg0Njk5OH0seyJ4Ijo4Ni4yMzQzNzUsInkiOjI3NS44ODQzNjc5NDI4MTAwNn0seyJ4Ijo4Ni4yMzQzNzUsInkiOjMxOC41ODQzNjc3NTIwNzUyfV0=" data-look="classic" marker-end="url(#mermaid-45_flowchart-v2-pointEnd)"/><path d="M217.727,206.755L228.266,218.276C238.805,229.798,259.883,252.841,270.422,269.529C280.961,286.218,280.961,296.551,280.961,301.718L280.961,306.884" id="mermaid-45-L_B_D_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_B_D_0" data-points="W3sieCI6MjE3LjcyNzQ4NDQ0ODAxNDM3LCJ5IjoyMDYuNzU0NTQwNjk4NDY5OTV9LHsieCI6MjgwLjk2MDkzNzUsInkiOjI3NS44ODQzNjc5NDI4MTAwNn0seyJ4IjoyODAuOTYwOTM3NSwieSI6MzEwLjg4NDM2Njk4OTEzNTc0fV0=" data-look="classic" marker-end="url(#mermaid-45_flowchart-v2-pointEnd)"/></g><g class="edgeLabels"><g class="edgeLabel"><g class="label" data-id="L_A_B_0" transform="translate(0, 0)"><text y="-10.1" text-anchor="middle"><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"/></text></g></g><g><rect class="background" style="stroke: none"/></g><g class="edgeLabel" transform="translate(86.234375, 275.88436794281006)"><g class="label" data-id="L_B_C_0" transform="translate(0, -9.000000476837158)"><g><rect class="background" style="" x="-16.328125" y="-0.9999990463256836" width="32.65625" height="19.999999046325684"/><text y="-10.1" text-anchor="middle" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">はい</tspan></tspan></text></g></g></g><g class="edgeLabel" transform="translate(280.9609375, 275.88436794281006)"><g class="label" data-id="L_B_D_0" transform="translate(0, -9.000000476837158)"><g><rect class="background" style="" x="-23.4921875" y="-0.9999990463256836" width="46.984375" height="19.999999046325684"/><text y="-10.1" text-anchor="middle" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">いいえ</tspan></tspan></text></g></g></g></g><g class="nodes"><g class="node default" id="mermaid-45-flowchart-A-0" data-look="classic" transform="translate(183.59765625, 28)"><rect class="basic label-container" style="" x="-72.65625" y="-19.999999523162842" width="145.3125" height="39.999999046325684"/><g class="label" style="" transform="translate(0, -7.999999523162842)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">uv</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> run</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> todo</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> add</tspan></tspan></text></g></g></g><g class="node default" id="mermaid-45-flowchart-B-1" data-look="classic" transform="translate(183.59765625, 169.4421844482422)"><polygon points="71.44218826293945,0 142.8843765258789,-71.44218826293945 71.44218826293945,-142.8843765258789 0,-71.44218826293945" class="label-container" transform="translate(-70.94218826293945, 71.44218826293945)"/><g class="label" style="" transform="translate(0, -15.700000762939453)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">タイトルは</tspan></tspan><tspan class="text-outer-tspan row" x="0" y="1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">1〜100文字か</tspan></tspan></text></g></g></g><g class="node default" id="mermaid-45-flowchart-C-3" data-look="classic" transform="translate(86.234375, 338.5843677520752)"><rect class="basic label-container" style="" x="-78.234375" y="-19.999999523162842" width="156.46875" height="39.999999046325684"/><g class="label" style="" transform="translate(0, -7.999999523162842)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">tasks.json</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> に保存</tspan></tspan></text></g></g></g><g class="node default" id="mermaid-45-flowchart-D-5" data-look="classic" transform="translate(280.9609375, 338.5843677520752)"><rect class="basic label-container" style="" x="-66.4921875" y="-27.700000762939453" width="132.984375" height="55.400001525878906"/><g class="label" style="" transform="translate(0, -15.700000762939453)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">エラーを表示</tspan></tspan><tspan class="text-outer-tspan row" x="0" y="1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">終了コード</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> 1</tspan></tspan></text></g></g></g></g></g></g><defs><filter id="mermaid-45-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="mermaid-45-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><linearGradient id="mermaid-45-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#3d5468" stop-opacity="1"/><stop offset="100%" stop-color="hsl(210, 0%, 84.5098039216%)" stop-opacity="1"/></linearGradient><style>/* mermaid-cli で画像にするときのフォント（HTML 版と同じ BIZ UDPGothic） */
+@import url("https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&amp;display=swap");
+svg { -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+</style></svg></figure>
+          </section>
+          <section class="level4" aria-labelledby="-期限の分かれ道を足す">
+            <h4 id="-期限の分かれ道を足す">🖋 期限の分かれ道を足す</h4>
+            <p>📒 <code>--due</code> が日付の形でないときもエラーになる（<code>parse_due</code>）。<code>B</code> と <code>C</code> の間に菱形を1つ足し、<code>D</code> に矢印をつなぐ。図が崩れたら、記号を含む文字を <code>"</code> で囲んだか確かめる</p>
+          </section>
+          <section class="level4" aria-labelledby="-やり取りを-sequencediagram-で書く">
+            <h4 id="-やり取りを-sequencediagram-で書く">🖋 やり取りを sequenceDiagram で書く</h4>
+            <p>📚 Mermaid 公式 Sequence diagrams</p>
+            <p>📒 同じ <code>add</code> を「誰が誰を呼ぶか」で見る。flowchart では見えなかった <code>cli.py</code>・<code>models.py</code>・<code>store.py</code> の分担が見える。同じファイルの下に書き足す</p>
+            <pre class="language-markdown"><code class="language-markdown"><span class="token code"><span class="token punctuation">```</span><span class="token code-language">mermaid</span>
+<span class="token code-block language-mermaid"><span class="token keyword">sequenceDiagram</span>
+  <span class="token keyword">participant</span> U as 利用者
+  <span class="token keyword">participant</span> C as cli.py
+  <span class="token keyword">participant</span> M as models.py
+  <span class="token keyword">participant</span> S as JsonStore
+  U<span class="token arrow operator">-&gt;&gt;</span>C<span class="token operator">:</span> todo add 牛乳を買う
+  C<span class="token arrow operator">-&gt;&gt;</span>M<span class="token operator">:</span> validate_title・parse_due
+  M<span class="token arrow operator">--&gt;&gt;</span>C<span class="token operator">:</span> タイトル・期限
+  C<span class="token arrow operator">-&gt;&gt;</span>S<span class="token operator">:</span> add<span class="token text string">(タイトル, 期限)</span>
+  S<span class="token arrow operator">--&gt;&gt;</span>C<span class="token operator">:</span> Task（番号つき）
+  C<span class="token arrow operator">--&gt;&gt;</span>U<span class="token operator">:</span> 追加しました<span class="token operator">:</span> 1 <span class="token text string">[未着手]</span> 牛乳を買う</span>
+<span class="token punctuation">```</span></span></code></pre>
+            <figure class="mermaid"><svg id="mermaid-46" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width: 1015px; background-color: transparent;" viewBox="-50 -10 1015 443" role="graphics-document document" aria-roledescription="sequence"><g><rect x="765" y="357" fill="#eaeaea" stroke="#666" width="150" height="65" name="S" rx="3" ry="3" class="actor actor-bottom"/><text x="840" y="389.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="840" dy="0">JsonStore</tspan></text></g><g><rect x="565" y="357" fill="#eaeaea" stroke="#666" width="150" height="65" name="M" rx="3" ry="3" class="actor actor-bottom"/><text x="640" y="389.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="640" dy="0">models.py</tspan></text></g><g><rect x="331" y="357" fill="#eaeaea" stroke="#666" width="150" height="65" name="C" rx="3" ry="3" class="actor actor-bottom"/><text x="406" y="389.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="406" dy="0">cli.py</tspan></text></g><g><rect x="0" y="357" fill="#eaeaea" stroke="#666" width="150" height="65" name="U" rx="3" ry="3" class="actor actor-bottom"/><text x="75" y="389.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="75" dy="0">利用者</tspan></text></g><g><line id="actor3" x1="840" y1="65" x2="840" y2="357" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="S" data-et="life-line" data-id="S"/><g id="root-3" data-et="participant" data-type="participant" data-id="S"><rect x="765" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="S" rx="3" ry="3" class="actor actor-top"/><text x="840" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="840" dy="0">JsonStore</tspan></text></g></g><g><line id="actor2" x1="640" y1="65" x2="640" y2="357" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="M" data-et="life-line" data-id="M"/><g id="root-2" data-et="participant" data-type="participant" data-id="M"><rect x="565" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="M" rx="3" ry="3" class="actor actor-top"/><text x="640" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="640" dy="0">models.py</tspan></text></g></g><g><line id="actor1" x1="406" y1="65" x2="406" y2="357" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="C" data-et="life-line" data-id="C"/><g id="root-1" data-et="participant" data-type="participant" data-id="C"><rect x="331" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="C" rx="3" ry="3" class="actor actor-top"/><text x="406" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="406" dy="0">cli.py</tspan></text></g></g><g><line id="actor0" x1="75" y1="65" x2="75" y2="357" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="U" data-et="life-line" data-id="U"/><g id="root-0" data-et="participant" data-type="participant" data-id="U"><rect x="0" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="U" rx="3" ry="3" class="actor actor-top"/><text x="75" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="75" dy="0">利用者</tspan></text></g></g><style>#mermaid-46{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;fill:#2b2b2b;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-46 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-46 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-46 .error-icon{fill:#fdfcfa;}#mermaid-46 .error-text{fill:#020305;stroke:#020305;}#mermaid-46 .edge-thickness-normal{stroke-width:1px;}#mermaid-46 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-46 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-46 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-46 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-46 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-46 .marker{fill:#6b6b6b;stroke:#6b6b6b;}#mermaid-46 .marker.cross{stroke:#6b6b6b;}#mermaid-46 svg{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;}#mermaid-46 p{margin:0;}#mermaid-46 .actor{stroke:#3d5468;fill:#f6f4f0;stroke-width:1;}#mermaid-46 rect.actor.outer-path[data-look="neo"]{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-46 rect.note[data-look="neo"]{stroke:hsl(40, 0%, 84.1176470588%);fill:#f3f1ed;filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-46 text.actor&gt;tspan{fill:#2b2b2b;stroke:none;}#mermaid-46 .actor-line{stroke:#3d5468;}#mermaid-46 .innerArc{stroke-width:1.5;stroke-dasharray:none;}#mermaid-46 .messageLine0{stroke-width:1.5;stroke-dasharray:none;stroke:#2b2b2b;}#mermaid-46 .messageLine1{stroke-width:1.5;stroke-dasharray:2,2;stroke:#2b2b2b;}#mermaid-46 [id$="-arrowhead"] path{fill:#2b2b2b;stroke:#2b2b2b;}#mermaid-46 .sequenceNumber{fill:#949494;}#mermaid-46 [id$="-sequencenumber"]{fill:#2b2b2b;}#mermaid-46 [id$="-crosshead"] path{fill:#2b2b2b;stroke:#2b2b2b;}#mermaid-46 .messageText{fill:#2b2b2b;stroke:none;}#mermaid-46 .labelBox{stroke:#3d5468;fill:#f6f4f0;filter:none;}#mermaid-46 .labelText,#mermaid-46 .labelText&gt;tspan{fill:#2b2b2b;stroke:none;}#mermaid-46 .loopText,#mermaid-46 .loopText&gt;tspan{fill:#2b2b2b;stroke:none;}#mermaid-46 .sectionTitle,#mermaid-46 .sectionTitle&gt;tspan{fill:#2b2b2b;stroke:none;}#mermaid-46 .loopLine{stroke-width:2px;stroke-dasharray:2,2;stroke:#3d5468;fill:#3d5468;}#mermaid-46 .note{stroke:hsl(40, 0%, 84.1176470588%);fill:#f3f1ed;}#mermaid-46 .noteText,#mermaid-46 .noteText&gt;tspan{fill:#333;stroke:none;font-weight:normal;}#mermaid-46 .activation0{fill:#eef1f4;stroke:hsl(210, 21.4285714286%, 84.5098039216%);}#mermaid-46 .activation1{fill:#eef1f4;stroke:hsl(210, 21.4285714286%, 84.5098039216%);}#mermaid-46 .activation2{fill:#eef1f4;stroke:hsl(210, 21.4285714286%, 84.5098039216%);}#mermaid-46 .actorPopupMenu{position:absolute;}#mermaid-46 .actorPopupMenuPanel{position:absolute;fill:#f6f4f0;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);filter:drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));}#mermaid-46 .actor-man circle,#mermaid-46 line{fill:#f6f4f0;stroke-width:2px;}#mermaid-46 g rect.rect{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));stroke:#3d5468;}#mermaid-46 .node .neo-node{stroke:#3d5468;}#mermaid-46 [data-look="neo"].node rect,#mermaid-46 [data-look="neo"].cluster rect,#mermaid-46 [data-look="neo"].node polygon{stroke:url(#mermaid-46-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-46 [data-look="neo"].swimlane.cluster rect{filter:none;}#mermaid-46 [data-look="neo"].node path{stroke:url(#mermaid-46-gradient);stroke-width:1px;}#mermaid-46 [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-46 [data-look="neo"].node .neo-line path{stroke:#3d5468;filter:none;}#mermaid-46 [data-look="neo"].node circle{stroke:url(#mermaid-46-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-46 [data-look="neo"].node circle .state-start{fill:#000000;}#mermaid-46 [data-look="neo"].icon-shape .icon{fill:url(#mermaid-46-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-46 [data-look="neo"].icon-shape .icon-neo path{stroke:url(#mermaid-46-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-46 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g/><defs><symbol id="mermaid-46-computer" width="24" height="24"><path transform="scale(.5)" d="M2 2v13h20v-13h-20zm18 11h-16v-9h16v9zm-10.228 6l.466-1h3.524l.467 1h-4.457zm14.228 3h-24l2-6h2.104l-1.33 4h18.45l-1.297-4h2.073l2 6zm-5-10h-14v-7h14v7z"/></symbol></defs><defs><symbol id="mermaid-46-database" fill-rule="evenodd" clip-rule="evenodd"><path transform="scale(.5)" d="M12.258.001l.256.004.255.005.253.008.251.01.249.012.247.015.246.016.242.019.241.02.239.023.236.024.233.027.231.028.229.031.225.032.223.034.22.036.217.038.214.04.211.041.208.043.205.045.201.046.198.048.194.05.191.051.187.053.183.054.18.056.175.057.172.059.168.06.163.061.16.063.155.064.15.066.074.033.073.033.071.034.07.034.069.035.068.035.067.035.066.035.064.036.064.036.062.036.06.036.06.037.058.037.058.037.055.038.055.038.053.038.052.038.051.039.05.039.048.039.047.039.045.04.044.04.043.04.041.04.04.041.039.041.037.041.036.041.034.041.033.042.032.042.03.042.029.042.027.042.026.043.024.043.023.043.021.043.02.043.018.044.017.043.015.044.013.044.012.044.011.045.009.044.007.045.006.045.004.045.002.045.001.045v17l-.001.045-.002.045-.004.045-.006.045-.007.045-.009.044-.011.045-.012.044-.013.044-.015.044-.017.043-.018.044-.02.043-.021.043-.023.043-.024.043-.026.043-.027.042-.029.042-.03.042-.032.042-.033.042-.034.041-.036.041-.037.041-.039.041-.04.041-.041.04-.043.04-.044.04-.045.04-.047.039-.048.039-.05.039-.051.039-.052.038-.053.038-.055.038-.055.038-.058.037-.058.037-.06.037-.06.036-.062.036-.064.036-.064.036-.066.035-.067.035-.068.035-.069.035-.07.034-.071.034-.073.033-.074.033-.15.066-.155.064-.16.063-.163.061-.168.06-.172.059-.175.057-.18.056-.183.054-.187.053-.191.051-.194.05-.198.048-.201.046-.205.045-.208.043-.211.041-.214.04-.217.038-.22.036-.223.034-.225.032-.229.031-.231.028-.233.027-.236.024-.239.023-.241.02-.242.019-.246.016-.247.015-.249.012-.251.01-.253.008-.255.005-.256.004-.258.001-.258-.001-.256-.004-.255-.005-.253-.008-.251-.01-.249-.012-.247-.015-.245-.016-.243-.019-.241-.02-.238-.023-.236-.024-.234-.027-.231-.028-.228-.031-.226-.032-.223-.034-.22-.036-.217-.038-.214-.04-.211-.041-.208-.043-.204-.045-.201-.046-.198-.048-.195-.05-.19-.051-.187-.053-.184-.054-.179-.056-.176-.057-.172-.059-.167-.06-.164-.061-.159-.063-.155-.064-.151-.066-.074-.033-.072-.033-.072-.034-.07-.034-.069-.035-.068-.035-.067-.035-.066-.035-.064-.036-.063-.036-.062-.036-.061-.036-.06-.037-.058-.037-.057-.037-.056-.038-.055-.038-.053-.038-.052-.038-.051-.039-.049-.039-.049-.039-.046-.039-.046-.04-.044-.04-.043-.04-.041-.04-.04-.041-.039-.041-.037-.041-.036-.041-.034-.041-.033-.042-.032-.042-.03-.042-.029-.042-.027-.042-.026-.043-.024-.043-.023-.043-.021-.043-.02-.043-.018-.044-.017-.043-.015-.044-.013-.044-.012-.044-.011-.045-.009-.044-.007-.045-.006-.045-.004-.045-.002-.045-.001-.045v-17l.001-.045.002-.045.004-.045.006-.045.007-.045.009-.044.011-.045.012-.044.013-.044.015-.044.017-.043.018-.044.02-.043.021-.043.023-.043.024-.043.026-.043.027-.042.029-.042.03-.042.032-.042.033-.042.034-.041.036-.041.037-.041.039-.041.04-.041.041-.04.043-.04.044-.04.046-.04.046-.039.049-.039.049-.039.051-.039.052-.038.053-.038.055-.038.056-.038.057-.037.058-.037.06-.037.061-.036.062-.036.063-.036.064-.036.066-.035.067-.035.068-.035.069-.035.07-.034.072-.034.072-.033.074-.033.151-.066.155-.064.159-.063.164-.061.167-.06.172-.059.176-.057.179-.056.184-.054.187-.053.19-.051.195-.05.198-.048.201-.046.204-.045.208-.043.211-.041.214-.04.217-.038.22-.036.223-.034.226-.032.228-.031.231-.028.234-.027.236-.024.238-.023.241-.02.243-.019.245-.016.247-.015.249-.012.251-.01.253-.008.255-.005.256-.004.258-.001.258.001zm-9.258 20.499v.01l.001.021.003.021.004.022.005.021.006.022.007.022.009.023.01.022.011.023.012.023.013.023.015.023.016.024.017.023.018.024.019.024.021.024.022.025.023.024.024.025.052.049.056.05.061.051.066.051.07.051.075.051.079.052.084.052.088.052.092.052.097.052.102.051.105.052.11.052.114.051.119.051.123.051.127.05.131.05.135.05.139.048.144.049.147.047.152.047.155.047.16.045.163.045.167.043.171.043.176.041.178.041.183.039.187.039.19.037.194.035.197.035.202.033.204.031.209.03.212.029.216.027.219.025.222.024.226.021.23.02.233.018.236.016.24.015.243.012.246.01.249.008.253.005.256.004.259.001.26-.001.257-.004.254-.005.25-.008.247-.011.244-.012.241-.014.237-.016.233-.018.231-.021.226-.021.224-.024.22-.026.216-.027.212-.028.21-.031.205-.031.202-.034.198-.034.194-.036.191-.037.187-.039.183-.04.179-.04.175-.042.172-.043.168-.044.163-.045.16-.046.155-.046.152-.047.148-.048.143-.049.139-.049.136-.05.131-.05.126-.05.123-.051.118-.052.114-.051.11-.052.106-.052.101-.052.096-.052.092-.052.088-.053.083-.051.079-.052.074-.052.07-.051.065-.051.06-.051.056-.05.051-.05.023-.024.023-.025.021-.024.02-.024.019-.024.018-.024.017-.024.015-.023.014-.024.013-.023.012-.023.01-.023.01-.022.008-.022.006-.022.006-.022.004-.022.004-.021.001-.021.001-.021v-4.127l-.077.055-.08.053-.083.054-.085.053-.087.052-.09.052-.093.051-.095.05-.097.05-.1.049-.102.049-.105.048-.106.047-.109.047-.111.046-.114.045-.115.045-.118.044-.12.043-.122.042-.124.042-.126.041-.128.04-.13.04-.132.038-.134.038-.135.037-.138.037-.139.035-.142.035-.143.034-.144.033-.147.032-.148.031-.15.03-.151.03-.153.029-.154.027-.156.027-.158.026-.159.025-.161.024-.162.023-.163.022-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.011-.178.01-.179.008-.179.008-.181.006-.182.005-.182.004-.184.003-.184.002h-.37l-.184-.002-.184-.003-.182-.004-.182-.005-.181-.006-.179-.008-.179-.008-.178-.01-.176-.011-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.022-.162-.023-.161-.024-.159-.025-.157-.026-.156-.027-.155-.027-.153-.029-.151-.03-.15-.03-.148-.031-.146-.032-.145-.033-.143-.034-.141-.035-.14-.035-.137-.037-.136-.037-.134-.038-.132-.038-.13-.04-.128-.04-.126-.041-.124-.042-.122-.042-.12-.044-.117-.043-.116-.045-.113-.045-.112-.046-.109-.047-.106-.047-.105-.048-.102-.049-.1-.049-.097-.05-.095-.05-.093-.052-.09-.051-.087-.052-.085-.053-.083-.054-.08-.054-.077-.054v4.127zm0-5.654v.011l.001.021.003.021.004.021.005.022.006.022.007.022.009.022.01.022.011.023.012.023.013.023.015.024.016.023.017.024.018.024.019.024.021.024.022.024.023.025.024.024.052.05.056.05.061.05.066.051.07.051.075.052.079.051.084.052.088.052.092.052.097.052.102.052.105.052.11.051.114.051.119.052.123.05.127.051.131.05.135.049.139.049.144.048.147.048.152.047.155.046.16.045.163.045.167.044.171.042.176.042.178.04.183.04.187.038.19.037.194.036.197.034.202.033.204.032.209.03.212.028.216.027.219.025.222.024.226.022.23.02.233.018.236.016.24.014.243.012.246.01.249.008.253.006.256.003.259.001.26-.001.257-.003.254-.006.25-.008.247-.01.244-.012.241-.015.237-.016.233-.018.231-.02.226-.022.224-.024.22-.025.216-.027.212-.029.21-.03.205-.032.202-.033.198-.035.194-.036.191-.037.187-.039.183-.039.179-.041.175-.042.172-.043.168-.044.163-.045.16-.045.155-.047.152-.047.148-.048.143-.048.139-.05.136-.049.131-.05.126-.051.123-.051.118-.051.114-.052.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.051.07-.052.065-.051.06-.05.056-.051.051-.049.023-.025.023-.024.021-.025.02-.024.019-.024.018-.024.017-.024.015-.023.014-.023.013-.024.012-.022.01-.023.01-.023.008-.022.006-.022.006-.022.004-.021.004-.022.001-.021.001-.021v-4.139l-.077.054-.08.054-.083.054-.085.052-.087.053-.09.051-.093.051-.095.051-.097.05-.1.049-.102.049-.105.048-.106.047-.109.047-.111.046-.114.045-.115.044-.118.044-.12.044-.122.042-.124.042-.126.041-.128.04-.13.039-.132.039-.134.038-.135.037-.138.036-.139.036-.142.035-.143.033-.144.033-.147.033-.148.031-.15.03-.151.03-.153.028-.154.028-.156.027-.158.026-.159.025-.161.024-.162.023-.163.022-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.011-.178.009-.179.009-.179.007-.181.007-.182.005-.182.004-.184.003-.184.002h-.37l-.184-.002-.184-.003-.182-.004-.182-.005-.181-.007-.179-.007-.179-.009-.178-.009-.176-.011-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.022-.162-.023-.161-.024-.159-.025-.157-.026-.156-.027-.155-.028-.153-.028-.151-.03-.15-.03-.148-.031-.146-.033-.145-.033-.143-.033-.141-.035-.14-.036-.137-.036-.136-.037-.134-.038-.132-.039-.13-.039-.128-.04-.126-.041-.124-.042-.122-.043-.12-.043-.117-.044-.116-.044-.113-.046-.112-.046-.109-.046-.106-.047-.105-.048-.102-.049-.1-.049-.097-.05-.095-.051-.093-.051-.09-.051-.087-.053-.085-.052-.083-.054-.08-.054-.077-.054v4.139zm0-5.666v.011l.001.02.003.022.004.021.005.022.006.021.007.022.009.023.01.022.011.023.012.023.013.023.015.023.016.024.017.024.018.023.019.024.021.025.022.024.023.024.024.025.052.05.056.05.061.05.066.051.07.051.075.052.079.051.084.052.088.052.092.052.097.052.102.052.105.051.11.052.114.051.119.051.123.051.127.05.131.05.135.05.139.049.144.048.147.048.152.047.155.046.16.045.163.045.167.043.171.043.176.042.178.04.183.04.187.038.19.037.194.036.197.034.202.033.204.032.209.03.212.028.216.027.219.025.222.024.226.021.23.02.233.018.236.017.24.014.243.012.246.01.249.008.253.006.256.003.259.001.26-.001.257-.003.254-.006.25-.008.247-.01.244-.013.241-.014.237-.016.233-.018.231-.02.226-.022.224-.024.22-.025.216-.027.212-.029.21-.03.205-.032.202-.033.198-.035.194-.036.191-.037.187-.039.183-.039.179-.041.175-.042.172-.043.168-.044.163-.045.16-.045.155-.047.152-.047.148-.048.143-.049.139-.049.136-.049.131-.051.126-.05.123-.051.118-.052.114-.051.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.052.07-.051.065-.051.06-.051.056-.05.051-.049.023-.025.023-.025.021-.024.02-.024.019-.024.018-.024.017-.024.015-.023.014-.024.013-.023.012-.023.01-.022.01-.023.008-.022.006-.022.006-.022.004-.022.004-.021.001-.021.001-.021v-4.153l-.077.054-.08.054-.083.053-.085.053-.087.053-.09.051-.093.051-.095.051-.097.05-.1.049-.102.048-.105.048-.106.048-.109.046-.111.046-.114.046-.115.044-.118.044-.12.043-.122.043-.124.042-.126.041-.128.04-.13.039-.132.039-.134.038-.135.037-.138.036-.139.036-.142.034-.143.034-.144.033-.147.032-.148.032-.15.03-.151.03-.153.028-.154.028-.156.027-.158.026-.159.024-.161.024-.162.023-.163.023-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.01-.178.01-.179.009-.179.007-.181.006-.182.006-.182.004-.184.003-.184.001-.185.001-.185-.001-.184-.001-.184-.003-.182-.004-.182-.006-.181-.006-.179-.007-.179-.009-.178-.01-.176-.01-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.023-.162-.023-.161-.024-.159-.024-.157-.026-.156-.027-.155-.028-.153-.028-.151-.03-.15-.03-.148-.032-.146-.032-.145-.033-.143-.034-.141-.034-.14-.036-.137-.036-.136-.037-.134-.038-.132-.039-.13-.039-.128-.041-.126-.041-.124-.041-.122-.043-.12-.043-.117-.044-.116-.044-.113-.046-.112-.046-.109-.046-.106-.048-.105-.048-.102-.048-.1-.05-.097-.049-.095-.051-.093-.051-.09-.052-.087-.052-.085-.053-.083-.053-.08-.054-.077-.054v4.153zm8.74-8.179l-.257.004-.254.005-.25.008-.247.011-.244.012-.241.014-.237.016-.233.018-.231.021-.226.022-.224.023-.22.026-.216.027-.212.028-.21.031-.205.032-.202.033-.198.034-.194.036-.191.038-.187.038-.183.04-.179.041-.175.042-.172.043-.168.043-.163.045-.16.046-.155.046-.152.048-.148.048-.143.048-.139.049-.136.05-.131.05-.126.051-.123.051-.118.051-.114.052-.11.052-.106.052-.101.052-.096.052-.092.052-.088.052-.083.052-.079.052-.074.051-.07.052-.065.051-.06.05-.056.05-.051.05-.023.025-.023.024-.021.024-.02.025-.019.024-.018.024-.017.023-.015.024-.014.023-.013.023-.012.023-.01.023-.01.022-.008.022-.006.023-.006.021-.004.022-.004.021-.001.021-.001.021.001.021.001.021.004.021.004.022.006.021.006.023.008.022.01.022.01.023.012.023.013.023.014.023.015.024.017.023.018.024.019.024.02.025.021.024.023.024.023.025.051.05.056.05.06.05.065.051.07.052.074.051.079.052.083.052.088.052.092.052.096.052.101.052.106.052.11.052.114.052.118.051.123.051.126.051.131.05.136.05.139.049.143.048.148.048.152.048.155.046.16.046.163.045.168.043.172.043.175.042.179.041.183.04.187.038.191.038.194.036.198.034.202.033.205.032.21.031.212.028.216.027.22.026.224.023.226.022.231.021.233.018.237.016.241.014.244.012.247.011.25.008.254.005.257.004.26.001.26-.001.257-.004.254-.005.25-.008.247-.011.244-.012.241-.014.237-.016.233-.018.231-.021.226-.022.224-.023.22-.026.216-.027.212-.028.21-.031.205-.032.202-.033.198-.034.194-.036.191-.038.187-.038.183-.04.179-.041.175-.042.172-.043.168-.043.163-.045.16-.046.155-.046.152-.048.148-.048.143-.048.139-.049.136-.05.131-.05.126-.051.123-.051.118-.051.114-.052.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.051.07-.052.065-.051.06-.05.056-.05.051-.05.023-.025.023-.024.021-.024.02-.025.019-.024.018-.024.017-.023.015-.024.014-.023.013-.023.012-.023.01-.023.01-.022.008-.022.006-.023.006-.021.004-.022.004-.021.001-.021.001-.021-.001-.021-.001-.021-.004-.021-.004-.022-.006-.021-.006-.023-.008-.022-.01-.022-.01-.023-.012-.023-.013-.023-.014-.023-.015-.024-.017-.023-.018-.024-.019-.024-.02-.025-.021-.024-.023-.024-.023-.025-.051-.05-.056-.05-.06-.05-.065-.051-.07-.052-.074-.051-.079-.052-.083-.052-.088-.052-.092-.052-.096-.052-.101-.052-.106-.052-.11-.052-.114-.052-.118-.051-.123-.051-.126-.051-.131-.05-.136-.05-.139-.049-.143-.048-.148-.048-.152-.048-.155-.046-.16-.046-.163-.045-.168-.043-.172-.043-.175-.042-.179-.041-.183-.04-.187-.038-.191-.038-.194-.036-.198-.034-.202-.033-.205-.032-.21-.031-.212-.028-.216-.027-.22-.026-.224-.023-.226-.022-.231-.021-.233-.018-.237-.016-.241-.014-.244-.012-.247-.011-.25-.008-.254-.005-.257-.004-.26-.001-.26.001z"/></symbol></defs><defs><symbol id="mermaid-46-clock" width="24" height="24"><path transform="scale(.5)" d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm5.848 12.459c.202.038.202.333.001.372-1.907.361-6.045 1.111-6.547 1.111-.719 0-1.301-.582-1.301-1.301 0-.512.77-5.447 1.125-7.445.034-.192.312-.181.343.014l.985 6.238 5.394 1.011z"/></symbol></defs><defs><marker id="mermaid-46-arrowhead" refX="7.9" refY="5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M -1 0 L 10 5 L 0 10 z"/></marker></defs><defs><marker id="mermaid-46-crosshead" markerWidth="15" markerHeight="8" orient="auto" refX="4" refY="4.5"><path fill="none" stroke="#000000" stroke-width="1pt" d="M 1,2 L 6,7 M 6,2 L 1,7" style="stroke-dasharray: 0, 0;"/></marker></defs><defs><marker id="mermaid-46-filled-head" refX="15.5" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L14,7 L9,1 Z"/></marker></defs><defs><marker id="mermaid-46-sequencenumber" refX="15" refY="15" markerWidth="60" markerHeight="40" orient="auto"><circle cx="15" cy="15" r="6"/></marker></defs><defs><marker id="mermaid-46-solidTopArrowHead" refX="7.9" refY="7.25" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 10 8 L 0 8 z"/></marker></defs><defs><marker id="mermaid-46-solidBottomArrowHead" refX="7.9" refY="0.75" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 10 0 L 0 8 z"/></marker></defs><defs><marker id="mermaid-46-stickTopArrowHead" refX="7.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 7 7" stroke="black" stroke-width="1.5" fill="none"/></marker></defs><defs><marker id="mermaid-46-stickBottomArrowHead" refX="7.5" refY="0" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 7 L 7 0" stroke="black" stroke-width="1.5" fill="none"/></marker></defs><text x="239" y="80" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">todo add 牛乳を買う</text><line x1="76" y1="111" x2="402" y2="111" class="messageLine0" data-et="message" data-id="i0" data-from="U" data-to="C" stroke-width="2" stroke="none" marker-end="url(#mermaid-46-arrowhead)" style="fill: none;"/><text x="522" y="126" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">validate_title・parse_due</text><line x1="407" y1="157" x2="636" y2="157" class="messageLine0" data-et="message" data-id="i1" data-from="C" data-to="M" stroke-width="2" stroke="none" marker-end="url(#mermaid-46-arrowhead)" style="fill: none;"/><text x="525" y="172" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">タイトル・期限</text><line x1="639" y1="201" x2="410" y2="201" class="messageLine1" data-et="message" data-id="i2" data-from="M" data-to="C" stroke-width="2" stroke="none" marker-end="url(#mermaid-46-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><text x="622" y="216" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">add(タイトル, 期限)</text><line x1="407" y1="247" x2="836" y2="247" class="messageLine0" data-et="message" data-id="i3" data-from="C" data-to="S" stroke-width="2" stroke="none" marker-end="url(#mermaid-46-arrowhead)" style="fill: none;"/><text x="625" y="262" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">Task（番号つき）</text><line x1="839" y1="291" x2="410" y2="291" class="messageLine1" data-et="message" data-id="i4" data-from="S" data-to="C" stroke-width="2" stroke="none" marker-end="url(#mermaid-46-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><text x="242" y="306" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">追加しました: 1 [未着手] 牛乳を買う</text><line x1="405" y1="337" x2="79" y2="337" class="messageLine1" data-et="message" data-id="i5" data-from="C" data-to="U" stroke-width="2" stroke="none" marker-end="url(#mermaid-46-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><style>/* mermaid-cli で画像にするときのフォント（HTML 版と同じ BIZ UDPGothic） */
+@import url("https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&amp;display=swap");
+svg { -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+</style></svg></figure>
+          </section>
+          <section class="level4" aria-labelledby="-図を選ぶ">
+            <h4 id="-図を選ぶ">🖋 図を選ぶ</h4>
+            <p>📚 SE基礎 4章 モデル</p>
+            <p>📒 図は「何を伝えたいか」で選ぶ。動き（順番・やり取り・状態。<code>flowchart</code>・<code>sequenceDiagram</code>・<code>stateDiagram-v2</code>）を伝える図と、形（データ・部品。<code>erDiagram</code>・構成図・<code>classDiagram</code>）を伝える図がある。今日は業務フロー図と状態遷移図を書き、残りは第10回で書く</p>
+            <blockquote>
+              <p>座学: 同じ <code>add</code> を flowchart とシーケンス図で描くと、それぞれ何が見えて何が見えないか（→ まとめ「図の種類と使い分け」）</p>
+            </blockquote>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="3-依頼を聞き質問する7分">
+          <h3 id="3-依頼を聞き質問する7分">3. 依頼を聞き、質問する（7分）</h3>
+          <section class="level4" aria-labelledby="-要件メモのテンプレートを置く">
+            <h4 id="-要件メモのテンプレートを置く">🖋 要件メモのテンプレートを置く</h4>
+            <p>📒 要件メモには、ストーリーに書けないこと（目的・非機能要件・制約・対象外）だけを書く。聞いた答えは、要件メモの各節に振り分けてメモする</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mkdir</span> docs; cp ~/handsoff/docs/templates/requirements.md docs/requirements.md</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-依頼を聞く">
+            <h4 id="-依頼を聞く">🖋 依頼を聞く</h4>
+            <p>📒 講師が依頼人の役。最初の一言は「第6回から作っている CLI の TODO、ブラウザでも使いたいんです」だけ。依頼人は聞かれたことにだけ答える</p>
+          </section>
+          <section class="level4" aria-labelledby="-質問する">
+            <h4 id="-質問する">🖋 質問する</h4>
+            <p>📚 SE基礎 4章 モデル、9章 ソフトウェアアーキテクチャ</p>
+            <p>📒 欲しい機能からではなく、困りごとから聞く。量や速さは「何件」「何秒」「何文字」のように数字で聞く。最後に「やらないこと」を確かめる</p>
+            <ul>
+              <li>聞く順: なぜ（今の困りごと）→ 誰が・どこから使うか → 何をしたいか（CLI との違い）→ どのくらい（何件・何秒・何文字）→ やらないこと（編集・ログインなど）</li>
+              <li>聞き漏らしやすい観点: 期限は必須か／編集・削除は要るか／ログインは要るか／スマホから使うか／CLI のデータは移すか／いつまでに</li>
+            </ul>
+          </section>
+          <section class="level4" aria-labelledby="-答えを要件メモに書く">
+            <h4 id="-答えを要件メモに書く">🖋 答えを要件メモに書く</h4>
+            <p>📒 決まっていないことは「6. 未定」に書く。答えが8件以上集まったら次へ進む</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>聞いたこと</th>
+                  <th>書く節</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>困りごと・誰が使うか</td>
+                  <td>1 目的・背景</td>
+                </tr>
+                <tr>
+                  <td>何件・何秒・どこから見えてよいか・データの置き場所</td>
+                  <td>3 非機能要件</td>
+                </tr>
+                <tr>
+                  <td>言語・期日など変えられないこと</td>
+                  <td>4 制約</td>
+                </tr>
+                <tr>
+                  <td>「要らない」と言われたこと（理由も）</td>
+                  <td>5 対象外</td>
+                </tr>
+              </tbody>
+            </table>
+            <blockquote>
+              <p>座学: 欲しい機能を直接聞くと、今の CLI をそのまま画面にしただけになる。対象外を書く理由（→ まとめ「要件メモ」）</p>
+            </blockquote>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="4-業務フロー図と状態遷移図を書く6分">
+          <h3 id="4-業務フロー図と状態遷移図を書く6分">4. 業務フロー図と状態遷移図を書く（6分）</h3>
+          <section class="level4" aria-labelledby="-業務フロー図を書く">
+            <h4 id="-業務フロー図を書く">🖋 業務フロー図を書く</h4>
+            <p>📚 SE基礎 4章 モデル</p>
+            <p>📒 導入後の利用者の1日の流れ。<code>subgraph</code> で人とアプリのレーンに分け、アプリが受け持つところを分ける。テンプレートの図（下）に「朝に一覧を開く → 期限切れはあるか」の分かれ道を足す。図の上には、この図で何を伝えるかを1文で書く</p>
+            <figure class="mermaid"><svg id="mermaid-47" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="flowchart" style="max-width: 457.953px; background-color: transparent;" viewBox="0 0 457.953125 698.3125" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#mermaid-47{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;fill:#2b2b2b;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-47 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-47 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-47 .error-icon{fill:#fdfcfa;}#mermaid-47 .error-text{fill:#020305;stroke:#020305;}#mermaid-47 .edge-thickness-normal{stroke-width:1px;}#mermaid-47 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-47 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-47 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-47 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-47 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-47 .marker{fill:#6b6b6b;stroke:#6b6b6b;}#mermaid-47 .marker.cross{stroke:#6b6b6b;}#mermaid-47 svg{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;}#mermaid-47 p{margin:0;}#mermaid-47 .label{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;color:#2b2b2b;}#mermaid-47 .cluster-label text{fill:#020305;}#mermaid-47 .cluster-label span{color:#020305;}#mermaid-47 .cluster-label span p{background-color:transparent;}#mermaid-47 .label text,#mermaid-47 span{fill:#2b2b2b;color:#2b2b2b;}#mermaid-47 .node rect,#mermaid-47 .node circle,#mermaid-47 .node ellipse,#mermaid-47 .node polygon,#mermaid-47 .node path{fill:#f6f4f0;stroke:#3d5468;stroke-width:1px;}#mermaid-47 .rough-node .label text,#mermaid-47 .node .label text,#mermaid-47 .image-shape .label,#mermaid-47 .icon-shape .label{text-anchor:middle;}#mermaid-47 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mermaid-47 .rough-node .label,#mermaid-47 .node .label,#mermaid-47 .image-shape .label,#mermaid-47 .icon-shape .label{text-align:center;}#mermaid-47 .node.clickable{cursor:pointer;}#mermaid-47 .root .anchor path{fill:#6b6b6b!important;stroke-width:0;stroke:#6b6b6b;}#mermaid-47 .arrowheadPath{fill:#0b0b0b;}#mermaid-47 .edgePaths .path{stroke:#6b6b6b;stroke-width:1px;}#mermaid-47 .flowchart-link{stroke:#6b6b6b;fill:none;}#mermaid-47 .edgeLabel{background-color:#eef1f4;text-align:center;}#mermaid-47 .edgeLabel p{background-color:#eef1f4;}#mermaid-47 .edgeLabel rect{opacity:0.5;background-color:#eef1f4;fill:#eef1f4;}#mermaid-47 .labelBkg{background-color:rgba(238, 241, 244, 0.5);}#mermaid-47 .cluster rect{fill:#fbfaf7;stroke:#c9c5bd;stroke-width:1px;}#mermaid-47 .cluster text{fill:#020305;}#mermaid-47 .cluster span{color:#020305;}#mermaid-47 .node .collapsed-indicator{fill:#c9c5bd;stroke:none;opacity:0.6;}#mermaid-47 .node .collapsed-separator{stroke:#c9c5bd;stroke-width:0.75px;}#mermaid-47 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:12px;background:#fdfcfa;border:1px solid hsl(40, 2.8571428571%, 88.6274509804%);border-radius:2px;pointer-events:none;z-index:100;}#mermaid-47 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#2b2b2b;}#mermaid-47 rect.text{fill:none;stroke-width:0;}#mermaid-47 .icon-shape,#mermaid-47 .image-shape{background-color:#eef1f4;text-align:center;}#mermaid-47 .icon-shape p,#mermaid-47 .image-shape p{background-color:#eef1f4;padding:2px;}#mermaid-47 .icon-shape .label rect,#mermaid-47 .image-shape .label rect{opacity:0.5;background-color:#eef1f4;fill:#eef1f4;}#mermaid-47 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#mermaid-47 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#mermaid-47 .node .neo-node{stroke:#3d5468;}#mermaid-47 [data-look="neo"].node rect,#mermaid-47 [data-look="neo"].cluster rect,#mermaid-47 [data-look="neo"].node polygon{stroke:url(#mermaid-47-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-47 [data-look="neo"].swimlane.cluster rect{filter:none;}#mermaid-47 [data-look="neo"].node path{stroke:url(#mermaid-47-gradient);stroke-width:1px;}#mermaid-47 [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-47 [data-look="neo"].node .neo-line path{stroke:#3d5468;filter:none;}#mermaid-47 [data-look="neo"].node circle{stroke:url(#mermaid-47-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-47 [data-look="neo"].node circle .state-start{fill:#000000;}#mermaid-47 [data-look="neo"].icon-shape .icon{fill:url(#mermaid-47-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-47 [data-look="neo"].icon-shape .icon-neo path{stroke:url(#mermaid-47-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-47 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker id="mermaid-47_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-47_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-47_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-47_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-47_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-47_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-47_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5" refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-47_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-47_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-47_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-47_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"/></marker><marker id="mermaid-47_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5; stroke-dasharray: 1, 0;"/></marker><g class="root"><g class="clusters"><g class="cluster" id="mermaid-47-アプリ" data-look="classic"><rect style="" x="8" y="213" width="175.65625" height="90"/><g class="cluster-label" transform="translate(74.3359375, 213)"><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">アプリ</tspan></tspan></text></g></g></g><g class="cluster" id="mermaid-47-利用者" data-look="classic"><rect style="" x="203.65625" y="8" width="246.296875" height="682.3124980926514"/><g class="cluster-label" transform="translate(305.8046875, 8)"><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">利用者</tspan></tspan></text></g></g></g></g><g class="edgePaths"><path d="M326.805,73L326.805,77.167C326.805,81.333,326.805,89.667,326.805,97.333C326.805,105,326.805,112,326.805,115.5L326.805,119" id="mermaid-47-L_U1_U2_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_U1_U2_0" data-points="W3sieCI6MzI2LjgwNDY4NzUsInkiOjczfSx7IngiOjMyNi44MDQ2ODc1LCJ5Ijo5OH0seyJ4IjozMjYuODA0Njg3NSwieSI6MTIzfV0=" data-look="classic" marker-end="url(#mermaid-47_flowchart-v2-pointEnd)"/><path d="M326.805,393L326.805,397.167C326.805,401.333,326.805,409.667,326.805,417.333C326.805,425,326.805,432,326.805,435.5L326.805,439" id="mermaid-47-L_U3_U4_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_U3_U4_0" data-points="W3sieCI6MzI2LjgwNDY4NzUsInkiOjM5M30seyJ4IjozMjYuODA0Njg3NSwieSI6NDE4fSx7IngiOjMyNi44MDQ2ODc1LCJ5Ijo0NDN9XQ==" data-look="classic" marker-end="url(#mermaid-47_flowchart-v2-pointEnd)"/><path d="M326.805,555.313L326.805,561.146C326.805,566.979,326.805,578.646,326.805,589.646C326.805,600.646,326.805,610.979,326.805,616.146L326.805,621.312" id="mermaid-47-L_U4_U5_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_U4_U5_0" data-points="W3sieCI6MzI2LjgwNDY4NzUsInkiOjU1NS4zMTI1fSx7IngiOjMyNi44MDQ2ODc1LCJ5Ijo1OTAuMzEyNDk5MDQ2MzI1N30seyJ4IjozMjYuODA0Njg3NSwieSI6NjI1LjMxMjQ5ODA5MjY1MTR9XQ==" data-look="classic" marker-end="url(#mermaid-47_flowchart-v2-pointEnd)"/><path d="M326.805,163L326.805,167.167C326.805,171.333,326.805,179.667,326.805,188C326.805,196.333,326.805,204.667,297.768,214.49C268.731,224.314,210.657,235.629,181.619,241.286L152.582,246.943" id="mermaid-47-L_U2_A1_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_U2_A1_0" data-points="W3sieCI6MzI2LjgwNDY4NzUsInkiOjE2M30seyJ4IjozMjYuODA0Njg3NSwieSI6MTg4fSx7IngiOjMyNi44MDQ2ODc1LCJ5IjoyMTN9LHsieCI6MTQ4LjY1NjI1LCJ5IjoyNDcuNzA3NzYyNTU3MDc3NjF9XQ==" data-look="classic" marker-end="url(#mermaid-47_flowchart-v2-pointEnd)"/><path d="M95.828,278L95.828,282.167C95.828,286.333,95.828,294.667,134.324,303C172.82,311.333,249.813,319.667,288.309,327.333C326.805,335,326.805,342,326.805,345.5L326.805,349" id="mermaid-47-L_A1_U3_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_A1_U3_0" data-points="W3sieCI6OTUuODI4MTI1LCJ5IjoyNzh9LHsieCI6OTUuODI4MTI1LCJ5IjozMDN9LHsieCI6MzI2LjgwNDY4NzUsInkiOjMyOH0seyJ4IjozMjYuODA0Njg3NSwieSI6MzUzfV0=" data-look="classic" marker-end="url(#mermaid-47_flowchart-v2-pointEnd)"/></g><g class="edgeLabels"><g class="edgeLabel"><g class="label" data-id="L_U1_U2_0" transform="translate(0, 0)"><text y="-10.1" text-anchor="middle"><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"/></text></g></g><g><rect class="background" style="stroke: none"/></g><g class="edgeLabel"><g class="label" data-id="L_U3_U4_0" transform="translate(0, 0)"><text y="-10.1" text-anchor="middle"><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"/></text></g></g><g><rect class="background" style="stroke: none"/></g><g class="edgeLabel" transform="translate(326.8046875, 590.3124990463257)"><g class="label" data-id="L_U4_U5_0" transform="translate(0, -9.000000476837158)"><g><rect class="background" style="" x="-16.328125" y="-0.9999990463256836" width="32.65625" height="19.999999046325684"/><text y="-10.1" text-anchor="middle" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">はい</tspan></tspan></text></g></g></g><g class="edgeLabel"><g class="label" data-id="L_U2_A1_0" transform="translate(0, 0)"><text y="-10.1" text-anchor="middle"><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"/></text></g></g><g><rect class="background" style="stroke: none"/></g><g class="edgeLabel"><g class="label" data-id="L_A1_U3_0" transform="translate(0, 0)"><text y="-10.1" text-anchor="middle"><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"/></text></g></g><g><rect class="background" style="stroke: none"/></g></g><g class="nodes"><g class="node default" id="mermaid-47-flowchart-U1-0" data-look="classic" transform="translate(326.8046875, 53)"><rect class="basic label-container" style="" x="-81.1484375" y="-19.999999523162842" width="162.296875" height="39.999999046325684"/><g class="label" style="" transform="translate(0, -7.999999523162842)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">タスクを思いつく</tspan></tspan></text></g></g></g><g class="node default" id="mermaid-47-flowchart-U2-1" data-look="classic" transform="translate(326.8046875, 143)"><rect class="basic label-container" style="" x="-88.1484375" y="-19.999999523162842" width="176.296875" height="39.999999046325684"/><g class="label" style="" transform="translate(0, -7.999999523162842)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">ブラウザで追加する</tspan></tspan></text></g></g></g><g class="node default" id="mermaid-47-flowchart-U3-2" data-look="classic" transform="translate(326.8046875, 373)"><rect class="basic label-container" style="" x="-59.328125" y="-19.999999523162842" width="118.65625" height="39.999999046325684"/><g class="label" style="" transform="translate(0, -7.999999523162842)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">一覧を見る</tspan></tspan></text></g></g></g><g class="node default" id="mermaid-47-flowchart-U4-3" data-look="classic" transform="translate(326.8046875, 499.15625)"><polygon points="56.15624952316284,0 112.31249904632568,-56.15624952316284 56.15624952316284,-112.31249904632568 0,-56.15624952316284" class="label-container" transform="translate(-55.65624952316284, 56.15624952316284)"/><g class="label" style="" transform="translate(0, -7.999999523162842)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">終わったか</tspan></tspan></text></g></g></g><g class="node default" id="mermaid-47-flowchart-U5-5" data-look="classic" transform="translate(326.8046875, 645.3124980926514)"><rect class="basic label-container" style="" x="-59.4921875" y="-19.999999523162842" width="118.984375" height="39.999999046325684"/><g class="label" style="" transform="translate(0, -7.999999523162842)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">完了にする</tspan></tspan></text></g></g></g><g class="node default" id="mermaid-47-flowchart-A1-6" data-look="classic" transform="translate(95.828125, 258)"><rect class="basic label-container" style="" x="-52.828125" y="-19.999999523162842" width="105.65625" height="39.999999046325684"/><g class="label" style="" transform="translate(0, -7.999999523162842)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">保存する</tspan></tspan></text></g></g></g></g></g></g><defs><filter id="mermaid-47-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="mermaid-47-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><linearGradient id="mermaid-47-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#3d5468" stop-opacity="1"/><stop offset="100%" stop-color="hsl(210, 0%, 84.5098039216%)" stop-opacity="1"/></linearGradient><style>/* mermaid-cli で画像にするときのフォント（HTML 版と同じ BIZ UDPGothic） */
+@import url("https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&amp;display=swap");
+svg { -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+</style></svg></figure>
+          </section>
+          <section class="level4" aria-labelledby="-状態遷移図を書く">
+            <h4 id="-状態遷移図を書く">🖋 状態遷移図を書く</h4>
+            <p>📚 Mermaid 公式 State diagrams</p>
+            <p>📒 テンプレートの図（下）には <code>TODO</code> と <code>DONE</code> しかない。期限切れ（<code>OVERDUE</code>）と、そこへ移るきっかけ・そこから出るきっかけを足し、下の表の「条件」を不等号まで埋める</p>
+            <figure class="mermaid"><svg id="mermaid-48" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="statediagram" style="max-width: 90.9844px; background-color: transparent;" viewBox="0 0 90.984375 234" role="graphics-document document" aria-roledescription="stateDiagram"><style>#mermaid-48{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;fill:#2b2b2b;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-48 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-48 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-48 .error-icon{fill:#fdfcfa;}#mermaid-48 .error-text{fill:#020305;stroke:#020305;}#mermaid-48 .edge-thickness-normal{stroke-width:1px;}#mermaid-48 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-48 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-48 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-48 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-48 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-48 .marker{fill:#6b6b6b;stroke:#6b6b6b;}#mermaid-48 .marker.cross{stroke:#6b6b6b;}#mermaid-48 svg{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;}#mermaid-48 p{margin:0;}#mermaid-48 defs [id$="-barbEnd"]{fill:#6b6b6b;stroke:#6b6b6b;}#mermaid-48 g.stateGroup text{fill:#3d5468;stroke:none;font-size:10px;}#mermaid-48 g.stateGroup text{fill:#2b2b2b;stroke:none;font-size:10px;}#mermaid-48 g.stateGroup .state-title{font-weight:bolder;fill:#2b2b2b;}#mermaid-48 g.stateGroup rect{fill:#f6f4f0;stroke:#3d5468;}#mermaid-48 g.stateGroup line{stroke:#6b6b6b;stroke-width:1;}#mermaid-48 .transition{stroke:#6b6b6b;stroke-width:1;fill:none;}#mermaid-48 .stateGroup .composit{fill:#f4f4f4;border-bottom:1px;}#mermaid-48 .stateGroup .alt-composit{fill:#e0e0e0;border-bottom:1px;}#mermaid-48 .state-note{stroke:hsl(40, 0%, 84.1176470588%);fill:#f3f1ed;}#mermaid-48 .state-note text{fill:#333;stroke:none;font-size:10px;}#mermaid-48 .stateLabel .box{stroke:none;stroke-width:0;fill:#f6f4f0;opacity:0.5;}#mermaid-48 .edgeLabel .label rect{fill:#f6f4f0;opacity:0.5;}#mermaid-48 .edgeLabel{background-color:#eef1f4;text-align:center;}#mermaid-48 .edgeLabel p{background-color:#eef1f4;}#mermaid-48 .edgeLabel rect{opacity:0.5;background-color:#eef1f4;fill:#eef1f4;}#mermaid-48 .edgeLabel .label text{fill:#2b2b2b;}#mermaid-48 .label div .edgeLabel{color:#2b2b2b;}#mermaid-48 .stateLabel text{fill:#2b2b2b;font-size:10px;font-weight:bold;}#mermaid-48 .node circle.state-start{fill:#6b6b6b;stroke:#6b6b6b;}#mermaid-48 .node .fork-join{fill:#6b6b6b;stroke:#6b6b6b;}#mermaid-48 .node circle.state-end{fill:#3d5468;stroke:#f4f4f4;stroke-width:1.5;}#mermaid-48 .end-state-inner{fill:#f4f4f4;stroke-width:1.5;}#mermaid-48 .node rect{fill:#f6f4f0;stroke:#3d5468;stroke-width:1px;}#mermaid-48 .node polygon{fill:#f6f4f0;stroke:#3d5468;stroke-width:1px;}#mermaid-48 [id$="-barbEnd"]{fill:#6b6b6b;}#mermaid-48 .statediagram-cluster rect{fill:#f6f4f0;stroke:#3d5468;stroke-width:1px;}#mermaid-48 .cluster-label,#mermaid-48 .nodeLabel{color:#2b2b2b;}#mermaid-48 .statediagram-cluster rect.outer{rx:5px;ry:5px;}#mermaid-48 .statediagram-state .divider{stroke:#3d5468;}#mermaid-48 .statediagram-state .title-state{rx:5px;ry:5px;}#mermaid-48 .statediagram-cluster.statediagram-cluster .inner{fill:#f4f4f4;}#mermaid-48 .statediagram-cluster.statediagram-cluster-alt .inner{fill:#fdfcfa;}#mermaid-48 .statediagram-cluster .inner{rx:0;ry:0;}#mermaid-48 .statediagram-state rect.basic{rx:5px;ry:5px;}#mermaid-48 .statediagram-state rect.divider{stroke-dasharray:10,10;fill:#fdfcfa;}#mermaid-48 .note-edge{stroke-dasharray:5;}#mermaid-48 .statediagram-note rect{fill:#f3f1ed;stroke:hsl(40, 0%, 84.1176470588%);stroke-width:1px;rx:0;ry:0;}#mermaid-48 .statediagram-note rect{fill:#f3f1ed;stroke:hsl(40, 0%, 84.1176470588%);stroke-width:1px;rx:0;ry:0;}#mermaid-48 .statediagram-note text{fill:#333;}#mermaid-48 .statediagram-note .nodeLabel{color:#333;}#mermaid-48 .statediagram .edgeLabel{color:red;}#mermaid-48 [id$="-dependencyStart"],#mermaid-48 [id$="-dependencyEnd"]{fill:#6b6b6b;stroke:#6b6b6b;stroke-width:1;}#mermaid-48 .statediagramTitleText{text-anchor:middle;font-size:18px;fill:#2b2b2b;}#mermaid-48 [data-look="neo"].statediagram-cluster rect{fill:#f6f4f0;stroke:url(#mermaid-48-gradient);stroke-width:1;}#mermaid-48 [data-look="neo"].statediagram-cluster rect.outer{rx:5px;ry:5px;filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-48 .node .neo-node{stroke:#3d5468;}#mermaid-48 [data-look="neo"].node rect,#mermaid-48 [data-look="neo"].cluster rect,#mermaid-48 [data-look="neo"].node polygon{stroke:url(#mermaid-48-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-48 [data-look="neo"].swimlane.cluster rect{filter:none;}#mermaid-48 [data-look="neo"].node path{stroke:url(#mermaid-48-gradient);stroke-width:1px;}#mermaid-48 [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-48 [data-look="neo"].node .neo-line path{stroke:#3d5468;filter:none;}#mermaid-48 [data-look="neo"].node circle{stroke:url(#mermaid-48-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-48 [data-look="neo"].node circle .state-start{fill:#000000;}#mermaid-48 [data-look="neo"].icon-shape .icon{fill:url(#mermaid-48-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-48 [data-look="neo"].icon-shape .icon-neo path{stroke:url(#mermaid-48-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-48 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><defs><marker id="mermaid-48_stateDiagram-barbEnd" refX="19" refY="7" markerWidth="20" markerHeight="14" markerUnits="userSpaceOnUse" orient="auto"><path d="M 19,7 L9,13 L14,7 L9,1 Z"/></marker></defs><g class="root"><g class="clusters"/><g class="edgePaths"><path d="M45.492,22L45.492,27.833C45.492,33.667,45.492,45.333,45.492,57C45.492,68.667,45.492,80.333,45.492,86.167L45.492,92" id="mermaid-48-edge0" class="edge-thickness-normal edge-pattern-solid transition" style="fill:none;;;fill:none" data-edge="true" data-et="edge" data-id="edge0" data-points="W3sieCI6NDUuNDkyMTg3NSwieSI6MjJ9LHsieCI6NDUuNDkyMTg3NSwieSI6NTYuOTk5OTk5MDQ2MzI1Njg0fSx7IngiOjQ1LjQ5MjE4NzUsInkiOjkxLjk5OTk5ODA5MjY1MTM3fV0=" data-look="classic" marker-end="url(#mermaid-48_stateDiagram-barbEnd)"/><path d="M45.492,124L45.492,129.833C45.492,135.667,45.492,147.333,45.492,159C45.492,170.667,45.492,182.333,45.492,188.167L45.492,194" id="mermaid-48-edge1" class="edge-thickness-normal edge-pattern-solid transition" style="fill:none;;;fill:none" data-edge="true" data-et="edge" data-id="edge1" data-points="W3sieCI6NDUuNDkyMTg3NSwieSI6MTIzLjk5OTk5NjE4NTMwMjczfSx7IngiOjQ1LjQ5MjE4NzUsInkiOjE1OC45OTk5OTUyMzE2Mjg0Mn0seyJ4Ijo0NS40OTIxODc1LCJ5IjoxOTMuOTk5OTk0Mjc3OTU0MX1d" data-look="classic" marker-end="url(#mermaid-48_stateDiagram-barbEnd)"/></g><g class="edgeLabels"><g class="edgeLabel" transform="translate(45.4921875, 56.999999046325684)"><g class="label" data-id="edge0" transform="translate(0, -9.000000476837158)"><g><rect class="background" style="" x="-30.328125" y="-0.9999990463256836" width="60.65625" height="19.999999046325684"/><text y="-10.1" text-anchor="middle" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">追加する</tspan></tspan></text></g></g></g><g class="edgeLabel" transform="translate(45.4921875, 158.99999523162842)"><g class="label" data-id="edge1" transform="translate(0, -9.000000476837158)"><g><rect class="background" style="" x="-37.4921875" y="-0.9999990463256836" width="74.984375" height="19.999999046325684"/><text y="-10.1" text-anchor="middle" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">完了にする</tspan></tspan></text></g></g></g></g><g class="nodes"><g class="node default" id="mermaid-48-state-root_start-0" data-look="classic" transform="translate(45.4921875, 15)"><circle class="state-start" r="7" width="14" height="14"/></g><g class="node  statediagram-state" id="mermaid-48-state-TODO-1" data-look="classic" transform="translate(45.4921875, 107.99999713897705)"><rect class="basic label-container" style="" rx="5" ry="5" x="-28.1494140625" y="-15.999999523162842" width="56.298828125" height="31.999999046325684"/><g class="label" style="" transform="translate(-20.1494140625, -7.999999523162842)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">TODO</tspan></tspan></text></g></g></g><g class="node  statediagram-state" id="mermaid-48-state-DONE-1" data-look="classic" transform="translate(45.4921875, 209.99999332427979)"><rect class="basic label-container" style="" rx="5" ry="5" x="-28.2265625" y="-15.999999523162842" width="56.453125" height="31.999999046325684"/><g class="label" style="" transform="translate(-20.2265625, -7.999999523162842)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">DONE</tspan></tspan></text></g></g></g></g></g></g><defs><filter id="mermaid-48-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="mermaid-48-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><linearGradient id="mermaid-48-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#3d5468" stop-opacity="1"/><stop offset="100%" stop-color="hsl(210, 0%, 84.5098039216%)" stop-opacity="1"/></linearGradient><style>/* mermaid-cli で画像にするときのフォント（HTML 版と同じ BIZ UDPGothic） */
+@import url("https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&amp;display=swap");
+svg { -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+</style></svg></figure>
+            <ul>
+              <li>確認: 「完了したタスクは期限切れになるか」「期限の当日は期限切れか」「期限なしのタスクは」に図と表で答えられる</li>
+            </ul>
+            <blockquote>
+              <p>座学: 期限切れを DB に保存するか、表示するときに計算するか（第10回の DB設計書につながる。→ まとめ「図の種類と使い分け」）</p>
+            </blockquote>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="5-ストーリーと受け入れ条件を書く7分">
+          <h3 id="5-ストーリーと受け入れ条件を書く7分">5. ストーリーと受け入れ条件を書く（7分）</h3>
+          <section class="level4" aria-labelledby="-ストーリーの控えを作る">
+            <h4 id="-ストーリーの控えを作る">🖋 ストーリーの控えを作る</h4>
+            <p>📒 ストーリーは Issue に書き、<code>docs/stories.md</code> に控えを残す。テンプレートは Issue 1件分の形</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cp</span> ~/handsoff/docs/templates/issue_story.md docs/stories.md</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-したいことを書き出す">
+            <h4 id="-したいことを書き出す">🖋 したいことを書き出す</h4>
+            <p>📒 依頼人の「したいこと」を1つずつに分け、<code>S-01</code> から番号を付ける。1つが半日〜1日で終わる大きさにする。「要らない」と言われたことは要件メモの「対象外」へ移す</p>
+          </section>
+          <section class="level4" aria-labelledby="-s-01-を1文で書く">
+            <h4 id="-s-01-を1文で書く">🖋 S-01 を1文で書く</h4>
+            <p>📒 <code>&lt;利用者&gt;として、&lt;したいこと&gt;したい。なぜなら&lt;理由&gt;から。</code> の形で、ストーリーの節に書く。「なぜなら」には、手順3で聞いた困りごとを入れる</p>
+          </section>
+          <section class="level4" aria-labelledby="-s-01-の受け入れ条件を書く">
+            <h4 id="-s-01-の受け入れ条件を書く">🖋 S-01 の受け入れ条件を書く</h4>
+            <p>📒 受け入れ条件の節に3〜6行書く。依頼人が言った数字（100文字など）、うまくいかない場合（空のタイトル、日付でない期限）、そのときの文言を入れる。1行が第11回でテスト1本以上になる</p>
+            <ul>
+              <li>確認: 受け入れ条件だけ読めば、来月の自分が依頼人に質問せずに作れるか</li>
+            </ul>
+            <blockquote>
+              <p>座学: 「追加できる」だけでは確かめられない。数字・文言・境目で書く（→ まとめ「ユーザーストーリーと受け入れ条件」）</p>
+            </blockquote>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="6-タスクに分けて幅で見積もる4分">
+          <h3 id="6-タスクに分けて幅で見積もる4分">6. タスクに分けて幅で見積もる（4分）</h3>
+          <section class="level4" aria-labelledby="-s-01-をタスクに分ける">
+            <h4 id="-s-01-をタスクに分ける">🖋 S-01 をタスクに分ける</h4>
+            <p>📚 達人プログラマー 見積もり</p>
+            <p>📒 半日以内の作業に分け、それぞれ「1〜2時間」のように幅で見積もる。下は第6回の「期限を足す」を分けた例。初めての作業は幅を広く取る</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>タスク</th>
+                  <th>幅</th>
+                  <th>根拠</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>parse_due</code></td>
+                  <td>0.5〜1時間</td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <td><code>--due</code> の引数</td>
+                  <td>0.5〜1時間</td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <td><code>list --overdue</code></td>
+                  <td>1〜2.5時間</td>
+                  <td>判定が初めて</td>
+                </tr>
+                <tr>
+                  <td>合計</td>
+                  <td>2〜4.5時間</td>
+                  <td>—</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+          <section class="level4" aria-labelledby="-見積の表を埋める">
+            <h4 id="-見積の表を埋める">🖋 見積の表を埋める</h4>
+            <p>📒 <code>docs/stories.md</code> の「見積」の表に、タスク・幅・根拠を1行ずつ書き、最後に合計の行を足す。根拠は「似た作業は何か」「初めてのことは何か」で書く</p>
+            <ul>
+              <li>確認: いちばん幅が広いタスクと、その理由を言える</li>
+            </ul>
+            <blockquote>
+              <p>座学: 幅が広いところが不確かなところ。見積は約束ではない（→ まとめ「見積」）</p>
+            </blockquote>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="7-見本と合わせてコミットする3分">
+          <h3 id="7-見本と合わせてコミットする3分">7. 見本と合わせてコミットする（3分）</h3>
+          <section class="level4" aria-labelledby="-自分の版をコミットする">
+            <h4 id="-自分の版をコミットする">🖋 自分の版をコミットする</h4>
+            <p>📒 自分で書いた版をまずコミットして残す。次のステップで見本に置き換えても、自分の版は履歴に残る</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">git</span> add docs; git commit -m "Web 版の要件メモとストーリー S-01 を書く"</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-見本に置き換えて違いを見る">
+            <h4 id="-見本に置き換えて違いを見る">🖋 見本に置き換えて違いを見る</h4>
+            <p>📒 見本は、講師（依頼人）と合わせた版。ストーリーは S-01〜S-04、受け入れ条件は通し番号 (1)〜(15)。第10回・第11回はこの番号と文言を使うので、見本に置き換える。<code>git diff</code> で自分の版との違いを読む</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cp</span> ~/handsoff/examples/todo-app-snapshots/session-09/docs/*.md docs/; git diff --stat; git diff docs/stories.md</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-readme-と一緒にコミットする">
+            <h4 id="-readme-と一緒にコミットする">🖋 README と一緒にコミットする</h4>
+            <p>📒 見本の README は、ドキュメントの表に <code>docs/</code> の2つを足したもの</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cp</span> ~/handsoff/examples/todo-app-snapshots/session-09/README.md .; git add README.md docs; git commit -m "依頼人と合わせた要件メモとストーリー S-01〜S-04 にする"</code></pre>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="8-issueラベルマイルストーンで管理する5分">
+          <h3 id="8-issueラベルマイルストーンで管理する5分">8. Issue・ラベル・マイルストーンで管理する（5分）</h3>
+          <section class="level4" aria-labelledby="-ラベルを作るブラウザ">
+            <h4 id="-ラベルを作るブラウザ">🖋 ラベルを作る（ブラウザ）</h4>
+            <p>📚 GitHub Docs ラベルを管理する</p>
+            <p>📒 Issues → Labels → New label で <code>ストーリー</code> と <code>タスク</code> を作り、Issue #7 に <code>タスク</code> を付ける（GitLab は Manage → Labels）</p>
+          </section>
+          <section class="level4" aria-labelledby="-マイルストーンを作るブラウザ">
+            <h4 id="-マイルストーンを作るブラウザ">🖋 マイルストーンを作る（ブラウザ）</h4>
+            <p>📚 GitHub Docs マイルストーンについて</p>
+            <p>📒 Issues → Milestones → New milestone で <code>Web 版</code> を作り、期日に第12回の日を入れる（GitLab は Plan → Milestones）</p>
+          </section>
+          <section class="level4" aria-labelledby="-ストーリーを-issue-に登録するブラウザ">
+            <h4 id="-ストーリーを-issue-に登録するブラウザ">🖋 ストーリーを Issue に登録する（ブラウザ）</h4>
+            <p>📒 <code>docs/stories.md</code> の S-01〜S-04 を1件ずつ Issue にする。タイトルは <code>S-01 タスクを追加する</code> の形、本文は各節の「ストーリー」から「関連」までをコピーし、ラベル <code>ストーリー</code> とマイルストーン <code>Web 版</code> を付ける。番号は #8〜#11 になる</p>
+          </section>
+          <section class="level4" aria-labelledby="-絞り込んで見るブラウザ">
+            <h4 id="-絞り込んで見るブラウザ">🖋 絞り込んで見る（ブラウザ）</h4>
+            <p>📒 Issue の一覧で <code>label:ストーリー</code> と絞り込むと4件が出る。マイルストーン <code>Web 版</code> を開くと、閉じた数（0/4）と期日が見える</p>
+          </section>
+          <section class="level4" aria-labelledby="-issue-の番号を控えに書く">
+            <h4 id="-issue-の番号を控えに書く">🖋 Issue の番号を控えに書く</h4>
+            <p>📒 <code>docs/stories.md</code> の一覧の表の「Issue」の列は見本では <code>#8</code>〜<code>#11</code>。番号が違ったら直してコミットする</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">git</span> diff --stat; git commit -am "ストーリーの Issue の番号を控えに書く"   <span class="token comment"># 直したときだけ</span></code></pre>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="9-pr-を出してマージする3分">
+          <h3 id="9-pr-を出してマージする3分">9. PR を出してマージする（3分）</h3>
+          <section class="level4" aria-labelledby="-push-して-pr-を作る">
+            <h4 id="-push-して-pr-を作る">🖋 push して PR を作る</h4>
+            <p>📚 Pro Git 6.2 プロジェクトへの貢献</p>
+            <p>📒 本文は<a href="../templates/pull_request.html">テンプレート</a>で書き、目的に <code>Closes #7</code>、確認方法に「GitHub の画面で図が描かれる」と書く。Files changed で <code>docs/requirements.md</code> を開き、表示を切り替えて図を見る。<code>[確認]</code> の行コメントを1件以上残す</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">git</span> push -u origin issue-7-requirements</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-ci-が緑になってからマージする">
+            <h4 id="-ci-が緑になってからマージする">🖋 CI が緑になってからマージする</h4>
+            <p>📒 コードは変えていないが、CI（<code>check</code>）が緑になるのを待ってからマージする。Issue #7 は閉じ、ストーリーの #8〜#11 は第11回の PR #16 で閉じる</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">git</span> switch main; git pull; git branch -d issue-7-requirements; ls docs</code></pre>
+            <ul>
+              <li>確認: Issue #7 が Closed、#8〜#11 が Open でマイルストーン <code>Web 版</code> に入っている。main に <code>docs/requirements.md</code>・<code>docs/stories.md</code> がある</li>
+            </ul>
+          </section>
+        </section>
+      </section>
+      <section class="level2" aria-labelledby="読む章">
+        <h2 id="読む章">読む章</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>区分</th>
+              <th>資料</th>
+              <th>範囲</th>
+              <th>読み方</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>参考書</td>
+              <td><a href="https://www.oreilly.co.jp/books/9784814401789/">ソフトウェアエンジニアリングの基礎</a>（SE基礎）</td>
+              <td>4章 モデル（どの図が必要か）</td>
+              <td>通読（第10回でも使う）</td>
+            </tr>
+            <tr>
+              <td>参考書</td>
+              <td>同上</td>
+              <td>9章 ソフトウェアアーキテクチャ（品質特性・非機能要件）</td>
+              <td>通読（第10回でも使う）</td>
+            </tr>
+            <tr>
+              <td>無料</td>
+              <td><a href="https://mermaid.js.org/">Mermaid 公式</a></td>
+              <td>Syntax Reference（Flowcharts、Sequence diagrams、State diagrams）</td>
+              <td>図を書くときに引く</td>
+            </tr>
+            <tr>
+              <td>無料</td>
+              <td><a href="https://git-scm.com/book/ja/v2">Pro Git（日本語版）</a>・<a href="https://docs.github.com/ja/issues">GitHub Docs</a></td>
+              <td>6.2 プロジェクトへの貢献／ラベルを管理する、マイルストーンについて</td>
+              <td>Issue・ラベルで困ったときに引く</td>
+            </tr>
+            <tr>
+              <td>紹介（副読本）</td>
+              <td><a href="https://www.hanmoto.com/bd/isbn/9784274226298">達人プログラマー 第2版</a></td>
+              <td>見積もり</td>
+              <td>持っている人は通読</td>
+            </tr>
+            <tr>
+              <td>紹介（副読本）</td>
+              <td><a href="https://www.oreilly.com/library/view/-/9784814401550/">ソフトウェアアーキテクチャの基礎 第2版</a></td>
+              <td>アーキテクチャ特性（非機能要件）の考え方</td>
+              <td>持っている人は</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+  
+
+</body></html>

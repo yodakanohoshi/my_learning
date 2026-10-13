@@ -1,0 +1,66 @@
+# 研修で動かすスクリプト用
+# Python は mise が入れたものを使い、依存パッケージは uv が pyproject.toml / uv.lock で管理する
+[tools]
+python = "3.12"
+uv = "0.9"
+# 図を画像にする mermaid-cli（diagrams タスク）と Vivliostyle（docs タスク）で使う
+node = "22"
+# 資料の PlantUML の図を SVG にする（docs タスク。PlantUML の jar は build_docs.py が取ってくる）
+java = "temurin-21"
+
+[env]
+# uv が独自に Python をダウンロードしないようにする（mise の Python だけを使う）
+UV_PYTHON_DOWNLOADS = "never"
+_.python.venv = { path = ".venv", create = true }
+
+[tasks.setup]
+description = "依存パッケージを uv.lock どおりにインストール"
+run = "uv sync --locked"
+
+[tasks.check]
+description = "資料の冒頭形式・タグ・必須見出しを検査"
+run = "python scripts/check_materials.py"
+
+[tasks.tag-index]
+description = "docs/tags/<タグ名>/README.md を資料から生成"
+run = "python scripts/build_tag_index.py"
+
+[tasks.session01-logs]
+description = "第1回の演習用ログファイルを再生成"
+run = "python scripts/generate_session01_logs.py"
+
+[tasks.test]
+description = "スクリプトのテスト・ruff・mypy"
+run = ["ruff check .", "ruff format --check .", "mypy scripts", "pytest"]
+
+[tasks.dist]
+description = "受講者に配る一式を .git・講師用なしで作る（docs/_build/ の HTML 版・PDF 版も入れる）。使い方: mise run dist -- <出力先>"
+run = "python scripts/build_distribution.py"
+
+[tasks.diagrams]
+description = "研修の系統図と全体像の図を生成し、画像にする（docs/diagrams/）"
+run = [
+  # HTML 版 → Playwright の Chromium で PNG・PDF（初回は `playwright install chromium`）
+  "python scripts/build_overview.py",
+  "python scripts/build_knowledge_map.py",
+  # Mermaid 版（block-beta）→ mermaid-cli。--no-sandbox は root で動かす WSL・コンテナ向け（puppeteer.json）
+  "npx -y @mermaid-js/mermaid-cli@11.4.2 -p puppeteer.json -C mermaid.css -i ../docs/diagrams/overview.mmd -o ../docs/diagrams/overview-mermaid.png -b white -w 2000 -s 2",
+]
+
+[tasks.docs]
+description = "docs/ の Markdown を HTML 版（docs/_build/html/、コピーボタン・ナビつき）と1冊の PDF 版（docs/_build/handsoff.pdf）にする。HTML だけなら mise run docs -- --no-pdf"
+# Vivliostyle で変換し、描画には Playwright の Chromium を使う（初回は `playwright install chromium`）
+run = "python scripts/build_docs.py"
+
+[tasks.docs-serve]
+description = "資料の HTML 版をスマホから見られるように配信する（同じ Wi-Fi の URL と QR コードを表示。ポートは -- --port で変更）"
+run = "python -u scripts/serve_docs.py"
+
+[tasks.build]
+description = "資料を直したら叩く: タグ索引 → 検査 → 図 → HTML 版・PDF 版を順に作り直す（検査で指摘があればそこで止まる）"
+run = [
+  { task = "tag-index" },
+  { task = "check" },
+  { task = "diagrams" },
+  { task = "docs" },
+]

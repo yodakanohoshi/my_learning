@@ -1,0 +1,632 @@
+<!DOCTYPE html><html lang="ja"><head>
+    <meta charset="utf-8">
+    <title>第8回 テストと TDD</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../theme.css">
+<script src="../docs.js" defer></script>
+</head>
+  <body>
+<nav class="page-nav"><a href="../index.html">目次</a><a href="../README.html">全体概要</a><a href="../tags.html">タグ一覧</a></nav>
+    <section class="level1" aria-labelledby="第8回-テストと-tdd">
+      <h1 id="第8回-テストと-tdd">第8回 テストと TDD</h1>
+      <p>tag: test-自動, test-CI<br>前提タグ: python-oop, test-静的解析, git-github<br>所要: 座学15分 / ハンズオン45分</p>
+      <section class="level2" aria-labelledby="ゴール">
+        <h2 id="ゴール">ゴール</h2>
+        <ul>
+          <li>pytest の <code>assert</code>・<code>parametrize</code>・fixture・<code>tmp_path</code>・<code>capsys</code> でテストを書き、失敗の表示を読める</li>
+          <li>機能を足す前に、今の動作をテストで固定できる</li>
+          <li>「期限が近い順に並べる」をレッド → グリーン → リファクタリングの順で足し、テストと実装のコミットを分けられる</li>
+          <li>push のたびに ruff・mypy・pytest を GitHub Actions で動かし、CI が通ってから PR をマージできる</li>
+        </ul>
+      </section>
+      <section class="level2" aria-labelledby="事前準備">
+        <h2 id="事前準備">事前準備</h2>
+        <ul>
+          <li>第7回のハンズオンの最後（手順7のマージ）まで済み、<code>~/handsoff/workspace/todo-app</code> の main で <code>mise run check</code> が通る</li>
+          <li>遅れた人: <a href="../../../../examples/todo-app-snapshots/session-07/README.md">session-07/</a> を <a href="../../../../examples/README.md#%E9%81%85%E3%82%8C%E3%81%9F%E4%BA%BA%E3%81%8C%E8%BF%BD%E3%81%84%E3%81%A4%E3%81%8F%E6%96%B9%E6%B3%95">examples/README.md</a> の手順でコピーし、push してから始める</li>
+          <li>アプリのリポジトリで GitHub Actions が使える（<a href="../open-questions.html">open-questions.md</a> の Q11。GitLab は Q4）。社内ネットワークでは PyPI に届く（手順1の <code>uv add</code>。Q5）</li>
+        </ul>
+      </section>
+      <section class="level2" aria-labelledby="まとめ">
+        <h2 id="まとめ">まとめ</h2>
+        <p>冒頭の座学で使います。ハンズオンでは、今の動作をテストで固定し、CI を置いてから、「期限が近い順に並べる」をテストを先に書いて足します。</p>
+        <section class="level3" aria-labelledby="テストの種類">
+          <h3 id="テストの種類">テストの種類</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>種類</th>
+                <th>このアプリでは</th>
+                <th>速さ・数</th>
+                <th>参照</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>単体テスト</td>
+                <td><code>test_models.py</code>・<code>test_sort.py</code>（関数1つ。ファイルも日付も使わない）</td>
+                <td>速い。一番多く書く</td>
+                <td>SE基礎 5章</td>
+              </tr>
+              <tr>
+                <td>結合テスト</td>
+                <td><code>test_store.py</code>（<code>JsonStore</code> が本当にファイルに書く）、<code>test_cli.py</code>（<code>main</code> から保存先まで通す）</td>
+                <td>少し遅い</td>
+                <td>SE基礎 5章</td>
+              </tr>
+              <tr>
+                <td>E2E テスト</td>
+                <td>第11回の <code>test_web.py</code>（HTTP で画面まで）</td>
+                <td>遅い。少なく</td>
+                <td>SE基礎 5章</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="pytest-の書き方">
+          <h3 id="pytest-の書き方">pytest の書き方</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>書き方</th>
+                <th>意味</th>
+                <th>参照</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>tests/test_*.py</code> の <code>def test_*():</code></td>
+                <td>テストとして集められる。<code>mise run test</code>（<code>uv run pytest -v</code> で1件ずつ、<code>-k 語</code> で名前を絞る）</td>
+                <td>pytest 公式 Get Started</td>
+              </tr>
+              <tr>
+                <td><code>assert 実際 == 期待</code></td>
+                <td>失敗すると、両辺の値と違う所を表示する</td>
+                <td>pytest 公式 assertions</td>
+              </tr>
+              <tr>
+                <td><code>with pytest.raises(例外, match="文言"):</code></td>
+                <td>例外が出ることと、その文言を確かめる</td>
+                <td>pytest 公式 assertions</td>
+              </tr>
+              <tr>
+                <td><code>@pytest.mark.parametrize</code></td>
+                <td>同じテストを、入力と期待の組ごとに別のテストとして動かす</td>
+                <td>pytest 公式 parametrize</td>
+              </tr>
+              <tr>
+                <td><code>@pytest.fixture</code></td>
+                <td>準備を関数にし、テストは引数名で受け取る。<code>params=</code> で準備ごとに繰り返す</td>
+                <td>pytest 公式 fixtures</td>
+              </tr>
+              <tr>
+                <td><code>tmp_path</code></td>
+                <td>テストごとに新しい空の一時ディレクトリ（<code>Path</code>）</td>
+                <td>pytest 公式 tmp_path</td>
+              </tr>
+              <tr>
+                <td><code>capsys</code></td>
+                <td><code>print</code> の出力を受け取る（<code>capsys.readouterr().out</code>・<code>.err</code>）</td>
+                <td>pytest 公式 capture</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="テストしやすい形">
+          <h3 id="テストしやすい形">テストしやすい形</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>形</th>
+                <th>このアプリでは</th>
+                <th>参照</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>判定を関数に分ける</td>
+                <td><code>Task.status(today)</code>、<code>sort_by_due(tasks)</code></td>
+                <td>SE基礎 5章</td>
+              </tr>
+              <tr>
+                <td>「今日」と保存先を外から渡す</td>
+                <td><code>main(argv, store=MemoryStore(...), today=date(2026, 11, 1))</code>（第7回の手順4）</td>
+                <td>SE基礎 5章</td>
+              </tr>
+              <tr>
+                <td>同じテストを保存先ごとに</td>
+                <td><code>MemoryStore</code> と <code>tmp_path</code> の <code>JsonStore</code>。両方で通れば、どちらも <code>TaskStore</code> の約束を守っている</td>
+                <td>SE基礎 5章</td>
+              </tr>
+              <tr>
+                <td>境目をテストにする</td>
+                <td>期限の当日・期限なし・同じ期限。間違いは境目に出やすい</td>
+                <td>SE基礎 5章</td>
+              </tr>
+              <tr>
+                <td>テスト名で仕様を書く</td>
+                <td><code>test_期限なしは最後に並べる</code>（日本語でよい）</td>
+                <td>リーダブルコード 14章</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="tdd">
+          <h3 id="tdd">TDD</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>決まり</th>
+                <th>理由・やり方</th>
+                <th>参照</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>レッド → グリーン → リファクタリング</td>
+                <td>テストを書いて失敗を見る → 通る最小の実装 → 通ったまま整える</td>
+                <td>SE基礎 5章</td>
+              </tr>
+              <tr>
+                <td>先に失敗を見る</td>
+                <td>最初から通るテストは、何も確かめていないことがある</td>
+                <td>SE基礎 5章</td>
+              </tr>
+              <tr>
+                <td>グリーンは一番簡単な実装でよい</td>
+                <td>次のテストで本物に近づける（三角測量）</td>
+                <td>SE基礎 5章</td>
+              </tr>
+              <tr>
+                <td>コミットを分け、1行目の頭に <code>テスト:</code> <code>レッド:</code> <code>グリーン:</code> <code>リファクタ:</code></td>
+                <td>PR の履歴で順序を追える。テストと実装は別々に <code>git add</code> する</td>
+                <td><a href="../session05/assets/commit-convention.html">研修の規約</a></td>
+              </tr>
+            </tbody>
+          </table>
+          <p>並び順の仕様: 期限が近い順、期限なしは最後、期限が同じなら id の順</p>
+        </section>
+        <section class="level3" aria-labelledby="ci">
+          <h3 id="ci">CI</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>項目</th>
+                <th>内容</th>
+                <th>参照</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>CI</td>
+                <td>push・PR のたびに、GitHub の用意した PC で <code>mise run setup</code> と <code>mise run check</code> を動かす</td>
+                <td>SE基礎 10章</td>
+              </tr>
+              <tr>
+                <td>置き場所</td>
+                <td><code>.github/workflows/check.yml</code>（GitLab は <code>.gitlab-ci.yml</code> に読み替え）</td>
+                <td>GitHub Actions 公式、mise 公式</td>
+              </tr>
+              <tr>
+                <td>判断</td>
+                <td>CI が赤の PR はマージしない。ログの失敗した行を読み、手元の <code>mise run check</code> で再現して直す</td>
+                <td>SE基礎 10章</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+      <section class="level2" aria-labelledby="ハンズオン">
+        <h2 id="ハンズオン">ハンズオン</h2>
+        <p>1ステップ1コマンド。各ステップは「🖋 やること → 📚 参考書・公式資料の節 → 📒 説明 → コマンドやコード」。作業場所は <code>~/handsoff/workspace/todo-app/</code>。見本は <a href="../../../../examples/todo-app-snapshots/session-08/README.md">session-08/</a>（<a href="../../../../examples/session08/README.md">examples/session08/</a>）。</p>
+        <section class="level3" aria-labelledby="1-issue-とブランチを作りpytest-を入れる5分">
+          <h3 id="1-issue-とブランチを作りpytest-を入れる5分">1. Issue とブランチを作り、pytest を入れる（5分）</h3>
+          <section class="level4" aria-labelledby="-issue-を立てるブラウザ">
+            <h4 id="-issue-を立てるブラウザ">🖋 Issue を立てる（ブラウザ）</h4>
+            <p>📚 Pro Git 6.2 プロジェクトへの貢献</p>
+            <p>📒 第7回の PR が #4 なので、この Issue は #5 になる（GitLab では出た番号を使う）</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Issue</th>
+                  <th>タイトル</th>
+                  <th>目的</th>
+                  <th>完了条件</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>#5</td>
+                  <td>一覧を期限が近い順に並べる</td>
+                  <td>締め切りの近いタスクを先に見る。今の動作をテストで固定し、push のたびに自動で確かめる</td>
+                  <td><code>uv run todo list</code> が期限が近い順（期限なしは最後）。<code>mise run check</code> が手元と CI で通る</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+          <section class="level4" aria-labelledby="-ブランチを作る">
+            <h4 id="-ブランチを作る">🖋 ブランチを作る</h4>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cd</span> ~/handsoff/workspace/todo-app
+<span class="token function">git</span> switch main; git pull; git switch -c issue-5-sort</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-pytest-を入れる">
+            <h4 id="-pytest-を入れる">🖋 pytest を入れる</h4>
+            <p>📚 SE基礎 5章 自動テスト、uv 公式 Managing dependencies（Development dependencies）</p>
+            <p>📒 速い単体テストを多く書き、遅いテストは少なくする。今日は単体と結合を書く（第11回で E2E）</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">uv</span> add --dev pytest</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-キャッシュを-gitignore-に足す">
+            <h4 id="-キャッシュを-gitignore-に足す">🖋 キャッシュを .gitignore に足す</h4>
+            <p>📒 pytest は <code>.pytest_cache/</code> を作る。見本の <code>.gitignore</code> は、第7回のものに1行を足したもの</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cp</span> ~/handsoff/examples/todo-app-snapshots/session-08/.gitignore .; git diff .gitignore</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-pytest-と-ruffmypy-の設定を書く">
+            <h4 id="-pytest-と-ruffmypy-の設定を書く">🖋 pytest と ruff・mypy の設定を書く</h4>
+            <p>📚 pytest 公式 Configuration、Ruff 公式 Configuring Ruff（per-file-ignores）</p>
+            <p>📒 テストは <code>tests/</code> に置く。テスト名の日本語を命名規則（N802）が指摘するので、<code>tests/</code> だけ外す。mypy はテストの型も確かめる。<code>[tool.mypy]</code> の <code>files</code> を <code>["src", "tests"]</code> に変え、<code>pyproject.toml</code> の末尾に下を足す</p>
+            <pre class="language-toml"><code class="language-toml"><span class="token punctuation">[</span><span class="token table class-name">tool.ruff.lint.per-file-ignores</span><span class="token punctuation">]</span>
+<span class="token comment"># テスト関数名には確かめたいことを日本語で書く。N802 は英小文字以外を指摘するため外す</span>
+<span class="token key property">"tests/**"</span> <span class="token punctuation">=</span> <span class="token punctuation">[</span><span class="token string">"N802"</span><span class="token punctuation">]</span>
+
+<span class="token punctuation">[</span><span class="token table class-name">tool.pytest.ini_options</span><span class="token punctuation">]</span>
+<span class="token key property">testpaths</span> <span class="token punctuation">=</span> <span class="token punctuation">[</span><span class="token string">"tests"</span><span class="token punctuation">]</span></code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-test-タスクを-misetoml-に足す">
+            <h4 id="-test-タスクを-misetoml-に足す">🖋 test タスクを mise.toml に足す</h4>
+            <p>📚 mise 公式 Tasks</p>
+            <p>📒 <code>check</code> に <code>test</code> を足す。PR を出す前の確認が、リント・型・テストの3つになる。<code>[tasks.check]</code> を書き換え、<code>[tasks.test]</code> を末尾に足す</p>
+            <pre class="language-toml"><code class="language-toml"><span class="token punctuation">[</span><span class="token table class-name">tasks.check</span><span class="token punctuation">]</span>
+<span class="token key property">description</span> <span class="token punctuation">=</span> <span class="token string">"PR を出す前の確認（リント・型・テスト）"</span>
+<span class="token key property">depends</span> <span class="token punctuation">=</span> <span class="token punctuation">[</span><span class="token string">"lint"</span><span class="token punctuation">,</span> <span class="token string">"typecheck"</span><span class="token punctuation">,</span> <span class="token string">"test"</span><span class="token punctuation">]</span>
+
+<span class="token punctuation">[</span><span class="token table class-name">tasks.test</span><span class="token punctuation">]</span>
+<span class="token key property">description</span> <span class="token punctuation">=</span> <span class="token string">"自動テスト（pytest）"</span>
+<span class="token key property">run</span> <span class="token punctuation">=</span> <span class="token string">"pytest"</span></code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-テストがないときの結果を見る">
+            <h4 id="-テストがないときの結果を見る">🖋 テストがないときの結果を見る</h4>
+            <p>📒 テストが1件もないと、pytest は <code>no tests ran</code> で失敗する（終了コード 5）。テストを書き忘れたまま「通った」ことにはならない</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mkdir</span> tests; mise run test</code></pre>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="2-assert-と-parametrize7分">
+          <h3 id="2-assert-と-parametrize7分">2. assert と parametrize（7分）</h3>
+          <section class="level4" aria-labelledby="-状態のテストを書く">
+            <h4 id="-状態のテストを書く">🖋 状態のテストを書く</h4>
+            <p>📚 pytest 公式 How to parametrize fixtures and test functions、How to write and report assertions in tests</p>
+            <p>📒 1つのテスト関数が、組の数（6つ）だけ別のテストとして動く。エディタで <code>tests/test_models.py</code> を新しく作り、下を書く</p>
+            <pre class="language-python"><code class="language-python"><span class="token triple-quoted-string string">"""タスクの状態と入力チェック（models.py）。"""</span>
+
+<span class="token keyword">from</span> datetime <span class="token keyword">import</span> date
+
+<span class="token keyword">import</span> pytest
+
+<span class="token keyword">from</span> todo<span class="token punctuation">.</span>models <span class="token keyword">import</span> InvalidTaskError<span class="token punctuation">,</span> Status<span class="token punctuation">,</span> Task<span class="token punctuation">,</span> validate_title
+
+TODAY <span class="token operator">=</span> date<span class="token punctuation">(</span><span class="token number">2026</span><span class="token punctuation">,</span> <span class="token number">11</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+
+
+<span class="token decorator annotation punctuation">@pytest<span class="token punctuation">.</span>mark<span class="token punctuation">.</span>parametrize</span><span class="token punctuation">(</span>
+    <span class="token punctuation">(</span><span class="token string">"due"</span><span class="token punctuation">,</span> <span class="token string">"done"</span><span class="token punctuation">,</span> <span class="token string">"expected"</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token punctuation">[</span>
+        <span class="token punctuation">(</span><span class="token boolean">None</span><span class="token punctuation">,</span> <span class="token boolean">False</span><span class="token punctuation">,</span> Status<span class="token punctuation">.</span>TODO<span class="token punctuation">)</span><span class="token punctuation">,</span>  <span class="token comment"># 期限なし</span>
+        <span class="token punctuation">(</span>date<span class="token punctuation">(</span><span class="token number">2026</span><span class="token punctuation">,</span> <span class="token number">11</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token boolean">False</span><span class="token punctuation">,</span> Status<span class="token punctuation">.</span>TODO<span class="token punctuation">)</span><span class="token punctuation">,</span>  <span class="token comment"># 期限は明日</span>
+        <span class="token punctuation">(</span>TODAY<span class="token punctuation">,</span> <span class="token boolean">False</span><span class="token punctuation">,</span> Status<span class="token punctuation">.</span>TODO<span class="token punctuation">)</span><span class="token punctuation">,</span>  <span class="token comment"># 期限の当日はまだ期限切れではない</span>
+        <span class="token punctuation">(</span>date<span class="token punctuation">(</span><span class="token number">2026</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">31</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token boolean">False</span><span class="token punctuation">,</span> Status<span class="token punctuation">.</span>OVERDUE<span class="token punctuation">)</span><span class="token punctuation">,</span>  <span class="token comment"># 期限は昨日</span>
+        <span class="token punctuation">(</span>date<span class="token punctuation">(</span><span class="token number">2026</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">31</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token boolean">True</span><span class="token punctuation">,</span> Status<span class="token punctuation">.</span>DONE<span class="token punctuation">)</span><span class="token punctuation">,</span>  <span class="token comment"># 完了したものは期限切れにならない</span>
+        <span class="token punctuation">(</span><span class="token boolean">None</span><span class="token punctuation">,</span> <span class="token boolean">True</span><span class="token punctuation">,</span> Status<span class="token punctuation">.</span>DONE<span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token punctuation">]</span><span class="token punctuation">,</span>
+<span class="token punctuation">)</span>
+<span class="token keyword">def</span> test_状態は完了と期限と今日で決まる<span class="token punctuation">(</span>due<span class="token punctuation">:</span> date <span class="token operator">|</span> <span class="token boolean">None</span><span class="token punctuation">,</span> done<span class="token punctuation">:</span> <span class="token builtin">bool</span><span class="token punctuation">,</span> expected<span class="token punctuation">:</span> Status<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+    task <span class="token operator">=</span> Task<span class="token punctuation">(</span><span class="token builtin">id</span><span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">,</span> title<span class="token operator">=</span><span class="token string">"牛乳を買う"</span><span class="token punctuation">,</span> due<span class="token operator">=</span>due<span class="token punctuation">,</span> done<span class="token operator">=</span>done<span class="token punctuation">)</span>
+
+    <span class="token keyword">assert</span> task<span class="token punctuation">.</span>status<span class="token punctuation">(</span>TODAY<span class="token punctuation">)</span> <span class="token keyword">is</span> expected</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-例外のテストを書く">
+            <h4 id="-例外のテストを書く">🖋 例外のテストを書く</h4>
+            <p>📒 <code>pytest.raises</code> の中で例外が出なければ、テストは失敗する。<code>match</code> で文言も確かめる。同じファイルの末尾に足す</p>
+            <pre class="language-python"><code class="language-python"><span class="token decorator annotation punctuation">@pytest<span class="token punctuation">.</span>mark<span class="token punctuation">.</span>parametrize</span><span class="token punctuation">(</span><span class="token string">"title"</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token string">""</span><span class="token punctuation">,</span> <span class="token string">"   "</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> test_タイトルが空ならエラー<span class="token punctuation">(</span>title<span class="token punctuation">:</span> <span class="token builtin">str</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+    <span class="token keyword">with</span> pytest<span class="token punctuation">.</span>raises<span class="token punctuation">(</span>InvalidTaskError<span class="token punctuation">,</span> <span class="token keyword">match</span><span class="token operator">=</span><span class="token string">"タイトルを入力してください"</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        validate_title<span class="token punctuation">(</span>title<span class="token punctuation">)</span></code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-テストを動かす">
+            <h4 id="-テストを動かす">🖋 テストを動かす</h4>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mise</span> run test; uv run pytest -v   <span class="token comment"># 8 passed。-v では組ごとに [due1-False-Status.TODO] のような名前が付く</span></code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-わざと壊して失敗の表示を読む">
+            <h4 id="-わざと壊して失敗の表示を読む">🖋 わざと壊して、失敗の表示を読む</h4>
+            <p>📒 期限の当日（境目）を間違えると、当日の組だけが落ちる。<code>&gt;</code> の行が落ちた <code>assert</code>、<code>E</code> の行が実際の値と期待の値。読んだら元に戻す</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">sed</span> -i 's/self.due &lt; today/self.due &lt;= today/' src/todo/models.py; mise run test
+<span class="token function">git</span> restore src/todo/models.py</code></pre>
+            <ul>
+              <li>確認: <code>FAILED tests/test_models.py::test_状態は完了と期限と今日で決まる[due2-False-Status.TODO]</code> と <code>assert &lt;Status.OVERDUE: '期限切れ'&gt; is &lt;Status.TODO: '未着手'&gt;</code></li>
+            </ul>
+            <blockquote>
+              <p>座学: 失敗の表示のどこを見るか。境目のテストがなければ、この間違いに気づけたか（→ まとめ「テストしやすい形」）</p>
+            </blockquote>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="3-fixture-と-tmp_path6分">
+          <h3 id="3-fixture-と-tmp_path6分">3. fixture と tmp_path（6分）</h3>
+          <section class="level4" aria-labelledby="-保存先のテストをコピーする">
+            <h4 id="-保存先のテストをコピーする">🖋 保存先のテストをコピーする</h4>
+            <p>📚 pytest 公式 How to use fixtures（Parametrizing fixtures）、How to use temporary directories and files in tests</p>
+            <p>📒 テストは引数名 <code>store</code> で fixture を受け取る。<code>params</code> が2つなので、各テストが <code>MemoryStore</code> と <code>JsonStore</code> で1回ずつ動く。<code>tmp_path</code> はテストごとに新しい空のディレクトリで、手元の <code>tasks.json</code> には触れない</p>
+            <figure class="mermaid"><svg id="mermaid-43" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width: 722px; background-color: transparent;" viewBox="-50 -10 722 519" role="graphics-document document" aria-roledescription="sequence"><g><rect x="470" y="433" fill="#eaeaea" stroke="#666" width="152" height="65" name="T" rx="3" ry="3" class="actor actor-bottom"/><text x="546" y="465.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="546" dy="0">test_追加すると…</tspan></text></g><g><rect x="270" y="433" fill="#eaeaea" stroke="#666" width="150" height="65" name="F" rx="3" ry="3" class="actor actor-bottom"/><text x="345" y="465.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="345" dy="0">fixture store</tspan></text></g><g><rect x="0" y="433" fill="#eaeaea" stroke="#666" width="150" height="65" name="P" rx="3" ry="3" class="actor actor-bottom"/><text x="75" y="465.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="75" dy="0">pytest</tspan></text></g><g><line id="actor2" x1="546" y1="65" x2="546" y2="433" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="T" data-et="life-line" data-id="T"/><g id="root-2" data-et="participant" data-type="participant" data-id="T"><rect x="470" y="0" fill="#eaeaea" stroke="#666" width="152" height="65" name="T" rx="3" ry="3" class="actor actor-top"/><text x="546" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="546" dy="0">test_追加すると…</tspan></text></g></g><g><line id="actor1" x1="345" y1="65" x2="345" y2="433" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="F" data-et="life-line" data-id="F"/><g id="root-1" data-et="participant" data-type="participant" data-id="F"><rect x="270" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="F" rx="3" ry="3" class="actor actor-top"/><text x="345" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="345" dy="0">fixture store</tspan></text></g></g><g><line id="actor0" x1="75" y1="65" x2="75" y2="433" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="P" data-et="life-line" data-id="P"/><g id="root-0" data-et="participant" data-type="participant" data-id="P"><rect x="0" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="P" rx="3" ry="3" class="actor actor-top"/><text x="75" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="75" dy="0">pytest</tspan></text></g></g><style>#mermaid-43{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;fill:#2b2b2b;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-43 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-43 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-43 .error-icon{fill:#fdfcfa;}#mermaid-43 .error-text{fill:#020305;stroke:#020305;}#mermaid-43 .edge-thickness-normal{stroke-width:1px;}#mermaid-43 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-43 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-43 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-43 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-43 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-43 .marker{fill:#6b6b6b;stroke:#6b6b6b;}#mermaid-43 .marker.cross{stroke:#6b6b6b;}#mermaid-43 svg{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;}#mermaid-43 p{margin:0;}#mermaid-43 .actor{stroke:#3d5468;fill:#f6f4f0;stroke-width:1;}#mermaid-43 rect.actor.outer-path[data-look="neo"]{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-43 rect.note[data-look="neo"]{stroke:hsl(40, 0%, 84.1176470588%);fill:#f3f1ed;filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-43 text.actor&gt;tspan{fill:#2b2b2b;stroke:none;}#mermaid-43 .actor-line{stroke:#3d5468;}#mermaid-43 .innerArc{stroke-width:1.5;stroke-dasharray:none;}#mermaid-43 .messageLine0{stroke-width:1.5;stroke-dasharray:none;stroke:#2b2b2b;}#mermaid-43 .messageLine1{stroke-width:1.5;stroke-dasharray:2,2;stroke:#2b2b2b;}#mermaid-43 [id$="-arrowhead"] path{fill:#2b2b2b;stroke:#2b2b2b;}#mermaid-43 .sequenceNumber{fill:#949494;}#mermaid-43 [id$="-sequencenumber"]{fill:#2b2b2b;}#mermaid-43 [id$="-crosshead"] path{fill:#2b2b2b;stroke:#2b2b2b;}#mermaid-43 .messageText{fill:#2b2b2b;stroke:none;}#mermaid-43 .labelBox{stroke:#3d5468;fill:#f6f4f0;filter:none;}#mermaid-43 .labelText,#mermaid-43 .labelText&gt;tspan{fill:#2b2b2b;stroke:none;}#mermaid-43 .loopText,#mermaid-43 .loopText&gt;tspan{fill:#2b2b2b;stroke:none;}#mermaid-43 .sectionTitle,#mermaid-43 .sectionTitle&gt;tspan{fill:#2b2b2b;stroke:none;}#mermaid-43 .loopLine{stroke-width:2px;stroke-dasharray:2,2;stroke:#3d5468;fill:#3d5468;}#mermaid-43 .note{stroke:hsl(40, 0%, 84.1176470588%);fill:#f3f1ed;}#mermaid-43 .noteText,#mermaid-43 .noteText&gt;tspan{fill:#333;stroke:none;font-weight:normal;}#mermaid-43 .activation0{fill:#eef1f4;stroke:hsl(210, 21.4285714286%, 84.5098039216%);}#mermaid-43 .activation1{fill:#eef1f4;stroke:hsl(210, 21.4285714286%, 84.5098039216%);}#mermaid-43 .activation2{fill:#eef1f4;stroke:hsl(210, 21.4285714286%, 84.5098039216%);}#mermaid-43 .actorPopupMenu{position:absolute;}#mermaid-43 .actorPopupMenuPanel{position:absolute;fill:#f6f4f0;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);filter:drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));}#mermaid-43 .actor-man circle,#mermaid-43 line{fill:#f6f4f0;stroke-width:2px;}#mermaid-43 g rect.rect{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));stroke:#3d5468;}#mermaid-43 .node .neo-node{stroke:#3d5468;}#mermaid-43 [data-look="neo"].node rect,#mermaid-43 [data-look="neo"].cluster rect,#mermaid-43 [data-look="neo"].node polygon{stroke:url(#mermaid-43-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-43 [data-look="neo"].swimlane.cluster rect{filter:none;}#mermaid-43 [data-look="neo"].node path{stroke:url(#mermaid-43-gradient);stroke-width:1px;}#mermaid-43 [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-43 [data-look="neo"].node .neo-line path{stroke:#3d5468;filter:none;}#mermaid-43 [data-look="neo"].node circle{stroke:url(#mermaid-43-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-43 [data-look="neo"].node circle .state-start{fill:#000000;}#mermaid-43 [data-look="neo"].icon-shape .icon{fill:url(#mermaid-43-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-43 [data-look="neo"].icon-shape .icon-neo path{stroke:url(#mermaid-43-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-43 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g/><defs><symbol id="mermaid-43-computer" width="24" height="24"><path transform="scale(.5)" d="M2 2v13h20v-13h-20zm18 11h-16v-9h16v9zm-10.228 6l.466-1h3.524l.467 1h-4.457zm14.228 3h-24l2-6h2.104l-1.33 4h18.45l-1.297-4h2.073l2 6zm-5-10h-14v-7h14v7z"/></symbol></defs><defs><symbol id="mermaid-43-database" fill-rule="evenodd" clip-rule="evenodd"><path transform="scale(.5)" d="M12.258.001l.256.004.255.005.253.008.251.01.249.012.247.015.246.016.242.019.241.02.239.023.236.024.233.027.231.028.229.031.225.032.223.034.22.036.217.038.214.04.211.041.208.043.205.045.201.046.198.048.194.05.191.051.187.053.183.054.18.056.175.057.172.059.168.06.163.061.16.063.155.064.15.066.074.033.073.033.071.034.07.034.069.035.068.035.067.035.066.035.064.036.064.036.062.036.06.036.06.037.058.037.058.037.055.038.055.038.053.038.052.038.051.039.05.039.048.039.047.039.045.04.044.04.043.04.041.04.04.041.039.041.037.041.036.041.034.041.033.042.032.042.03.042.029.042.027.042.026.043.024.043.023.043.021.043.02.043.018.044.017.043.015.044.013.044.012.044.011.045.009.044.007.045.006.045.004.045.002.045.001.045v17l-.001.045-.002.045-.004.045-.006.045-.007.045-.009.044-.011.045-.012.044-.013.044-.015.044-.017.043-.018.044-.02.043-.021.043-.023.043-.024.043-.026.043-.027.042-.029.042-.03.042-.032.042-.033.042-.034.041-.036.041-.037.041-.039.041-.04.041-.041.04-.043.04-.044.04-.045.04-.047.039-.048.039-.05.039-.051.039-.052.038-.053.038-.055.038-.055.038-.058.037-.058.037-.06.037-.06.036-.062.036-.064.036-.064.036-.066.035-.067.035-.068.035-.069.035-.07.034-.071.034-.073.033-.074.033-.15.066-.155.064-.16.063-.163.061-.168.06-.172.059-.175.057-.18.056-.183.054-.187.053-.191.051-.194.05-.198.048-.201.046-.205.045-.208.043-.211.041-.214.04-.217.038-.22.036-.223.034-.225.032-.229.031-.231.028-.233.027-.236.024-.239.023-.241.02-.242.019-.246.016-.247.015-.249.012-.251.01-.253.008-.255.005-.256.004-.258.001-.258-.001-.256-.004-.255-.005-.253-.008-.251-.01-.249-.012-.247-.015-.245-.016-.243-.019-.241-.02-.238-.023-.236-.024-.234-.027-.231-.028-.228-.031-.226-.032-.223-.034-.22-.036-.217-.038-.214-.04-.211-.041-.208-.043-.204-.045-.201-.046-.198-.048-.195-.05-.19-.051-.187-.053-.184-.054-.179-.056-.176-.057-.172-.059-.167-.06-.164-.061-.159-.063-.155-.064-.151-.066-.074-.033-.072-.033-.072-.034-.07-.034-.069-.035-.068-.035-.067-.035-.066-.035-.064-.036-.063-.036-.062-.036-.061-.036-.06-.037-.058-.037-.057-.037-.056-.038-.055-.038-.053-.038-.052-.038-.051-.039-.049-.039-.049-.039-.046-.039-.046-.04-.044-.04-.043-.04-.041-.04-.04-.041-.039-.041-.037-.041-.036-.041-.034-.041-.033-.042-.032-.042-.03-.042-.029-.042-.027-.042-.026-.043-.024-.043-.023-.043-.021-.043-.02-.043-.018-.044-.017-.043-.015-.044-.013-.044-.012-.044-.011-.045-.009-.044-.007-.045-.006-.045-.004-.045-.002-.045-.001-.045v-17l.001-.045.002-.045.004-.045.006-.045.007-.045.009-.044.011-.045.012-.044.013-.044.015-.044.017-.043.018-.044.02-.043.021-.043.023-.043.024-.043.026-.043.027-.042.029-.042.03-.042.032-.042.033-.042.034-.041.036-.041.037-.041.039-.041.04-.041.041-.04.043-.04.044-.04.046-.04.046-.039.049-.039.049-.039.051-.039.052-.038.053-.038.055-.038.056-.038.057-.037.058-.037.06-.037.061-.036.062-.036.063-.036.064-.036.066-.035.067-.035.068-.035.069-.035.07-.034.072-.034.072-.033.074-.033.151-.066.155-.064.159-.063.164-.061.167-.06.172-.059.176-.057.179-.056.184-.054.187-.053.19-.051.195-.05.198-.048.201-.046.204-.045.208-.043.211-.041.214-.04.217-.038.22-.036.223-.034.226-.032.228-.031.231-.028.234-.027.236-.024.238-.023.241-.02.243-.019.245-.016.247-.015.249-.012.251-.01.253-.008.255-.005.256-.004.258-.001.258.001zm-9.258 20.499v.01l.001.021.003.021.004.022.005.021.006.022.007.022.009.023.01.022.011.023.012.023.013.023.015.023.016.024.017.023.018.024.019.024.021.024.022.025.023.024.024.025.052.049.056.05.061.051.066.051.07.051.075.051.079.052.084.052.088.052.092.052.097.052.102.051.105.052.11.052.114.051.119.051.123.051.127.05.131.05.135.05.139.048.144.049.147.047.152.047.155.047.16.045.163.045.167.043.171.043.176.041.178.041.183.039.187.039.19.037.194.035.197.035.202.033.204.031.209.03.212.029.216.027.219.025.222.024.226.021.23.02.233.018.236.016.24.015.243.012.246.01.249.008.253.005.256.004.259.001.26-.001.257-.004.254-.005.25-.008.247-.011.244-.012.241-.014.237-.016.233-.018.231-.021.226-.021.224-.024.22-.026.216-.027.212-.028.21-.031.205-.031.202-.034.198-.034.194-.036.191-.037.187-.039.183-.04.179-.04.175-.042.172-.043.168-.044.163-.045.16-.046.155-.046.152-.047.148-.048.143-.049.139-.049.136-.05.131-.05.126-.05.123-.051.118-.052.114-.051.11-.052.106-.052.101-.052.096-.052.092-.052.088-.053.083-.051.079-.052.074-.052.07-.051.065-.051.06-.051.056-.05.051-.05.023-.024.023-.025.021-.024.02-.024.019-.024.018-.024.017-.024.015-.023.014-.024.013-.023.012-.023.01-.023.01-.022.008-.022.006-.022.006-.022.004-.022.004-.021.001-.021.001-.021v-4.127l-.077.055-.08.053-.083.054-.085.053-.087.052-.09.052-.093.051-.095.05-.097.05-.1.049-.102.049-.105.048-.106.047-.109.047-.111.046-.114.045-.115.045-.118.044-.12.043-.122.042-.124.042-.126.041-.128.04-.13.04-.132.038-.134.038-.135.037-.138.037-.139.035-.142.035-.143.034-.144.033-.147.032-.148.031-.15.03-.151.03-.153.029-.154.027-.156.027-.158.026-.159.025-.161.024-.162.023-.163.022-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.011-.178.01-.179.008-.179.008-.181.006-.182.005-.182.004-.184.003-.184.002h-.37l-.184-.002-.184-.003-.182-.004-.182-.005-.181-.006-.179-.008-.179-.008-.178-.01-.176-.011-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.022-.162-.023-.161-.024-.159-.025-.157-.026-.156-.027-.155-.027-.153-.029-.151-.03-.15-.03-.148-.031-.146-.032-.145-.033-.143-.034-.141-.035-.14-.035-.137-.037-.136-.037-.134-.038-.132-.038-.13-.04-.128-.04-.126-.041-.124-.042-.122-.042-.12-.044-.117-.043-.116-.045-.113-.045-.112-.046-.109-.047-.106-.047-.105-.048-.102-.049-.1-.049-.097-.05-.095-.05-.093-.052-.09-.051-.087-.052-.085-.053-.083-.054-.08-.054-.077-.054v4.127zm0-5.654v.011l.001.021.003.021.004.021.005.022.006.022.007.022.009.022.01.022.011.023.012.023.013.023.015.024.016.023.017.024.018.024.019.024.021.024.022.024.023.025.024.024.052.05.056.05.061.05.066.051.07.051.075.052.079.051.084.052.088.052.092.052.097.052.102.052.105.052.11.051.114.051.119.052.123.05.127.051.131.05.135.049.139.049.144.048.147.048.152.047.155.046.16.045.163.045.167.044.171.042.176.042.178.04.183.04.187.038.19.037.194.036.197.034.202.033.204.032.209.03.212.028.216.027.219.025.222.024.226.022.23.02.233.018.236.016.24.014.243.012.246.01.249.008.253.006.256.003.259.001.26-.001.257-.003.254-.006.25-.008.247-.01.244-.012.241-.015.237-.016.233-.018.231-.02.226-.022.224-.024.22-.025.216-.027.212-.029.21-.03.205-.032.202-.033.198-.035.194-.036.191-.037.187-.039.183-.039.179-.041.175-.042.172-.043.168-.044.163-.045.16-.045.155-.047.152-.047.148-.048.143-.048.139-.05.136-.049.131-.05.126-.051.123-.051.118-.051.114-.052.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.051.07-.052.065-.051.06-.05.056-.051.051-.049.023-.025.023-.024.021-.025.02-.024.019-.024.018-.024.017-.024.015-.023.014-.023.013-.024.012-.022.01-.023.01-.023.008-.022.006-.022.006-.022.004-.021.004-.022.001-.021.001-.021v-4.139l-.077.054-.08.054-.083.054-.085.052-.087.053-.09.051-.093.051-.095.051-.097.05-.1.049-.102.049-.105.048-.106.047-.109.047-.111.046-.114.045-.115.044-.118.044-.12.044-.122.042-.124.042-.126.041-.128.04-.13.039-.132.039-.134.038-.135.037-.138.036-.139.036-.142.035-.143.033-.144.033-.147.033-.148.031-.15.03-.151.03-.153.028-.154.028-.156.027-.158.026-.159.025-.161.024-.162.023-.163.022-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.011-.178.009-.179.009-.179.007-.181.007-.182.005-.182.004-.184.003-.184.002h-.37l-.184-.002-.184-.003-.182-.004-.182-.005-.181-.007-.179-.007-.179-.009-.178-.009-.176-.011-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.022-.162-.023-.161-.024-.159-.025-.157-.026-.156-.027-.155-.028-.153-.028-.151-.03-.15-.03-.148-.031-.146-.033-.145-.033-.143-.033-.141-.035-.14-.036-.137-.036-.136-.037-.134-.038-.132-.039-.13-.039-.128-.04-.126-.041-.124-.042-.122-.043-.12-.043-.117-.044-.116-.044-.113-.046-.112-.046-.109-.046-.106-.047-.105-.048-.102-.049-.1-.049-.097-.05-.095-.051-.093-.051-.09-.051-.087-.053-.085-.052-.083-.054-.08-.054-.077-.054v4.139zm0-5.666v.011l.001.02.003.022.004.021.005.022.006.021.007.022.009.023.01.022.011.023.012.023.013.023.015.023.016.024.017.024.018.023.019.024.021.025.022.024.023.024.024.025.052.05.056.05.061.05.066.051.07.051.075.052.079.051.084.052.088.052.092.052.097.052.102.052.105.051.11.052.114.051.119.051.123.051.127.05.131.05.135.05.139.049.144.048.147.048.152.047.155.046.16.045.163.045.167.043.171.043.176.042.178.04.183.04.187.038.19.037.194.036.197.034.202.033.204.032.209.03.212.028.216.027.219.025.222.024.226.021.23.02.233.018.236.017.24.014.243.012.246.01.249.008.253.006.256.003.259.001.26-.001.257-.003.254-.006.25-.008.247-.01.244-.013.241-.014.237-.016.233-.018.231-.02.226-.022.224-.024.22-.025.216-.027.212-.029.21-.03.205-.032.202-.033.198-.035.194-.036.191-.037.187-.039.183-.039.179-.041.175-.042.172-.043.168-.044.163-.045.16-.045.155-.047.152-.047.148-.048.143-.049.139-.049.136-.049.131-.051.126-.05.123-.051.118-.052.114-.051.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.052.07-.051.065-.051.06-.051.056-.05.051-.049.023-.025.023-.025.021-.024.02-.024.019-.024.018-.024.017-.024.015-.023.014-.024.013-.023.012-.023.01-.022.01-.023.008-.022.006-.022.006-.022.004-.022.004-.021.001-.021.001-.021v-4.153l-.077.054-.08.054-.083.053-.085.053-.087.053-.09.051-.093.051-.095.051-.097.05-.1.049-.102.048-.105.048-.106.048-.109.046-.111.046-.114.046-.115.044-.118.044-.12.043-.122.043-.124.042-.126.041-.128.04-.13.039-.132.039-.134.038-.135.037-.138.036-.139.036-.142.034-.143.034-.144.033-.147.032-.148.032-.15.03-.151.03-.153.028-.154.028-.156.027-.158.026-.159.024-.161.024-.162.023-.163.023-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.01-.178.01-.179.009-.179.007-.181.006-.182.006-.182.004-.184.003-.184.001-.185.001-.185-.001-.184-.001-.184-.003-.182-.004-.182-.006-.181-.006-.179-.007-.179-.009-.178-.01-.176-.01-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.023-.162-.023-.161-.024-.159-.024-.157-.026-.156-.027-.155-.028-.153-.028-.151-.03-.15-.03-.148-.032-.146-.032-.145-.033-.143-.034-.141-.034-.14-.036-.137-.036-.136-.037-.134-.038-.132-.039-.13-.039-.128-.041-.126-.041-.124-.041-.122-.043-.12-.043-.117-.044-.116-.044-.113-.046-.112-.046-.109-.046-.106-.048-.105-.048-.102-.048-.1-.05-.097-.049-.095-.051-.093-.051-.09-.052-.087-.052-.085-.053-.083-.053-.08-.054-.077-.054v4.153zm8.74-8.179l-.257.004-.254.005-.25.008-.247.011-.244.012-.241.014-.237.016-.233.018-.231.021-.226.022-.224.023-.22.026-.216.027-.212.028-.21.031-.205.032-.202.033-.198.034-.194.036-.191.038-.187.038-.183.04-.179.041-.175.042-.172.043-.168.043-.163.045-.16.046-.155.046-.152.048-.148.048-.143.048-.139.049-.136.05-.131.05-.126.051-.123.051-.118.051-.114.052-.11.052-.106.052-.101.052-.096.052-.092.052-.088.052-.083.052-.079.052-.074.051-.07.052-.065.051-.06.05-.056.05-.051.05-.023.025-.023.024-.021.024-.02.025-.019.024-.018.024-.017.023-.015.024-.014.023-.013.023-.012.023-.01.023-.01.022-.008.022-.006.023-.006.021-.004.022-.004.021-.001.021-.001.021.001.021.001.021.004.021.004.022.006.021.006.023.008.022.01.022.01.023.012.023.013.023.014.023.015.024.017.023.018.024.019.024.02.025.021.024.023.024.023.025.051.05.056.05.06.05.065.051.07.052.074.051.079.052.083.052.088.052.092.052.096.052.101.052.106.052.11.052.114.052.118.051.123.051.126.051.131.05.136.05.139.049.143.048.148.048.152.048.155.046.16.046.163.045.168.043.172.043.175.042.179.041.183.04.187.038.191.038.194.036.198.034.202.033.205.032.21.031.212.028.216.027.22.026.224.023.226.022.231.021.233.018.237.016.241.014.244.012.247.011.25.008.254.005.257.004.26.001.26-.001.257-.004.254-.005.25-.008.247-.011.244-.012.241-.014.237-.016.233-.018.231-.021.226-.022.224-.023.22-.026.216-.027.212-.028.21-.031.205-.032.202-.033.198-.034.194-.036.191-.038.187-.038.183-.04.179-.041.175-.042.172-.043.168-.043.163-.045.16-.046.155-.046.152-.048.148-.048.143-.048.139-.049.136-.05.131-.05.126-.051.123-.051.118-.051.114-.052.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.051.07-.052.065-.051.06-.05.056-.05.051-.05.023-.025.023-.024.021-.024.02-.025.019-.024.018-.024.017-.023.015-.024.014-.023.013-.023.012-.023.01-.023.01-.022.008-.022.006-.023.006-.021.004-.022.004-.021.001-.021.001-.021-.001-.021-.001-.021-.004-.021-.004-.022-.006-.021-.006-.023-.008-.022-.01-.022-.01-.023-.012-.023-.013-.023-.014-.023-.015-.024-.017-.023-.018-.024-.019-.024-.02-.025-.021-.024-.023-.024-.023-.025-.051-.05-.056-.05-.06-.05-.065-.051-.07-.052-.074-.051-.079-.052-.083-.052-.088-.052-.092-.052-.096-.052-.101-.052-.106-.052-.11-.052-.114-.052-.118-.051-.123-.051-.126-.051-.131-.05-.136-.05-.139-.049-.143-.048-.148-.048-.152-.048-.155-.046-.16-.046-.163-.045-.168-.043-.172-.043-.175-.042-.179-.041-.183-.04-.187-.038-.191-.038-.194-.036-.198-.034-.202-.033-.205-.032-.21-.031-.212-.028-.216-.027-.22-.026-.224-.023-.226-.022-.231-.021-.233-.018-.237-.016-.241-.014-.244-.012-.247-.011-.25-.008-.254-.005-.257-.004-.26-.001-.26.001z"/></symbol></defs><defs><symbol id="mermaid-43-clock" width="24" height="24"><path transform="scale(.5)" d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm5.848 12.459c.202.038.202.333.001.372-1.907.361-6.045 1.111-6.547 1.111-.719 0-1.301-.582-1.301-1.301 0-.512.77-5.447 1.125-7.445.034-.192.312-.181.343.014l.985 6.238 5.394 1.011z"/></symbol></defs><defs><marker id="mermaid-43-arrowhead" refX="7.9" refY="5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M -1 0 L 10 5 L 0 10 z"/></marker></defs><defs><marker id="mermaid-43-crosshead" markerWidth="15" markerHeight="8" orient="auto" refX="4" refY="4.5"><path fill="none" stroke="#000000" stroke-width="1pt" d="M 1,2 L 6,7 M 6,2 L 1,7" style="stroke-dasharray: 0, 0;"/></marker></defs><defs><marker id="mermaid-43-filled-head" refX="15.5" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L14,7 L9,1 Z"/></marker></defs><defs><marker id="mermaid-43-sequencenumber" refX="15" refY="15" markerWidth="60" markerHeight="40" orient="auto"><circle cx="15" cy="15" r="6"/></marker></defs><defs><marker id="mermaid-43-solidTopArrowHead" refX="7.9" refY="7.25" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 10 8 L 0 8 z"/></marker></defs><defs><marker id="mermaid-43-solidBottomArrowHead" refX="7.9" refY="0.75" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 10 0 L 0 8 z"/></marker></defs><defs><marker id="mermaid-43-stickTopArrowHead" refX="7.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 7 7" stroke="black" stroke-width="1.5" fill="none"/></marker></defs><defs><marker id="mermaid-43-stickBottomArrowHead" refX="7.5" refY="0" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 7 L 7 0" stroke="black" stroke-width="1.5" fill="none"/></marker></defs><text x="209" y="80" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">param="memory"</text><line x1="76" y1="111" x2="341" y2="111" class="messageLine0" data-et="message" data-id="i0" data-from="P" data-to="F" stroke-width="2" stroke="none" marker-end="url(#mermaid-43-arrowhead)" style="fill: none;"/><text x="212" y="126" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">MemoryStore()</text><line x1="344" y1="157" x2="79" y2="157" class="messageLine1" data-et="message" data-id="i1" data-from="F" data-to="P" stroke-width="2" stroke="none" marker-end="url(#mermaid-43-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><text x="309" y="172" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">store を渡して実行</text><line x1="76" y1="201" x2="542" y2="201" class="messageLine0" data-et="message" data-id="i2" data-from="P" data-to="T" stroke-width="2" stroke="none" marker-end="url(#mermaid-43-arrowhead)" style="fill: none;"/><text x="209" y="216" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">param="json"、tmp_path</text><line x1="76" y1="247" x2="341" y2="247" class="messageLine0" data-et="message" data-id="i3" data-from="P" data-to="F" stroke-width="2" stroke="none" marker-end="url(#mermaid-43-arrowhead)" style="fill: none;"/><text x="212" y="262" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">JsonStore(tmp_path/tasks.json)</text><line x1="344" y1="293" x2="79" y2="293" class="messageLine1" data-et="message" data-id="i4" data-from="F" data-to="P" stroke-width="2" stroke="none" marker-end="url(#mermaid-43-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><text x="309" y="308" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">store を渡して実行</text><line x1="76" y1="337" x2="542" y2="337" class="messageLine0" data-et="message" data-id="i5" data-from="P" data-to="T" stroke-width="2" stroke="none" marker-end="url(#mermaid-43-arrowhead)" style="fill: none;"/><text x="76" y="352" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">tmp_path を片付ける</text><path d="M 76,383 C 136,373 136,413 76,403" class="messageLine0" data-et="message" data-id="i6" data-from="P" data-to="P" stroke-width="2" stroke="none" marker-end="url(#mermaid-43-arrowhead)" style="fill: none;"/><style>/* mermaid-cli で画像にするときのフォント（HTML 版と同じ BIZ UDPGothic） */
+@import url("https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&amp;display=swap");
+svg { -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+</style></svg></figure>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cp</span> ~/handsoff/docs/session08/assets/test_store.py tests/; less tests/test_store.py</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-保存先ごとに動くのを見る">
+            <h4 id="-保存先ごとに動くのを見る">🖋 保存先ごとに動くのを見る</h4>
+            <p>📒 同じテストが両方で通れば、どちらも <code>TaskStore</code> の約束（<code>list_all</code>・<code>add</code>・<code>mark_done</code>）を守っている</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">uv</span> run pytest -v tests/test_store.py   <span class="token comment"># [memory] と [json] が並ぶ</span></code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-最初は空のテストを書く">
+            <h4 id="-最初は空のテストを書く">🖋 「最初は空」のテストを書く</h4>
+            <p>📒 「手順3: ここに test_最初は空 を書く」のコメントの行を置き換える。fixture を使うので、これも2回動く</p>
+            <pre class="language-python"><code class="language-python"><span class="token keyword">def</span> test_最初は空<span class="token punctuation">(</span>store<span class="token punctuation">:</span> TaskStore<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+    <span class="token keyword">assert</span> store<span class="token punctuation">.</span>list_all<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token punctuation">[</span><span class="token punctuation">]</span></code></pre>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mise</span> run test   <span class="token comment"># 18 passed</span></code></pre>
+            <blockquote>
+              <p>座学: <code>JsonStore</code> のテストが手元の <code>tasks.json</code> を書き換えない理由と、<code>MemoryStore</code> と同じテストが通る意味（→ まとめ「テストしやすい形」）</p>
+            </blockquote>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="4-cli-の動作を固定する5分">
+          <h3 id="4-cli-の動作を固定する5分">4. CLI の動作を固定する（5分）</h3>
+          <section class="level4" aria-labelledby="-cli-のテストをコピーして読む">
+            <h4 id="-cli-のテストをコピーして読む">🖋 CLI のテストをコピーして読む</h4>
+            <p>📚 pytest 公式 How to capture stdout/stderr output</p>
+            <p>📒 <code>run</code> は <code>main</code> に <code>MemoryStore</code> と固定の「今日」（2026-11-01）を渡す。表示は <code>capsys</code> で受け取って比べる</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cp</span> ~/handsoff/docs/session08/assets/test_cli.py tests/; less tests/test_cli.py</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-ない番号の-done-のテストを書く">
+            <h4 id="-ない番号の-done-のテストを書く">🖋 ない番号の done のテストを書く</h4>
+            <p>📒 「手順4: ここに test_doneでない番号なら終了コード1 を書く」の行を置き換える。エラーは標準エラー出力なので <code>.err</code> を見る</p>
+            <pre class="language-python"><code class="language-python"><span class="token keyword">def</span> test_doneでない番号なら終了コード<span class="token number">1</span><span class="token punctuation">(</span>
+    store<span class="token punctuation">:</span> MemoryStore<span class="token punctuation">,</span> capsys<span class="token punctuation">:</span> pytest<span class="token punctuation">.</span>CaptureFixture<span class="token punctuation">[</span><span class="token builtin">str</span><span class="token punctuation">]</span>
+<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+    <span class="token keyword">assert</span> run<span class="token punctuation">(</span>store<span class="token punctuation">,</span> <span class="token string">"done"</span><span class="token punctuation">,</span> <span class="token string">"9"</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">1</span>
+
+    <span class="token keyword">assert</span> <span class="token string">"タスクが見つかりません: 9"</span> <span class="token keyword">in</span> capsys<span class="token punctuation">.</span>readouterr<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>err</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-check-を通す">
+            <h4 id="-check-を通す">🖋 check を通す</h4>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mise</span> run check   <span class="token comment"># 24 passed。指摘が出たら mise run fmt の後にもう一度</span></code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-テストをコミットする">
+            <h4 id="-テストをコミットする">🖋 テストをコミットする</h4>
+            <p>📒 動作は変えていないので <code>テスト:</code> を付ける。この後の変更で今の動作を壊すと、このテストが落ちる</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">git</span> status --short; git add .gitignore pyproject.toml uv.lock mise.toml tests; git commit -m "テスト: 今の動作をテストで固定する" -m "期限の順に並べる機能を足す前に、add・list・done と保存先の今の動きを確かめておく。"</code></pre>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="5-ci-を置いて-push-する5分">
+          <h3 id="5-ci-を置いて-push-する5分">5. CI を置いて push する（5分）</h3>
+          <section class="level4" aria-labelledby="-ワークフローをコピーして読む">
+            <h4 id="-ワークフローをコピーして読む">🖋 ワークフローをコピーして読む</h4>
+            <p>📚 GitHub Actions 公式 ワークフロー構文、mise 公式 Continuous Integration</p>
+            <p>📒 GitHub の用意した PC で、手元と同じ <code>mise run setup</code> と <code>mise run check</code> を動かす。<code>mise-action</code> が <code>mise.toml</code> の Python と uv を入れる</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cp</span> -r ~/handsoff/examples/todo-app-snapshots/session-08/.github .; less .github/workflows/check.yml</code></pre>
+            <pre class="language-yaml"><code class="language-yaml"><span class="token key atrule">name</span><span class="token punctuation">:</span> check
+<span class="token key atrule">on</span><span class="token punctuation">:</span>
+  <span class="token key atrule">push</span><span class="token punctuation">:</span>
+  <span class="token key atrule">pull_request</span><span class="token punctuation">:</span>
+<span class="token key atrule">jobs</span><span class="token punctuation">:</span>
+  <span class="token key atrule">check</span><span class="token punctuation">:</span>
+    <span class="token key atrule">runs-on</span><span class="token punctuation">:</span> ubuntu<span class="token punctuation">-</span>latest
+    <span class="token key atrule">env</span><span class="token punctuation">:</span>
+      <span class="token key atrule">MISE_TRUSTED_CONFIG_PATHS</span><span class="token punctuation">:</span> $<span class="token punctuation">{</span><span class="token punctuation">{</span> github.workspace <span class="token punctuation">}</span><span class="token punctuation">}</span>   <span class="token comment"># mise trust に当たる</span>
+    <span class="token key atrule">steps</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> <span class="token key atrule">uses</span><span class="token punctuation">:</span> actions/checkout@v5
+      <span class="token punctuation">-</span> <span class="token key atrule">uses</span><span class="token punctuation">:</span> jdx/mise<span class="token punctuation">-</span>action@v3   <span class="token comment"># mise.toml の Python・uv を入れる</span>
+        <span class="token key atrule">with</span><span class="token punctuation">:</span>
+          <span class="token key atrule">version</span><span class="token punctuation">:</span> 2026.10.7
+      <span class="token punctuation">-</span> <span class="token key atrule">run</span><span class="token punctuation">:</span> mise run setup        <span class="token comment"># uv.lock どおりに入れる</span>
+      <span class="token punctuation">-</span> <span class="token key atrule">run</span><span class="token punctuation">:</span> mise run check        <span class="token comment"># ruff・mypy・pytest</span></code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-コミットして-push-する">
+            <h4 id="-コミットして-push-する">🖋 コミットして push する</h4>
+            <p>📚 SE基礎 10章 本番環境へ</p>
+            <p>📒 push すると、GitHub がワークフローを動かす。結果は数分で出るので、待たずに手順6へ進む</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">git</span> add .github; git commit -m "PR ごとに mise run check を GitHub Actions で実行する"; git push -u origin issue-5-sort</code></pre>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="6-tdd-期限が近い順に並べる10分">
+          <h3 id="6-tdd-期限が近い順に並べる10分">6. TDD: 期限が近い順に並べる（10分）</h3>
+          <section class="level4" aria-labelledby="-レッド-最初のテストを書く">
+            <h4 id="-レッド-最初のテストを書く">🖋 レッド: 最初のテストを書く</h4>
+            <p>📚 SE基礎 5章 自動テスト</p>
+            <p>📒 <code>sort_by_due</code> はまだない。エディタで <code>tests/test_sort.py</code> を新しく作り、下を書く</p>
+            <figure class="mermaid"><svg id="mermaid-44" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="statediagram" style="max-width: 270.043px; background-color: transparent;" viewBox="0 0 270.04296875 336" role="graphics-document document" aria-roledescription="stateDiagram"><style>#mermaid-44{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;fill:#2b2b2b;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-44 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-44 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-44 .error-icon{fill:#fdfcfa;}#mermaid-44 .error-text{fill:#020305;stroke:#020305;}#mermaid-44 .edge-thickness-normal{stroke-width:1px;}#mermaid-44 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-44 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-44 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-44 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-44 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-44 .marker{fill:#6b6b6b;stroke:#6b6b6b;}#mermaid-44 .marker.cross{stroke:#6b6b6b;}#mermaid-44 svg{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;}#mermaid-44 p{margin:0;}#mermaid-44 defs [id$="-barbEnd"]{fill:#6b6b6b;stroke:#6b6b6b;}#mermaid-44 g.stateGroup text{fill:#3d5468;stroke:none;font-size:10px;}#mermaid-44 g.stateGroup text{fill:#2b2b2b;stroke:none;font-size:10px;}#mermaid-44 g.stateGroup .state-title{font-weight:bolder;fill:#2b2b2b;}#mermaid-44 g.stateGroup rect{fill:#f6f4f0;stroke:#3d5468;}#mermaid-44 g.stateGroup line{stroke:#6b6b6b;stroke-width:1;}#mermaid-44 .transition{stroke:#6b6b6b;stroke-width:1;fill:none;}#mermaid-44 .stateGroup .composit{fill:#f4f4f4;border-bottom:1px;}#mermaid-44 .stateGroup .alt-composit{fill:#e0e0e0;border-bottom:1px;}#mermaid-44 .state-note{stroke:hsl(40, 0%, 84.1176470588%);fill:#f3f1ed;}#mermaid-44 .state-note text{fill:#333;stroke:none;font-size:10px;}#mermaid-44 .stateLabel .box{stroke:none;stroke-width:0;fill:#f6f4f0;opacity:0.5;}#mermaid-44 .edgeLabel .label rect{fill:#f6f4f0;opacity:0.5;}#mermaid-44 .edgeLabel{background-color:#eef1f4;text-align:center;}#mermaid-44 .edgeLabel p{background-color:#eef1f4;}#mermaid-44 .edgeLabel rect{opacity:0.5;background-color:#eef1f4;fill:#eef1f4;}#mermaid-44 .edgeLabel .label text{fill:#2b2b2b;}#mermaid-44 .label div .edgeLabel{color:#2b2b2b;}#mermaid-44 .stateLabel text{fill:#2b2b2b;font-size:10px;font-weight:bold;}#mermaid-44 .node circle.state-start{fill:#6b6b6b;stroke:#6b6b6b;}#mermaid-44 .node .fork-join{fill:#6b6b6b;stroke:#6b6b6b;}#mermaid-44 .node circle.state-end{fill:#3d5468;stroke:#f4f4f4;stroke-width:1.5;}#mermaid-44 .end-state-inner{fill:#f4f4f4;stroke-width:1.5;}#mermaid-44 .node rect{fill:#f6f4f0;stroke:#3d5468;stroke-width:1px;}#mermaid-44 .node polygon{fill:#f6f4f0;stroke:#3d5468;stroke-width:1px;}#mermaid-44 [id$="-barbEnd"]{fill:#6b6b6b;}#mermaid-44 .statediagram-cluster rect{fill:#f6f4f0;stroke:#3d5468;stroke-width:1px;}#mermaid-44 .cluster-label,#mermaid-44 .nodeLabel{color:#2b2b2b;}#mermaid-44 .statediagram-cluster rect.outer{rx:5px;ry:5px;}#mermaid-44 .statediagram-state .divider{stroke:#3d5468;}#mermaid-44 .statediagram-state .title-state{rx:5px;ry:5px;}#mermaid-44 .statediagram-cluster.statediagram-cluster .inner{fill:#f4f4f4;}#mermaid-44 .statediagram-cluster.statediagram-cluster-alt .inner{fill:#fdfcfa;}#mermaid-44 .statediagram-cluster .inner{rx:0;ry:0;}#mermaid-44 .statediagram-state rect.basic{rx:5px;ry:5px;}#mermaid-44 .statediagram-state rect.divider{stroke-dasharray:10,10;fill:#fdfcfa;}#mermaid-44 .note-edge{stroke-dasharray:5;}#mermaid-44 .statediagram-note rect{fill:#f3f1ed;stroke:hsl(40, 0%, 84.1176470588%);stroke-width:1px;rx:0;ry:0;}#mermaid-44 .statediagram-note rect{fill:#f3f1ed;stroke:hsl(40, 0%, 84.1176470588%);stroke-width:1px;rx:0;ry:0;}#mermaid-44 .statediagram-note text{fill:#333;}#mermaid-44 .statediagram-note .nodeLabel{color:#333;}#mermaid-44 .statediagram .edgeLabel{color:red;}#mermaid-44 [id$="-dependencyStart"],#mermaid-44 [id$="-dependencyEnd"]{fill:#6b6b6b;stroke:#6b6b6b;stroke-width:1;}#mermaid-44 .statediagramTitleText{text-anchor:middle;font-size:18px;fill:#2b2b2b;}#mermaid-44 [data-look="neo"].statediagram-cluster rect{fill:#f6f4f0;stroke:url(#mermaid-44-gradient);stroke-width:1;}#mermaid-44 [data-look="neo"].statediagram-cluster rect.outer{rx:5px;ry:5px;filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-44 .node .neo-node{stroke:#3d5468;}#mermaid-44 [data-look="neo"].node rect,#mermaid-44 [data-look="neo"].cluster rect,#mermaid-44 [data-look="neo"].node polygon{stroke:url(#mermaid-44-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-44 [data-look="neo"].swimlane.cluster rect{filter:none;}#mermaid-44 [data-look="neo"].node path{stroke:url(#mermaid-44-gradient);stroke-width:1px;}#mermaid-44 [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-44 [data-look="neo"].node .neo-line path{stroke:#3d5468;filter:none;}#mermaid-44 [data-look="neo"].node circle{stroke:url(#mermaid-44-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-44 [data-look="neo"].node circle .state-start{fill:#000000;}#mermaid-44 [data-look="neo"].icon-shape .icon{fill:url(#mermaid-44-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-44 [data-look="neo"].icon-shape .icon-neo path{stroke:url(#mermaid-44-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-44 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><defs><marker id="mermaid-44_stateDiagram-barbEnd" refX="19" refY="7" markerWidth="20" markerHeight="14" markerUnits="userSpaceOnUse" orient="auto"><path d="M 19,7 L9,13 L14,7 L9,1 Z"/></marker></defs><g class="root"><g class="clusters"/><g class="edgePaths"><path d="M140.984,22L140.984,27.833C140.984,33.667,140.984,45.333,140.984,57C140.984,68.667,140.984,80.333,140.984,86.167L140.984,92" id="mermaid-44-edge0" class="edge-thickness-normal edge-pattern-solid transition" style="fill:none;;;fill:none" data-edge="true" data-et="edge" data-id="edge0" data-points="W3sieCI6MTQwLjk4NDM3NSwieSI6MjJ9LHsieCI6MTQwLjk4NDM3NSwieSI6NTYuOTk5OTk5MDQ2MzI1Njg0fSx7IngiOjE0MC45ODQzNzUsInkiOjkxLjk5OTk5ODA5MjY1MTM3fV0=" data-look="classic" marker-end="url(#mermaid-44_stateDiagram-barbEnd)"/><path d="M111.492,123.779L100.521,129.65C89.549,135.52,67.607,147.26,62.087,158.963C56.567,170.667,67.469,182.333,72.921,188.167L78.372,194" id="mermaid-44-edge1" class="edge-thickness-normal edge-pattern-solid transition" style="fill:none;;;fill:none" data-edge="true" data-et="edge" data-id="edge1" data-points="W3sieCI6MTExLjQ5MjE4NzUsInkiOjEyMy43Nzk0NDA4NTY2ODUzNH0seyJ4Ijo0NS42NjQwNjI1LCJ5IjoxNTguOTk5OTk1MjMxNjI4NDJ9LHsieCI6NzguMzcyMDEzMTk5NjcwNTUsInkiOjE5My45OTk5OTQyNzc5NTQxfV0=" data-look="classic" marker-end="url(#mermaid-44_stateDiagram-barbEnd)"/><path d="M93.324,226L93.324,231.833C93.324,237.667,93.324,249.333,99.566,261C105.809,272.667,118.293,284.333,124.535,290.167L130.777,296" id="mermaid-44-edge2" class="edge-thickness-normal edge-pattern-solid transition" style="fill:none;;;fill:none" data-edge="true" data-et="edge" data-id="edge2" data-points="W3sieCI6OTMuMzI0MjE4NzUsInkiOjIyNS45OTk5OTIzNzA2MDU0N30seyJ4Ijo5My4zMjQyMTg3NSwieSI6MjYwLjk5OTk5MTQxNjkzMTE1fSx7IngiOjEzMC43NzcxMTQzNTA3Nzg0LCJ5IjoyOTUuOTk5OTkwNDYzMjU2ODR9XQ==" data-look="classic" marker-end="url(#mermaid-44_stateDiagram-barbEnd)"/><path d="M171.895,296L180.643,290.167C189.392,284.333,206.889,272.667,215.638,258.333C224.387,244,224.387,227,224.387,210C224.387,193,224.387,176,214.847,161.667C205.308,147.333,186.229,135.667,176.689,129.833L167.15,124" id="mermaid-44-edge3" class="edge-thickness-normal edge-pattern-solid transition" style="fill:none;;;fill:none" data-edge="true" data-et="edge" data-id="edge3" data-points="W3sieCI6MTcxLjg5NDc2MDQ5NjU1Nzc1LCJ5IjoyOTUuOTk5OTkwNDYzMjU2ODR9LHsieCI6MjI0LjM4NjcxODc1LCJ5IjoyNjAuOTk5OTkxNDE2OTMxMTV9LHsieCI6MjI0LjM4NjcxODc1LCJ5IjoyMDkuOTk5OTkzMzI0Mjc5Nzl9LHsieCI6MjI0LjM4NjcxODc1LCJ5IjoxNTguOTk5OTk1MjMxNjI4NDJ9LHsieCI6MTY3LjE0OTgxNTU5NTQ0OTksInkiOjEyMy45OTk5OTYxODUzMDI3M31d" data-look="classic" marker-end="url(#mermaid-44_stateDiagram-barbEnd)"/><path d="M108.276,194L113.728,188.167C119.179,182.333,130.082,170.667,135.533,159C140.984,147.333,140.984,135.667,140.984,129.833L140.984,124" id="mermaid-44-edge4" class="edge-thickness-normal edge-pattern-solid transition" style="fill:none;;;fill:none" data-edge="true" data-et="edge" data-id="edge4" data-points="W3sieCI6MTA4LjI3NjQyNDMwMDMyOTQ1LCJ5IjoxOTMuOTk5OTk0Mjc3OTU0MX0seyJ4IjoxNDAuOTg0Mzc1LCJ5IjoxNTguOTk5OTk1MjMxNjI4NDJ9LHsieCI6MTQwLjk4NDM3NSwieSI6MTIzLjk5OTk5NjE4NTMwMjczfV0=" data-look="classic" marker-end="url(#mermaid-44_stateDiagram-barbEnd)"/></g><g class="edgeLabels"><g class="edgeLabel" transform="translate(140.984375, 56.999999046325684)"><g class="label" data-id="edge0" transform="translate(0, -9.000000476837158)"><g><rect class="background" style="" x="-44.8203125" y="-0.9999990463256836" width="89.640625" height="19.999999046325684"/><text y="-10.1" text-anchor="middle" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">テストを書く</tspan></tspan></text></g></g></g><g class="edgeLabel" transform="translate(45.6640625, 158.99999523162842)"><g class="label" data-id="edge1" transform="translate(0.5, -9.000000476837158)"><g><rect class="background" style="" x="-38.1640625" y="-0.9999990463256836" width="75.328125" height="19.999999046325684"/><text y="-10.1" text-anchor="middle" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">最小の実装</tspan></tspan></text></g></g></g><g class="edgeLabel" transform="translate(93.32421875, 260.99999141693115)"><g class="label" data-id="edge2" transform="translate(0, -9.000000476837158)"><g><rect class="background" style="" x="-23.328125" y="-0.9999990463256836" width="46.65625" height="19.999999046325684"/><text y="-10.1" text-anchor="middle" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">整える</tspan></tspan></text></g></g></g><g class="edgeLabel" transform="translate(224.38671875, 209.99999332427979)"><g class="label" data-id="edge3" transform="translate(0, -9.000000476837158)"><g><rect class="background" style="" x="-37.65625" y="-0.9999990463256836" width="75.3125" height="19.999999046325684"/><text y="-10.1" text-anchor="middle" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">次のテスト</tspan></tspan></text></g></g></g><g class="edgeLabel" transform="translate(140.984375, 158.99999523162842)"><g class="label" data-id="edge4" transform="translate(0, -9.000000476837158)"><g><rect class="background" style="" x="-37.65625" y="-0.9999990463256836" width="75.3125" height="19.999999046325684"/><text y="-10.1" text-anchor="middle" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">次のテスト</tspan></tspan></text></g></g></g></g><g class="nodes"><g class="node  statediagram-state" id="mermaid-44-state-R-4" data-look="classic" transform="translate(140.984375, 107.99999713897705)"><rect class="basic label-container" style="" rx="5" ry="5" x="-29.4921875" y="-15.999999523162842" width="58.984375" height="31.999999046325684"/><g class="label" style="" transform="translate(-21.4921875, -7.999999523162842)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">レッド</tspan></tspan></text></g></g></g><g class="node  statediagram-state" id="mermaid-44-state-G-4" data-look="classic" transform="translate(93.32421875, 209.99999332427979)"><rect class="basic label-container" style="" rx="5" ry="5" x="-36.4921875" y="-15.999999523162842" width="72.984375" height="31.999999046325684"/><g class="label" style="" transform="translate(-28.4921875, -7.999999523162842)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">グリーン</tspan></tspan></text></g></g></g><g class="node  statediagram-state" id="mermaid-44-state-F-3" data-look="classic" transform="translate(147.8984375, 311.9999895095825)"><rect class="basic label-container" style="" rx="5" ry="5" x="-43.8203125" y="-15.999999523162842" width="87.640625" height="31.999999046325684"/><g class="label" style="" transform="translate(-35.8203125, -7.999999523162842)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">リファクタ</tspan></tspan></text></g></g></g><g class="node default" id="mermaid-44-state-root_start-0" data-look="classic" transform="translate(140.984375, 15)"><circle class="state-start" r="7" width="14" height="14"/></g></g></g></g><defs><filter id="mermaid-44-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="mermaid-44-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><linearGradient id="mermaid-44-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#3d5468" stop-opacity="1"/><stop offset="100%" stop-color="hsl(210, 0%, 84.5098039216%)" stop-opacity="1"/></linearGradient><style>/* mermaid-cli で画像にするときのフォント（HTML 版と同じ BIZ UDPGothic） */
+@import url("https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&amp;display=swap");
+svg { -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+</style></svg></figure>
+            <pre class="language-python"><code class="language-python"><span class="token triple-quoted-string string">"""期限が近い順に並べる（第8回に TDD で足した機能）。"""</span>
+
+<span class="token keyword">from</span> datetime <span class="token keyword">import</span> date
+
+<span class="token keyword">from</span> todo<span class="token punctuation">.</span>models <span class="token keyword">import</span> Task<span class="token punctuation">,</span> sort_by_due
+
+
+<span class="token keyword">def</span> test_期限が近い順に並べる<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+    tasks <span class="token operator">=</span> <span class="token punctuation">[</span>
+        Task<span class="token punctuation">(</span><span class="token builtin">id</span><span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">,</span> title<span class="token operator">=</span><span class="token string">"a"</span><span class="token punctuation">,</span> due<span class="token operator">=</span>date<span class="token punctuation">(</span><span class="token number">2026</span><span class="token punctuation">,</span> <span class="token number">11</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        Task<span class="token punctuation">(</span><span class="token builtin">id</span><span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">,</span> title<span class="token operator">=</span><span class="token string">"b"</span><span class="token punctuation">,</span> due<span class="token operator">=</span>date<span class="token punctuation">(</span><span class="token number">2026</span><span class="token punctuation">,</span> <span class="token number">11</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        Task<span class="token punctuation">(</span><span class="token builtin">id</span><span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">,</span> title<span class="token operator">=</span><span class="token string">"c"</span><span class="token punctuation">,</span> due<span class="token operator">=</span>date<span class="token punctuation">(</span><span class="token number">2026</span><span class="token punctuation">,</span> <span class="token number">11</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token punctuation">]</span>
+
+    <span class="token keyword">assert</span> <span class="token punctuation">[</span>t<span class="token punctuation">.</span><span class="token builtin">id</span> <span class="token keyword">for</span> t <span class="token keyword">in</span> sort_by_due<span class="token punctuation">(</span>tasks<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">]</span></code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-失敗を見てレッドを-push-する">
+            <h4 id="-失敗を見てレッドを-push-する">🖋 失敗を見て、レッドを push する</h4>
+            <p>📒 <code>ImportError: cannot import name 'sort_by_due'</code> で落ちれば、テストが本当に <code>sort_by_due</code> を確かめている。テストのファイルだけをコミットし、CI が赤になるのも見る</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mise</span> run test; git add tests/test_sort.py; git commit -m "レッド: 期限が近い順に並べるテスト"; git push</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-グリーン-一番簡単な実装">
+            <h4 id="-グリーン-一番簡単な実装">🖋 グリーン: 一番簡単な実装</h4>
+            <p>📒 <code>models.py</code> の <code>Task</code> クラスの後に足す。期限なしのことはまだ考えない</p>
+            <pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">sort_by_due</span><span class="token punctuation">(</span>tasks<span class="token punctuation">:</span> <span class="token builtin">list</span><span class="token punctuation">[</span>Task<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> <span class="token builtin">list</span><span class="token punctuation">[</span>Task<span class="token punctuation">]</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""期限が近い順に並べる。"""</span>
+    <span class="token keyword">return</span> <span class="token builtin">sorted</span><span class="token punctuation">(</span>tasks<span class="token punctuation">,</span> key<span class="token operator">=</span><span class="token keyword">lambda</span> t<span class="token punctuation">:</span> t<span class="token punctuation">.</span>due<span class="token punctuation">)</span></code></pre>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mise</span> run test; git add src; git commit -m "グリーン: 期限の順に並べる最小の実装"   <span class="token comment"># 25 passed</span></code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-actions-の結果を見るブラウザ">
+            <h4 id="-actions-の結果を見るブラウザ">🖋 Actions の結果を見る（ブラウザ）</h4>
+            <p>📚 GitHub Actions 公式 ワークフロー実行ログの使用</p>
+            <p>📒 リポジトリの Actions タブを開く。手順5の push は緑、レッドの push は赤で、ログの <code>mise run check</code> に手元と同じ <code>ImportError</code> が出ている</p>
+          </section>
+          <section class="level4" aria-labelledby="-mypy-の指摘を見る">
+            <h4 id="-mypy-の指摘を見る">🖋 mypy の指摘を見る</h4>
+            <p>📒 テストは通ったが、mypy は <code>t.due</code> が <code>None</code> のときに比べられないことを指摘する。次のテストで確かめる</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mise</span> run typecheck   <span class="token comment"># Argument "key" to "sorted" has incompatible type "Callable[[Task], date | None]" ...</span></code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-レッド-期限なしのテストを書く">
+            <h4 id="-レッド-期限なしのテストを書く">🖋 レッド: 期限なしのテストを書く</h4>
+            <p>📒 <code>test_sort.py</code> の末尾に足す。<code>TypeError: '&lt;' not supported between instances of 'datetime.date' and 'NoneType'</code> で落ちる</p>
+            <pre class="language-python"><code class="language-python"><span class="token keyword">def</span> test_期限なしは最後に並べる<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+    tasks <span class="token operator">=</span> <span class="token punctuation">[</span>
+        Task<span class="token punctuation">(</span><span class="token builtin">id</span><span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">,</span> title<span class="token operator">=</span><span class="token string">"a"</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        Task<span class="token punctuation">(</span><span class="token builtin">id</span><span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">,</span> title<span class="token operator">=</span><span class="token string">"b"</span><span class="token punctuation">,</span> due<span class="token operator">=</span>date<span class="token punctuation">(</span><span class="token number">2026</span><span class="token punctuation">,</span> <span class="token number">12</span><span class="token punctuation">,</span> <span class="token number">31</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token punctuation">]</span>
+
+    <span class="token keyword">assert</span> <span class="token punctuation">[</span>t<span class="token punctuation">.</span><span class="token builtin">id</span> <span class="token keyword">for</span> t <span class="token keyword">in</span> sort_by_due<span class="token punctuation">(</span>tasks<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">]</span></code></pre>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mise</span> run test; git add tests/test_sort.py; git commit -m "レッド: 期限なしは最後に並べるテスト"</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-グリーン-期限なしを最後にする">
+            <h4 id="-グリーン-期限なしを最後にする">🖋 グリーン: 期限なしを最後にする</h4>
+            <p>📒 キーをタプル <code>(期限なしか, 期限)</code> にする。<code>False &lt; True</code> なので期限ありが先。<code>t.due or date.min</code> は、期限なしでも比べられるようにするための値</p>
+            <pre class="language-python"><code class="language-python">    <span class="token keyword">return</span> <span class="token builtin">sorted</span><span class="token punctuation">(</span>tasks<span class="token punctuation">,</span> key<span class="token operator">=</span><span class="token keyword">lambda</span> t<span class="token punctuation">:</span> <span class="token punctuation">(</span>t<span class="token punctuation">.</span>due <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">,</span> t<span class="token punctuation">.</span>due <span class="token keyword">or</span> date<span class="token punctuation">.</span><span class="token builtin">min</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mise</span> run check; git add src; git commit -m "グリーン: 期限なしを最後にする"   <span class="token comment"># mypy の指摘も消える</span></code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-レッド-同じ期限のテストを書く">
+            <h4 id="-レッド-同じ期限のテストを書く">🖋 レッド: 同じ期限のテストを書く</h4>
+            <p>📒 期限が同じものは元の並び（3 → 1）のまま残り、<code>assert [3, 1, 4, 2] == [1, 3, 2, 4]</code> で落ちる。テストを足すたびに、キーが本物に近づく（三角測量）</p>
+            <pre class="language-python"><code class="language-python"><span class="token keyword">def</span> test_期限が同じなら番号の順<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+    tasks <span class="token operator">=</span> <span class="token punctuation">[</span>
+        Task<span class="token punctuation">(</span><span class="token builtin">id</span><span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">,</span> title<span class="token operator">=</span><span class="token string">"c"</span><span class="token punctuation">,</span> due<span class="token operator">=</span>date<span class="token punctuation">(</span><span class="token number">2026</span><span class="token punctuation">,</span> <span class="token number">11</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        Task<span class="token punctuation">(</span><span class="token builtin">id</span><span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">,</span> title<span class="token operator">=</span><span class="token string">"a"</span><span class="token punctuation">,</span> due<span class="token operator">=</span>date<span class="token punctuation">(</span><span class="token number">2026</span><span class="token punctuation">,</span> <span class="token number">11</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        Task<span class="token punctuation">(</span><span class="token builtin">id</span><span class="token operator">=</span><span class="token number">4</span><span class="token punctuation">,</span> title<span class="token operator">=</span><span class="token string">"d"</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        Task<span class="token punctuation">(</span><span class="token builtin">id</span><span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">,</span> title<span class="token operator">=</span><span class="token string">"b"</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token punctuation">]</span>
+
+    <span class="token keyword">assert</span> <span class="token punctuation">[</span>t<span class="token punctuation">.</span><span class="token builtin">id</span> <span class="token keyword">for</span> t <span class="token keyword">in</span> sort_by_due<span class="token punctuation">(</span>tasks<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">]</span></code></pre>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mise</span> run test; git add tests/test_sort.py; git commit -m "レッド: 期限が同じなら番号の順のテスト"</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-グリーン-キーに-id-を足す">
+            <h4 id="-グリーン-キーに-id-を足す">🖋 グリーン: キーに id を足す</h4>
+            <p>📒 タプルは前の要素から順に比べ、同じなら次の要素で比べる。<code>(False, 11/1, 1)</code> → <code>(False, 11/1, 3)</code> → <code>(True, min, 2)</code> → <code>(True, min, 4)</code> の順になる。<code>sort_by_due</code> を下に置き換える</p>
+            <pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">sort_by_due</span><span class="token punctuation">(</span>tasks<span class="token punctuation">:</span> <span class="token builtin">list</span><span class="token punctuation">[</span>Task<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> <span class="token builtin">list</span><span class="token punctuation">[</span>Task<span class="token punctuation">]</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""期限が近い順に並べる。期限なしは最後、期限が同じなら id の順。"""</span>
+    <span class="token comment"># タプルは前の要素から順に比べる: (期限なしか, 期限, id)。False &lt; True なので期限ありが先</span>
+    <span class="token keyword">return</span> <span class="token builtin">sorted</span><span class="token punctuation">(</span>tasks<span class="token punctuation">,</span> key<span class="token operator">=</span><span class="token keyword">lambda</span> t<span class="token punctuation">:</span> <span class="token punctuation">(</span>t<span class="token punctuation">.</span>due <span class="token keyword">is</span> <span class="token boolean">None</span><span class="token punctuation">,</span> t<span class="token punctuation">.</span>due <span class="token keyword">or</span> date<span class="token punctuation">.</span><span class="token builtin">min</span><span class="token punctuation">,</span> t<span class="token punctuation">.</span><span class="token builtin">id</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mise</span> run test; git add src; git commit -m "グリーン: 期限が同じなら番号の順にする"   <span class="token comment"># 27 passed</span></code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-リファクタ-テストの重複をまとめる">
+            <h4 id="-リファクタ-テストの重複をまとめる">🖋 リファクタ: テストの重複をまとめる</h4>
+            <p>📒 3つのテストに同じ <code>[t.id for t in ...]</code> がある。<code>ids</code> にまとめ、テストが通ったままであることを確かめる。<code>import</code> の下に関数を足し、3か所を <code>ids(sort_by_due(tasks))</code> に置き換える</p>
+            <pre class="language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">ids</span><span class="token punctuation">(</span>tasks<span class="token punctuation">:</span> <span class="token builtin">list</span><span class="token punctuation">[</span>Task<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> <span class="token builtin">list</span><span class="token punctuation">[</span><span class="token builtin">int</span><span class="token punctuation">]</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token punctuation">[</span>t<span class="token punctuation">.</span><span class="token builtin">id</span> <span class="token keyword">for</span> t <span class="token keyword">in</span> tasks<span class="token punctuation">]</span></code></pre>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mise</span> run check; git commit -am "リファクタ: テストの番号の取り出しを ids にまとめる"</code></pre>
+            <blockquote>
+              <p>座学: 最小の実装で最初のテストが通ってしまったこと。次のテストと mypy で気づいたこと（→ まとめ「TDD」）</p>
+            </blockquote>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="7-tdd-一覧を期限が近い順に表示する4分">
+          <h3 id="7-tdd-一覧を期限が近い順に表示する4分">7. TDD: 一覧を期限が近い順に表示する（4分）</h3>
+          <section class="level4" aria-labelledby="-レッド-list-のテストを書く">
+            <h4 id="-レッド-list-のテストを書く">🖋 レッド: list のテストを書く</h4>
+            <p>📒 <code>tests/test_cli.py</code> の「手順7: ここに …」の行を置き換える。今は id の順（1 → 2 → 3）に出るので落ちる</p>
+            <pre class="language-python"><code class="language-python"><span class="token keyword">def</span> test_listは期限が近い順に表示する<span class="token punctuation">(</span>
+    store<span class="token punctuation">:</span> MemoryStore<span class="token punctuation">,</span> capsys<span class="token punctuation">:</span> pytest<span class="token punctuation">.</span>CaptureFixture<span class="token punctuation">[</span><span class="token builtin">str</span><span class="token punctuation">]</span>
+<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+    <span class="token keyword">assert</span> run<span class="token punctuation">(</span>store<span class="token punctuation">,</span> <span class="token string">"list"</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span>
+
+    <span class="token keyword">assert</span> capsys<span class="token punctuation">.</span>readouterr<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>out<span class="token punctuation">.</span>splitlines<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token punctuation">[</span>
+        <span class="token string">"  2 [期限切れ] 牛乳を買う（期限 2026-10-30）"</span><span class="token punctuation">,</span>
+        <span class="token string">"  1 [未着手] レポートを出す（期限 2026-11-05）"</span><span class="token punctuation">,</span>
+        <span class="token string">"  3 [未着手] 本を返す"</span><span class="token punctuation">,</span>
+    <span class="token punctuation">]</span></code></pre>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mise</span> run test; git add tests/test_cli.py; git commit -m "レッド: list を期限が近い順に表示するテスト"</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-グリーン-run_list-で並べる">
+            <h4 id="-グリーン-run_list-で並べる">🖋 グリーン: run_list で並べる</h4>
+            <p>📒 <code>cli.py</code> の <code>from todo.models import ...</code> に <code>sort_by_due</code> を足し、<code>run_list</code> の1行目を置き換える。期限切れだけの表示も、並べた後に絞るので同じ順になる</p>
+            <pre class="language-python"><code class="language-python">    tasks <span class="token operator">=</span> sort_by_due<span class="token punctuation">(</span>store<span class="token punctuation">.</span>list_all<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mise</span> run check; git add src; git commit -m "グリーン: list を期限が近い順に表示する"   <span class="token comment"># 28 passed</span>
+<span class="token function">uv</span> run todo list</code></pre>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="8-pr-を出しci-が通ってからマージする4分">
+          <h3 id="8-pr-を出しci-が通ってからマージする4分">8. PR を出し、CI が通ってからマージする（4分）</h3>
+          <section class="level4" aria-labelledby="-readme-を更新する">
+            <h4 id="-readme-を更新する">🖋 README を更新する</h4>
+            <p>📒 見本の README は、<code>mise run check</code> にテストが入ったこと、CI、<code>tests/</code>、テストの規約を足したもの</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cp</span> ~/handsoff/examples/todo-app-snapshots/session-08/README.md .; git diff README.md; git add README.md; git commit -m "README にテストと CI を書く"</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-履歴を確かめて-push-する">
+            <h4 id="-履歴を確かめて-push-する">🖋 履歴を確かめて push する</h4>
+            <p>📒 テスト → CI → レッドとグリーンの繰り返し → リファクタ → README の順に並ぶ</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">git</span> log --oneline main..; git push</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-pr-を作りセルフレビューするブラウザ">
+            <h4 id="-pr-を作りセルフレビューするブラウザ">🖋 PR を作り、セルフレビューする（ブラウザ）</h4>
+            <p>📚 SE基礎 2章 コードを読む、10章 本番環境へ</p>
+            <p>📒 本文は<a href="../templates/pull_request.html">テンプレート</a>で書き、目的に <code>Closes #5</code>、確認方法に <code>mise run check</code> と <code>uv run todo list</code> を書く。Commits タブでレッドとグリーンの順を確かめ、<code>[確認]</code> の行コメントを1件以上残す</p>
+          </section>
+          <section class="level4" aria-labelledby="-ci-が緑になってからマージする">
+            <h4 id="-ci-が緑になってからマージする">🖋 CI が緑になってからマージする</h4>
+            <p>📒 PR の下のチェック <code>check</code> が緑になるのを待つ。赤なら、ログの失敗した行を読み、手元の <code>mise run check</code> で再現して直す</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">git</span> switch main; git pull; git branch -d issue-5-sort; mise run check; uv run todo list</code></pre>
+            <ul>
+              <li>確認: Issue #5 が Closed。main で <code>mise run check</code> が通り、<code>uv run todo list</code> が期限が近い順</li>
+            </ul>
+          </section>
+        </section>
+      </section>
+      <section class="level2" aria-labelledby="読む章">
+        <h2 id="読む章">読む章</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>区分</th>
+              <th>資料</th>
+              <th>範囲</th>
+              <th>読み方</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>参考書</td>
+              <td><a href="https://www.oreilly.co.jp/books/9784814401789/">ソフトウェアエンジニアリングの基礎</a>（SE基礎）</td>
+              <td>5章 自動テスト、10章 本番環境へ（CI）</td>
+              <td>通読（5章は第11・12回でも使う）</td>
+            </tr>
+            <tr>
+              <td>無料</td>
+              <td><a href="https://docs.pytest.org/">pytest 公式</a></td>
+              <td>Get Started、How-to（assertions、fixtures、parametrize、tmp_path、capture）</td>
+              <td>該当章</td>
+            </tr>
+            <tr>
+              <td>無料</td>
+              <td><a href="https://docs.github.com/ja/actions">GitHub Actions 公式</a>・<a href="https://mise.jdx.dev/">mise 公式</a></td>
+              <td>ワークフロー構文、ワークフロー実行ログ／Continuous Integration（mise-action）</td>
+              <td>困ったときに引く</td>
+            </tr>
+            <tr>
+              <td>紹介（副読本）</td>
+              <td><a href="https://www.oreilly.co.jp/books/9784873115658/">リーダブルコード</a></td>
+              <td>14章 テストと読みやすさ</td>
+              <td>持っている人は通読</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+  
+
+</body></html>

@@ -1,0 +1,16 @@
+# 手順書のリポジトリ（workspace/session04）やアプリのリポジトリ（workspace/todo-app）の .gitignore の見本
+# 使うときは .gitignore という名前でリポジトリの一番上に置く
+
+# 仮想環境（mise.toml と uv.lock から作り直せるので履歴に入れない）
+.venv/
+
+# 秘密情報（プロキシの認証情報、トークンなど）
+.env
+
+# Python が実行時に自動で作るファイル
+__pycache__/
+
+# エディタや OS が自動で作るファイル
+.vscode/
+*.swp
+Thumbs.db

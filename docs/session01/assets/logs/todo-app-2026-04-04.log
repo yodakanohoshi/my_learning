@@ -1,0 +1,28 @@
+2026-04-04 08:00:00 INFO  [app] started
+2026-04-04 08:58:51 INFO  [task] task created id=279 user=U032
+2026-04-04 09:09:44 INFO  [task] task created id=392 user=U022
+2026-04-04 09:20:46 INFO  [task] task done id=83 user=U012
+2026-04-04 10:00:29 INFO  [web] GET /?overdue=1 200 17ms user=U034
+2026-04-04 10:02:09 INFO  [task] task done id=272 user=U007
+2026-04-04 10:19:32 INFO  [web] GET /help/error-codes 200 18ms user=U017
+2026-04-04 10:56:02 INFO  [task] task done id=372 user=U022
+2026-04-04 11:35:37 INFO  [task] task done id=346 user=U037
+2026-04-04 12:14:14 INFO  [web] GET / 200 11ms user=U021
+2026-04-04 12:16:00 INFO  [web] GET / 200 73ms user=U014
+2026-04-04 12:41:01 INFO  [web] GET / 200 45ms user=U028
+2026-04-04 12:55:02 INFO  [web] GET / 200 16ms user=U010
+2026-04-04 13:04:08 INFO  [web] GET / 200 22ms user=U012
+2026-04-04 13:07:45 INFO  [web] GET /?overdue=1 200 28ms user=U028
+2026-04-04 13:47:12 INFO  [task] task done id=470 user=U006
+2026-04-04 14:24:03 INFO  [task] task created id=37 user=U022
+2026-04-04 14:53:32 INFO  [web] GET / 200 42ms user=U023
+2026-04-04 15:14:05 INFO  [web] GET /?overdue=1 200 34ms user=U035
+2026-04-04 15:34:24 INFO  [web] GET / 200 17ms user=U003
+2026-04-04 16:06:07 INFO  [web] GET / 200 73ms user=U004
+2026-04-04 16:09:38 INFO  [web] GET / 200 3ms user=U001
+2026-04-04 16:44:48 INFO  [task] task created id=18 user=U007
+2026-04-04 16:57:56 INFO  [web] GET / 200 47ms user=U004
+2026-04-04 17:36:58 INFO  [web] GET / 200 24ms user=U006
+2026-04-04 18:02:31 INFO  [web] GET / 200 76ms user=U038
+2026-04-04 18:41:33 INFO  [web] GET / 200 11ms user=U006
+2026-04-04 19:08:56 WARN  [task] overdue id=458 user=U021 days=20

@@ -1,0 +1,19 @@
+# 第4回の見本: タスク一覧を表示する小さな Python プロジェクト
+# Python と uv のバージョンはここで固定する（システムの Python は使わない）
+[tools]
+python = "3.12"
+uv = "0.9"
+
+[env]
+# uv が独自に Python をダウンロードしないようにする（mise が入れた Python だけを使う）
+UV_PYTHON_DOWNLOADS = "never"
+# .venv を作り、このディレクトリに入ったら自動で有効にする
+_.python.venv = { path = ".venv", create = true }
+
+[tasks.setup]
+description = "依存パッケージを uv.lock どおりに入れる"
+run = "uv sync --locked"
+
+[tasks.hello]
+description = "タスク一覧を表示する"
+run = "python main.py"

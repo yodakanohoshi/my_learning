@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+{# action はふつうの送信先、data-fragment は app.js が fetch で送る先（HTML 断片が返る） #}
+<form method="post" action="/tasks" class="add-form" data-fragment="/fragments/tasks{{ query }}">
+  <label>タイトル <input name="title" value="{{ form.title }}" maxlength="100" required></label>
+  <label>期限 <input type="date" name="due" value="{{ form.due }}"></label>
+  <button type="submit">追加</button>
+</form>
+
+<div id="error-area">
+  {% if error %}{% include "_error.html" %}{% endif %}
+</div>
+
+<nav aria-label="絞り込み">
+  <a href="/"{% if not overdue_only %} aria-current="page"{% endif %}>すべて</a>
+  <a href="/?overdue=1"{% if overdue_only %} aria-current="page"{% endif %}>期限切れだけ</a>
+</nav>
+
+{% include "_task_list.html" %}
+{% endblock %}

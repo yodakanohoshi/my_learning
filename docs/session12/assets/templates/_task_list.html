@@ -1,0 +1,16 @@
+{# 一覧の HTML 断片。index.html から読み込み、断片の URL（A-04〜A-06）はこれだけを返す #}
+<ul id="task-list">
+  {% for task in tasks %}
+  {% set status = task.status(today) %}
+  <li id="task-{{ task.id }}" class="task status-{{ status.name.lower() }}">
+    <span class="title">{{ task.title }}</span>
+    <span class="due">{{ task.due or "" }}</span>
+    <span class="status">{{ status.value }}</span>
+    {% if not task.done %}
+    <form method="post" action="/tasks/{{ task.id }}/done" data-fragment="/fragments/tasks/{{ task.id }}/done"><button type="submit">完了</button></form>
+    {% endif %}
+  </li>
+  {% else %}
+  <li class="empty">タスクはありません</li>
+  {% endfor %}
+</ul>

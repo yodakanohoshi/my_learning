@@ -1,0 +1,34 @@
+%% tools/scripts/build_overview.py で生成。手で編集しない
+%%{init: {'theme': 'base', 'themeVariables': {'fontFamily': 'BIZ UDPGothic, sans-serif', 'fontSize': '15px', 'primaryTextColor': '#1b1b1b'}}%%
+block-beta
+  columns 13
+  space p1["環境"]:2 p3["Web"] p4["環境"] p5["構成管理"] p6["Python"]:3 p9["設計"]:2 p11["実装"] p12["総括"]
+  space s1["第1回"] s2["第2回"] s3["第3回"] s4["第4回"] s5["第5回"] s6["第6回"] s7["第7回"] s8["第8回"] s9["第9回"] s10["第10回"] s11["第11回"] s12["第12回"]
+  lane0["コンピュータ基盤"] g0["<b>OS（Linux）</b><br/>linux・第1・2回"]:2 g3["<b>セキュリティ</b><br/>sec・第3回"] space:6 g2["<b>データベース</b><br/>db・第10・11回"]:2 space
+  space space:2 g1["<b>Web通信</b><br/>http・第3・10回"]:8 space:2
+  lane1["実装技術"] space:2 g5["<b>Webアプリケーション</b><br/>web・第3・11・12回"]:10
+  space space:5 g4["<b>プログラミング（Python）</b><br/>python・第6・7回"]:2 space:5
+  lane2["ソフトウェア開発"] space:3 g9["<b>実行環境</b><br/>env・第4回"] g8["<b>バージョン管理（Git）</b><br/>git・第5回"] space:3 g6["<b>設計</b><br/>設計・第9・10回"]:2 space:2
+  space space:4 g10["<b>開発標準</b><br/>標準・第5・7回"]:3 space:5
+  space space:4 g7["<b>テストと品質</b><br/>test・第5・7・8・11・12回"]:8
+  lane3["その他"] space:8 g11["<b>プロジェクトマネジメント</b><br/>pm・第9回"] space:3
+  themes["横断テーマ"] space:4 t0["Git　第5回〜"]:8
+  space space:8 t1["ドキュメント　第9回〜"]:4
+  space space:3 t2["環境の再現性　第4回〜"]:9
+  space space:7 t3["TDD　第8回〜"]:5
+  classDef area0 fill:#edf1f7,stroke:#2b4c7e,color:#1b1b1b
+  classDef area1 fill:#eef4ef,stroke:#3a6b47,color:#1b1b1b
+  classDef area2 fill:#f7f1e6,stroke:#9a6b1f,color:#1b1b1b
+  classDef area3 fill:#f3eff6,stroke:#634a7a,color:#1b1b1b
+  classDef lane fill:#ffffff,stroke:#ffffff,color:#1b1b1b
+  classDef phase fill:#ffffff,stroke:#1b1b1b,stroke-width:2px,color:#1b1b1b
+  classDef session fill:#ffffff,stroke:#d6d6d6,color:#333333
+  classDef theme fill:#eeeeee,stroke:#eeeeee,color:#1b1b1b
+  class g0,g3,g2,g1 area0
+  class lane0,lane1,lane2,lane3,themes lane
+  class g5,g4 area1
+  class g9,g8,g6,g10,g7 area2
+  class g11 area3
+  class t0,t1,t2,t3 theme
+  class p1,p3,p4,p5,p6,p9,p11,p12 phase
+  class s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12 session

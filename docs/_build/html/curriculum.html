@@ -1,0 +1,861 @@
+<!DOCTYPE html><html lang="ja"><head>
+    <meta charset="utf-8">
+    <title>1年目エンジニア研修カリキュラム（Linux・Git・設計・Web・TDD）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="theme.css">
+<script src="docs.js" defer></script>
+</head>
+  <body>
+<nav class="page-nav"><a href="index.html">目次</a><a href="README.html">全体概要</a><a href="tags.html">タグ一覧</a></nav>
+    <section class="level1" aria-labelledby="1年目エンジニア研修カリキュラムlinuxgit設計webtdd">
+      <h1 id="1年目エンジニア研修カリキュラムlinuxgit設計webtdd">1年目エンジニア研修カリキュラム（Linux・Git・設計・Web・TDD）</h1>
+      <p>最終更新: 2026-10-13</p>
+      <p>変更履歴:</p>
+      <ul>
+        <li>2026-10-13 第3回に「Web 通信の基礎（HTTP ヘッダ・Cookie とセッション・CSRF・Web API と JSON・CORS・DOM と fetch・XSS）」を新設し、旧第3〜10回を第4〜11回に繰り下げた。旧第11回のアプリに依存しない Web の基礎は第3回へ移し、残り（画面の部分更新・JSON 版・BUG-001）と成果発表を第12回にまとめた。KPT とスクラムは扱わないことにした</li>
+        <li>2026-10-13 振り返り・宿題・発展課題をやめ、各回を座学とハンズオンだけの60分にした。ハンズオンは第1回と同じく「🖋 やること → 📚 参考書の節 → 📒 説明（Mermaid の図を多めに）→ コマンド」のステップ形式にし、yomiyasu で推敲する。宿題で作っていたものはハンズオンに移した</li>
+        <li>2026-10-12 第1回を『入門 モダンLinux』の流れ（全体→プロセス→ファイルシステム→ネットワーク→押さえるコマンド→コンテナ→モダンなコマンド）で Linux 全体を通して見る回にした（テーマ「知識体系の紹介＋Linux の全体像」、タグ <code>linux</code>、座学15分 / ハンズオン35分）</li>
+        <li>2026-10-12 チーム開発と題材「社内備品貸出システム」をやめ、個人で TODO・タスク管理アプリを作る流れにした。Git は1回（第4回、基本からブランチ・PR・コンフリクト解決まで）にまとめ、ユーザーストーリーと見積は軽くして設計を2回（要件と図／設計書）に組み直した。空いた分は Python を2回（基本／読みやすく壊れにくい Python）とテストの回に配った。共通リポジトリは使わず、Git で管理するのは必要な回だけにした</li>
+        <li>2026-10-12 第5回の後に「図と設計書の書き方」の回を追加し、全13回にした（以降の回番号を1つずつ繰り下げ、以降の回で図を使う箇所を明記）</li>
+        <li>2026-10-12 データ分析の回を外して全12回にした。プロジェクトマネジメントは考え方の講義と GitHub での管理の体験だけにし、見積と実績の記録はやめた。座学の時間を回ごとに取り、ハンズオン資料はチートシートの形にした</li>
+        <li>2026-10-12 知識体系マップを整理した。開発標準（旧 <code>pm-標準</code>）をソフトウェア開発の下へ移してタグを <code>標準</code> に変え、タグのない中間の枝（開発ツールと環境）をなくして Git と実行環境をソフトウェア開発の直下に置いた。プロジェクトマネジメントは浅いまま（計画と見積・タスク管理・振り返り・ドキュメント）</li>
+        <li>2026-10-12 大分野を4つに組み替えた（コンピュータ基盤／実装技術／ソフトウェア開発／その他）。プロジェクトマネジメントは「その他」の下の <code>pm</code> にし、<code>pm-振り返り</code> と <code>pm-文書</code> はなくした（第12回のタグは <code>pm</code>）。大分野はタグ名に入らないので、ほかのタグ名は変わらない</li>
+        <li>2026-10-12 コンピュータ基盤を整理した。社内ネットワーク（<code>net-社内</code>）は分野から外し、プロキシは必要な場面で案内する。通信の基礎は Linux の下（<code>linux-ネットワーク</code>）、Web通信は OS と同じ層（<code>http</code>。HTTPとは→ブラウザの挙動→HTTPの構成→リアルタイム）にした。DB は深く扱わないので細分せず <code>db</code> だけにした（セキュリティも細分しない）</li>
+        <li>2026-10-12 設計は、アジャイルで設計書を少なめにする範囲にした。要件はユーザーストーリーと受け入れ条件（第7回のテーマを「ユーザーストーリーと見積」に変更）、設計書は要件メモ・API・DB・システム構成図だけにし、画面設計書とテスト仕様書はなくした。アーキテクチャのモジュール性と結合・DRYと直交性は扱わない</li>
+        <li>2026-10-12 全体を見直した。自己評価シートと週2回の拡張案をなくし、CI（<code>test-CI</code>、第10回）を足した。第2回は「シェル・環境変数・通信の基礎」にし、プロキシは社内で必要な設定の1項目に抑え、第11回のリアルタイム通信は発展課題だけにした。<code>test-設計</code> はマップから外した</li>
+        <li>2026-10-12 参考書を3冊（計9,460円）に組み替えた。『ソフトウェアエンジニアリングの基礎』を副読本から参考書へ移して研修の軸にし、初心者向けの『新しいLinuxの教科書 第2版』と『Web技術の基本 第2版』を引く本として足した。『Python実践レシピ』は追加候補へ移した</li>
+        <li>2026-10-12 副読本は紹介だけで全員が持つ前提ではないことにし、資料と宿題を参考書と無料資料だけで完結させる方針にした。『入門 モダンLinux』を副読本から参考書へ移し、『新しいLinuxの教科書 第2版』は候補へ移した（参考書は計9,240円）</li>
+      </ul>
+      <section class="level2" aria-labelledby="方針と全体像">
+        <h2 id="方針と全体像">方針と全体像</h2>
+        <p>週1回×1時間×12回（約3か月）を基本形とします。目的は、Linux の基礎から始めて、配属後に知らない領域に触れたときの判断基準となるベースを作っておくことです。そのために、1つの題材を通して「作る」より「仕事を進める型」（記録する・小さく変更する・設計で合意する・テストで確かめる）を身につけ、知識体系マップで全体のどこに何があるかを押さえます。Web開発は手段であり、評価の中心はGit運用・設計書の質・テストのある実装に置きます。</p>
+        <ul>
+          <li><strong>1回の進め方</strong>：冒頭の座学で要点をまとめて話し、ハンズオンの合間にも短い座学を挟みます。座学で使うのはハンズオン資料の「まとめ」か、参考書の該当章です。ハンズオンでは講師と一緒にその場で動かし、後半の回では各自が実際にプログラムを作ります。配分は回ごとに変え、「全N回の一覧」の所要の列に書きます。振り返り・宿題・発展課題は設けず、その回でやることは60分の中で終えます。</li>
+          <li><strong>ハンズオン資料はチートシート＋ステップ</strong>：まとめはエッセンス（コマンド・用語・判断の基準を表や箇条書きで）と、参考書と無料の公式資料への参照だけを載せます。ハンズオンは1ステップずつ「🖋 やること → 📚 参考書の節 → 📒 短い説明（Mermaid の図を多めに）→ コマンド」の形で書きます。副読本は全員が持っているとは限らないので、資料は副読本なしで完結させます。短く保ちつつ、その回に必要な要素は漏らしません。詳しい説明は本に任せます。</li>
+          <li><strong>言語はPythonで統一</strong>：言語の学習コストを抑え、設計・テストの学習に回します。Python は2回（第6〜7回）かけて基本から Python らしい書き方（ダックタイピングなど）まで扱い、第8回でテストを書けるようにします。Web は移り変わりが激しいため、HTTP・HTML・Cookie・WebSocket など変わりにくい基礎を厚く学びます。バックエンドは FastAPI、画面はサーバが HTML を返す軽い構成とし、React などのフレームワークやビルドツールは使いません。</li>
+          <li><strong>受講者のレベル差</strong>：情報系・非情報系の混在を想定し、ハンズオンを短いステップに分けて、全員がその場で同じところまで進めるようにします。</li>
+          <li><strong>進め方</strong>：全回を個人で進めます。共通のリポジトリは使わず、各自のリポジトリで作ります。Git で管理するのはコード・設計書など履歴を残す意味があるものだけにし、毎回の演習を必ず Git に載せることはしません。レビューは PR のセルフレビューと、講師や隣の人に見てもらう形で行います。</li>
+          <li><strong>プロジェクトマネジメントは軽く</strong>：作る機能をユーザーストーリーに分け、幅を持たせて見積もり、Issue で管理する考え方を体験する程度にします（第9回）。研修そのもの（講義やハンズオン）について見積と実績を記録する進捗管理は行いません。</li>
+        </ul>
+        <p>画面側はライブラリを使わず、素の HTML と JavaScript（fetch）で作ります。ブラウザ標準の機能は流行に左右されず、通信を自分で書くので初学者でも何が起きているかを追えるからです。基本形は「サーバが HTML 断片を返し、JavaScript は受け取って差し替えるだけ」とし、画面の中身をサーバ側に残して pytest による TDD の範囲に収めます。第12回では1機能だけ JSON を返す版も書き、次の観点で比べます。htmx は最後に「この作りをライブラリにしたもの」として紹介します。</p>
+        <table>
+          <thead>
+            <tr>
+              <th>観点</th>
+              <th>HTML 断片を返す（基本形）</th>
+              <th>JSON を返す（比較用）</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>サーバが返すもの</td>
+              <td>Jinja2 で描いた HTML 断片</td>
+              <td>JSON</td>
+            </tr>
+            <tr>
+              <td>画面を組み立てる場所</td>
+              <td>サーバ</td>
+              <td>ブラウザ</td>
+            </tr>
+            <tr>
+              <td>JavaScript の役割</td>
+              <td>fetch して受け取った HTML を差し替えるだけ</td>
+              <td>JSON から DOM を組み立てる</td>
+            </tr>
+            <tr>
+              <td>状態の持ち主</td>
+              <td>サーバに一元化しやすい</td>
+              <td>ブラウザの変数とサーバで二重に持ちやすい</td>
+            </tr>
+            <tr>
+              <td>テスト</td>
+              <td>返す HTML を pytest で検証でき、TDD の範囲に収まる</td>
+              <td>API は pytest で検証できるが、画面の組み立てはブラウザ側のテストが別に要る</td>
+            </tr>
+            <tr>
+              <td>安全性</td>
+              <td>テンプレートが自動でエスケープする</td>
+              <td>innerHTML に値を直接入れると XSS になる。textContent を使う</td>
+            </tr>
+            <tr>
+              <td>向いている場面</td>
+              <td>CRUD 中心の画面、管理画面</td>
+              <td>複雑なクライアント側の状態、オフライン対応</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>オンラインへのリリースは前提として設計に含めますが、実際には公開しません。第9〜10回の非機能要件とシステム構成図は本番公開を想定して書き、設定は環境変数で切り替えられるようにします。CI で PR ごとにテストを自動実行するところまでを扱い、デプロイや実際のリリースは行いません。</p>
+      </section>
+      <section class="level2" aria-labelledby="通しの題材と横断テーマ">
+        <h2 id="通しの題材と横断テーマ">通しの題材と横断テーマ</h2>
+        <p>題材は「TODO・タスク管理アプリ」です。第6〜8回で Python の CLI（追加・一覧・完了・期限）として作ってテストを付け、第9〜10回で Web 版の要件と設計を書き、第11〜12回で画面（FastAPI＋Jinja2＋SQLite＋素のHTML/JavaScript）をテスト付きで作ります。全員が個人で一通り作ります。</p>
+        <p>全回を貫く横断テーマは次の4つです。どの回でも必ず触れるので、個別の回で教え切る必要はありません。</p>
+        <ol>
+          <li><strong>Git</strong>：第5回以降、コードと設計書は自分のリポジトリにコミットし、まとまった変更は PR にしてセルフレビューしてからマージする</li>
+          <li><strong>ドキュメント</strong>：設計書・README・手順書をリポジトリ内にMarkdownで置く。第9回で図と要件、第10回で設計書の書き方を学び、以降の回でも要所で Mermaid の図を書いて考え・伝える</li>
+          <li><strong>環境の再現性</strong>：第4回以降、「自分のPCでは動く」を禁止。mise.tomlと手順書だけで他人が再現できることを完了条件にする</li>
+          <li><strong>TDD</strong>：第8回以降の実装はテストを先に書く。テストのコミットと実装のコミットを分け、PR の履歴でレッド→グリーン→リファクタリングの順序が追えることをレビュー基準にする</li>
+        </ol>
+      </section>
+      <section class="level2" aria-labelledby="知識体系とタグ">
+        <h2 id="知識体系とタグ">知識体系とタグ</h2>
+        <p>研修で扱う知識を4つの大分野に整理し、第1回の冒頭で全体地図として紹介します。大分野は知識の性質で分けており、コンピュータ基盤（動かす土台）、実装技術（作るための技術）、ソフトウェア開発（作り方と道具）、その他（プロジェクトマネジメント）の4つです。その下は書籍の守備範囲（章立て）に合わせて切っています。このため、枝ごとに「この本を読めばよい」と副読本を案内できます。知識体系は研修の回とは独立させ、回との対応は各回のアジェンダ側からタグで付けます。</p>
+        <p>枝は分野ごとに深さを変えてよく、必要に応じて何段でも伸ばせます。タグは大分野を除いた経路を「-」でつないだ名前（例：<code>http-リアルタイム</code>）とし、資料の粒度に合わせてどの深さのタグを付けても構いません（<code>http</code> のように途中の枝で止めてもよい）。同じタグ名をハンズオン資料と Issue ラベルで共通に使います。</p>
+        <p>図にしたもの：<a href="diagrams/knowledge-map.png">研修で扱う知識の系統図</a>（<code>tools/</code> の <code>mise run diagrams</code> でこのマップから生成）</p>
+        <section class="level3" aria-labelledby="知識体系マップ木構造">
+          <h3 id="知識体系マップ木構造">知識体系マップ（木構造）</h3>
+          <ul>
+            <li><strong>コンピュータ基盤</strong>（OS・Web通信・DB・セキュリティ）
+              <ul>
+                <li><code>linux</code> OS（Linux）
+                  <ul>
+                    <li><code>linux-ファイル</code> ファイルと権限：ファイル操作／パイプとリダイレクト／権限</li>
+                    <li><code>linux-シェル</code> シェル：環境変数とPATH／.bashrc／シェルスクリプト</li>
+                    <li><code>linux-アプリ</code> パッケージとプロセス：apt／エディタ（nano／vim）／プロセス（ps・kill）／コンテナ（Docker）</li>
+                    <li><code>linux-ネットワーク</code> 通信の基礎：ネットワーク層とアプリ層／TCP/IPとポート／DNS・hosts／curl・ss・ping</li>
+                  </ul>
+                </li>
+                <li><code>http</code> Web通信
+                  <ul>
+                    <li><code>http-基本</code> HTTPとは：アプリ層のプロトコル／リクエストとレスポンス／URI</li>
+                    <li><code>http-ブラウザ</code> ブラウザの挙動：ページの読み込み／フォーム送信とリダイレクト／Cookie・セッション／CORS</li>
+                    <li><code>http-構成</code> HTTPの構成：メソッド／ステータスコード／ヘッダ／キャッシュ</li>
+                    <li><code>http-リアルタイム</code> リアルタイム通信：ポーリング／SSE／WebSocket</li>
+                  </ul>
+                </li>
+                <li><code>db</code> データベース：ER図・テーブル設計／SQL（SQLite）</li>
+                <li><code>sec</code> セキュリティ：XSSとエスケープ／CSRF／秘密情報の管理</li>
+              </ul>
+            </li>
+            <li><strong>実装技術</strong>（言語・Webアプリケーション）
+              <ul>
+                <li><code>python</code> プログラミング（Python）
+                  <ul>
+                    <li><code>python-構文</code> 言語機能：型ヒント／dict.get／内包表記／例外とwith／pathlib／パターンマッチ</li>
+                    <li><code>python-oop</code> オブジェクト指向：ダックタイピング／Protocol／dataclass／ABC</li>
+                    <li><code>python-可読性</code> 読みやすいコード：命名／コメント／制御フロー／リファクタリング</li>
+                  </ul>
+                </li>
+                <li><code>web</code> Webアプリケーション
+                  <ul>
+                    <li><code>web-サーバ</code> サーバ側：FastAPI／Jinja2テンプレート／Pydantic／依存性の注入</li>
+                    <li><code>web-ブラウザ</code> ブラウザ側：HTMLフォーム／fetch・DOM操作／DevTools／htmx</li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li><strong>ソフトウェア開発</strong>（設計・テスト・道具・開発標準）
+              <ul>
+                <li><code>設計</code> 設計
+                  <ul>
+                    <li><code>設計-要件</code> 要件：ユーザーストーリー／受け入れ条件／非機能要件</li>
+                    <li><code>設計-構成</code> システム構成：システム構成図</li>
+                    <li><code>設計-詳細</code> 詳細設計：API設計書／DB設計書</li>
+                  </ul>
+                </li>
+                <li><code>test</code> テストと品質
+                  <ul>
+                    <li><code>test-自動</code> 自動テスト：pytest／TDD／テスト用DB</li>
+                    <li><code>test-静的解析</code> 静的解析：ruff／mypy／pyright</li>
+                    <li><code>test-CI</code> CI：GitHub Actions／PR ごとの ruff・pytest の自動実行</li>
+                    <li><code>test-レビュー</code> レビューと不具合管理：コードレビュー／不具合票</li>
+                  </ul>
+                </li>
+                <li><code>git</code> バージョン管理（Git）
+                  <ul>
+                    <li><code>git-基礎</code> Gitの基本：commit／diff・log／.gitignore／revert</li>
+                    <li><code>git-github</code> GitHub での利用：ブランチ／PR・セルフレビュー／Issue／コンフリクト解決</li>
+                  </ul>
+                </li>
+                <li><code>env</code> 実行環境
+                  <ul>
+                    <li><code>env-mise</code> ツールのバージョン管理：mise.toml／タスク</li>
+                    <li><code>env-python</code> Pythonの環境：uv／仮想環境／ロックファイル</li>
+                  </ul>
+                </li>
+                <li><code>標準</code> 開発標準：コーディング規約／ブランチ運用／コミット規約／レビュー基準</li>
+              </ul>
+            </li>
+            <li><strong>その他</strong>（プロジェクトマネジメント）
+              <ul>
+                <li><code>pm</code> プロジェクトマネジメント
+                  <ul>
+                    <li><code>pm-見積</code> 計画と見積：タスクの分解／幅のある見積</li>
+                    <li><code>pm-進捗</code> タスク管理：Issue／ラベル・マイルストーン</li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+        <section class="level3" aria-labelledby="設計書で押さえること設計-要件設計-構成設計-詳細">
+          <h3 id="設計書で押さえること設計-要件設計-構成設計-詳細">設計書で押さえること（設計-要件・設計-構成・設計-詳細）</h3>
+          <p>アジャイルで設計書を少なくする前提で、書くのは次の5つだけにします。何を作るかはユーザーストーリーと受け入れ条件で合意し、細かい振る舞いは TDD のテストで示します（画面設計書とテスト仕様書は作りません）。図は Mermaid で Markdown に書き、Git で差分を追える形にします。合格基準は「実装者が質問せずに作れるか」です。</p>
+          <table>
+            <thead>
+              <tr>
+                <th>設計書</th>
+                <th>主な図</th>
+                <th>必須記載事項</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>ユーザーストーリー（Issue）</td>
+                <td>—</td>
+                <td>「〜として、〜したい。なぜなら〜」、受け入れ条件（チェックリスト）、幅のある見積</td>
+              </tr>
+              <tr>
+                <td>要件メモ</td>
+                <td>業務フロー図</td>
+                <td>目的・背景、非機能要件（性能・セキュリティ・運用）、制約、対象外、ストーリー一覧へのリンク</td>
+              </tr>
+              <tr>
+                <td>API設計書</td>
+                <td>シーケンス図</td>
+                <td>エンドポイント、メソッド、リクエスト・レスポンス例、ステータスコード、入力チェックとエラー表示の文言</td>
+              </tr>
+              <tr>
+                <td>DB設計書</td>
+                <td>ER図</td>
+                <td>テーブル定義（カラム・型・NULL可否・キー）、制約</td>
+              </tr>
+              <tr>
+                <td>システム構成図</td>
+                <td>構成図</td>
+                <td>構成要素、通信経路とポート、ミドルウェアとバージョン</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="ハンズオン資料へのタグ付け">
+          <h3 id="ハンズオン資料へのタグ付け">ハンズオン資料へのタグ付け</h3>
+          <p>資料の冒頭にタグと前提タグを書きます。同じタグを GitHub の Issue ラベルにも使い、タグごとの索引（扱う回と読む本）を <code>docs/tags/</code> に生成します。</p>
+          <pre class="language-markdown"><code class="language-markdown"><span class="token title important"><span class="token punctuation">#</span> 第2回 シェル・環境変数・通信の切り分け</span>
+tag: linux-シェル, linux-アプリ, linux-ネットワーク
+前提タグ: linux
+所要: 座学15分 / ハンズオン45分
+
+<span class="token title important"><span class="token punctuation">##</span> ゴール</span>
+<span class="token list punctuation">-</span> <span class="token code-snippet code keyword">`command not found`</span> のとき、PATH とコマンドを探す順番から原因を見つけて直せる
+<span class="token list punctuation">-</span> つながらないとき、<span class="token code-snippet code keyword">`curl`</span> の表示と終了コードから、名前解決・接続・TLS・HTTP のどこで止まったかを言える</code></pre>
+        </section>
+      </section>
+      <section class="level2" aria-labelledby="副読本と参考書">
+        <h2 id="副読本と参考書">副読本と参考書</h2>
+        <p>参考書は3冊（計9,240円）で、全員に配る前提です。研修の軸として読み進める『ソフトウェアエンジニアリングの基礎』、Linux の仕組みを理解する『入門 モダンLinux』、困ったときに引く『Web技術の基本 第2版』を組み合わせ、ハンズオン資料に書く説明を本の章に任せます。Git・Python・FastAPI などは無料の公式資料を使います。副読本は紹介するだけで、全員が利用できるわけではない前提です。資料とハンズオンは参考書と無料資料だけで進められるようにし、副読本は「さらに読むなら」として案内します。どの本もタグに紐付け、各回の資料に「読む章」として書きます。</p>
+        <section class="level3" aria-labelledby="副読本紹介のみ全員が持つ前提ではない">
+          <h3 id="副読本紹介のみ全員が持つ前提ではない">副読本（紹介のみ。全員が持つ前提ではない）</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>書名</th>
+                <th>価格（税込）</th>
+                <th>読み方</th>
+                <th>対応タグ</th>
+                <th>研修で使う章と回</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><a href="https://www.oreilly.co.jp/books/9784873119175">Effective Python 第2版</a></td>
+                <td>3,960円</td>
+                <td>該当章</td>
+                <td>python-構文, python-oop, test-静的解析, env-python</td>
+                <td>1〜2章（項目16 dict.get など）、8章 項目65〜66（例外と with）（第6回）／5章 クラスと継承（第7回）／10章 項目83 仮想環境（第4回）、項目90 静的解析（第7回）</td>
+              </tr>
+              <tr>
+                <td><a href="https://www.oreilly.co.jp/books/9784873115658/">リーダブルコード</a></td>
+                <td>2,640円</td>
+                <td>通読</td>
+                <td>python-可読性, test-レビュー, 標準</td>
+                <td>2〜6章 名前とコメント（第7回の規約づくり）／7〜9章 制御フローと変数（第7回のリファクタリング演習）／14章 テストと読みやすさ（第8回）／巻末解説の添削コミット（第5回のセルフレビュー）</td>
+              </tr>
+              <tr>
+                <td><a href="https://www.hanmoto.com/bd/isbn/9784274226298">達人プログラマー 第2版</a>（オーム社）</td>
+                <td>3,520円</td>
+                <td>通読</td>
+                <td>linux-シェル, git-基礎, pm-見積</td>
+                <td>基本ツール（シェル、プレーンテキスト、バージョン管理）（第1〜5回）／見積もり（第9回）</td>
+              </tr>
+              <tr>
+                <td><a href="https://www.kinokuniya.co.jp/f/dsg-01-9784774142043">Webを支える技術</a>（技術評論社）</td>
+                <td>電子版 2,827円</td>
+                <td>該当章</td>
+                <td>http, 設計-詳細</td>
+                <td>第2部 URI、第3部 HTTP（第3・10回）／第5部 Web サービスの設計（第10回の API 設計）</td>
+              </tr>
+              <tr>
+                <td><a href="https://www.maruzenjunkudo.co.jp/products/9784798186627">達人に学ぶDB設計徹底指南書 第2版</a>（翔泳社）</td>
+                <td>3,080円</td>
+                <td>該当章</td>
+                <td>db, 設計-詳細</td>
+                <td>3章 正規化、4章 ER図（第10回）／6章 インデックス設計、7章 論理設計のアンチパターン（第11回）</td>
+              </tr>
+              <tr>
+                <td><a href="https://www.oreilly.com/library/view/-/9784814401550/">ソフトウェアアーキテクチャの基礎 第2版</a>（オライリー・ジャパン）</td>
+                <td>未確認</td>
+                <td>発展</td>
+                <td>設計-構成</td>
+                <td>アーキテクチャ特性（非機能要件）の考え方（第9回）／アーキテクチャスタイルの比較は配属後の発展課題</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>Effective Python 第2版は Python 3.8 対応です。新しい型ヒントの書き方、パターンマッチ、uv・Ruff は、Python と uv の公式ドキュメントで補います（まとまった本が欲しい場合は、下の候補の『Python実践レシピ』）。</p>
+        </section>
+        <section class="level3" aria-labelledby="参考書リファレンス1万円以内">
+          <h3 id="参考書リファレンス1万円以内">参考書（リファレンス、1万円以内）</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>書名</th>
+                <th>価格（税込）</th>
+                <th>発行</th>
+                <th>対応タグ</th>
+                <th>引きどころ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><a href="https://www.oreilly.co.jp/books/9784814401789/">ソフトウェアエンジニアリングの基礎</a>（オライリー・ジャパン）</td>
+                <td>4,180円</td>
+                <td>2026年9月</td>
+                <td>設計, test, 標準, pm</td>
+                <td>研修の軸として読み進める1冊。2章 コードを読む・3章 コードを書く（第5・7回）／4章 モデル＝どの図が必要か（第9〜10回）／5章 自動テスト（第8・11回）／6章 初めて触れるシステムの調査と変更（第1・12回）／8章 データの取り扱い（第10〜11回）／9章 ソフトウェアアーキテクチャ（第9〜10回）／10章 本番環境へ（第8回の CI）／12章 学び方を学ぶ（第1回）／13章 ソフトスキル（第12回）</td>
+              </tr>
+              <tr>
+                <td><a href="https://www.oreilly.co.jp/books/9784814400218/">入門 モダンLinux</a>（オライリー・ジャパン）</td>
+                <td>3,080円</td>
+                <td>2023年4月</td>
+                <td>linux, linux-ネットワーク</td>
+                <td>Linux の仕組みを理解する本。第1回はこの本の流れで全体を通して見る。1章 Linuxの入門・2章 Linuxカーネル（第1回）／3章 シェルとスクリプト、4章 アクセス制御（第1〜2回）／5章 ファイルシステム（第1回）／6章 アプリケーション、パッケージ管理、コンテナ（6.6 コンテナは第1回、パッケージは第2・4回）／7章 ネットワーク（第1〜2回）／9.1 プロセス間通信（シグナル、第1回）／付録A 便利なコマンド集（第1回、以降は引く）・付録B モダンLinuxツール（第1回）</td>
+              </tr>
+              <tr>
+                <td><a href="https://www.maruzenjunkudo.co.jp/products/9784815625948">イラスト図解式 この一冊で全部わかるWeb技術の基本 第2版</a>（SBクリエイティブ）</td>
+                <td>1,980円</td>
+                <td>2024年6月</td>
+                <td>linux-ネットワーク, http, 設計-構成, sec</td>
+                <td>見開き1テーマの図解で引く Web の入門書。2章 Webとネットワーク技術（第2回）／3章 HTTPでやりとりする仕組み（第3・10回）／4章 データ形式（HTML・DOM・JSON、第3・12回）／5章 Webアプリケーションの基本（Web API、第3回／3層構造、第10〜11回／Ajax、第12回）／6章 セキュリティと認証（プロキシは第2回、Cookie・セッション・CSRF・XSS は第3回）／7章 構築と運用（構成図、第10回）</td>
+              </tr>
+              <tr>
+                <td><strong>合計</strong></td>
+                <td><strong>9,240円</strong></td>
+                <td></td>
+                <td></td>
+                <td>予算の残りは 760円</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="無料の公式資料">
+          <h3 id="無料の公式資料">無料の公式資料</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>資料</th>
+                <th>対応タグ</th>
+                <th>用途</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><a href="https://git-scm.com/book/ja/v2">Pro Git（日本語版）</a></td>
+                <td>git</td>
+                <td>Git 公式の解説書。仕組みからブランチ運用まで網羅しており、Git のリファレンスはこれで足りる</td>
+              </tr>
+              <tr>
+                <td><a href="https://docs.python.org/ja/3/">Python 公式ドキュメント</a></td>
+                <td>python</td>
+                <td>言語仕様と標準ライブラリの原典</td>
+              </tr>
+              <tr>
+                <td><a href="https://pep8-ja.readthedocs.io/">PEP 8</a>・<a href="https://docs.astral.sh/ruff/">Ruff</a>・<a href="https://mypy.readthedocs.io/">mypy</a> 公式</td>
+                <td>python-可読性, test-静的解析</td>
+                <td>コーディング規約と、規約・型を自動で確かめる道具の一次資料（第7回）</td>
+              </tr>
+              <tr>
+                <td><a href="https://developer.mozilla.org/ja/">MDN Web Docs</a></td>
+                <td>http, web-ブラウザ, sec</td>
+                <td>HTTP、HTML、Cookie、WebSocket、CORS のリファレンス。Web の基礎はここを一次資料にする（第3回のヘッダ・キャッシュ・Cookie・CORS・フェッチ API・DOM、第10・12回でも引く）</td>
+              </tr>
+              <tr>
+                <td><a href="https://htmx.org/">htmx 公式</a>・<a href="https://hypermedia.systems/">Hypermedia Systems</a></td>
+                <td>web-ブラウザ</td>
+                <td>htmx の属性リファレンスと例集。Hypermedia Systems は htmx 作者らによる無料の書籍で、サーバが HTML を返す設計の考え方がわかる（第12回の講師の補足で紹介）</td>
+              </tr>
+              <tr>
+                <td><a href="https://mise.jdx.dev/">mise</a>・<a href="https://docs.astral.sh/uv/">uv</a> 公式ドキュメント</td>
+                <td>env</td>
+                <td>まとまった書籍がないため、公式が主な資料</td>
+              </tr>
+              <tr>
+                <td><a href="https://fastapi.tiangolo.com/ja/">FastAPI 公式ドキュメント</a></td>
+                <td>web-サーバ</td>
+                <td>チュートリアルがそのまま第11回の教材になる</td>
+              </tr>
+              <tr>
+                <td><a href="https://docs.pytest.org/">pytest 公式</a>・<a href="https://docs.github.com/ja/actions">GitHub Actions 公式</a></td>
+                <td>test-自動, test-CI</td>
+                <td>テストの書き方（fixture・parametrize）と CI の設定の一次資料（第8回）</td>
+              </tr>
+              <tr>
+                <td><a href="https://mermaid.js.org/">Mermaid 公式</a>・<a href="https://docs.github.com/ja/issues">GitHub Docs（Issues）</a></td>
+                <td>設計-要件, pm-進捗</td>
+                <td>図の書き方（Syntax Reference）と、Issue・ラベル・マイルストーンの使い方の一次資料（第9回）</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="そのほかの候補紹介用">
+          <h3 id="そのほかの候補紹介用">そのほかの候補（紹介用）</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>分野</th>
+                <th>書名</th>
+                <th>価格（税込）</th>
+                <th>向いている使い方</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>pm</td>
+                <td><a href="https://codezine.jp/news/detail/11235">ずっと受けたかったソフトウェアエンジニアリングの新人研修 第3版</a></td>
+                <td>2,200円</td>
+                <td>工程・見積・プロジェクト管理を体系的に学べる。プロジェクトマネジメントの副読本を足す場合に</td>
+              </tr>
+              <tr>
+                <td>http</td>
+                <td><a href="https://www.oreilly.co.jp/books/9784814400669/">Real World HTTP 第3版</a></td>
+                <td>未確認</td>
+                <td>HTTP の仕様と歴史を深く扱う中上級向け。『Webを支える技術』の先を知りたい人や講師用（第3回の先）</td>
+              </tr>
+              <tr>
+                <td>linux</td>
+                <td><a href="https://www.sbcr.jp/product/4815624316/">新しいLinuxの教科書 第2版</a>（SBクリエイティブ、2024年4月）</td>
+                <td>3,300円</td>
+                <td>コマンドの使い方を1章1テーマで丁寧に追える入門書。非情報系でモダンLinuxが難しい人や、シェルスクリプト・Git の基礎を手順で学びたい人に</td>
+              </tr>
+              <tr>
+                <td>python</td>
+                <td><a href="https://gihyo.jp/book/2026/978-4-297-15489-9">改訂新版 Python実践レシピ</a>（技術評論社、2026年3月）</td>
+                <td>3,520円</td>
+                <td>Python 3.14 対応。uv、Ruff、型ヒント、pathlib などをライブラリ単位で引ける。第4・6〜7回を本で補いたい場合に</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>見積の本格的なリファレンス（マコネル『ソフトウェア見積り』など）は、受講者に配るより講師用として部署に1冊置く運用を勧めます。</p>
+        </section>
+      </section>
+      <section class="level2" aria-labelledby="全12回の一覧">
+        <h2 id="全12回の一覧">全12回の一覧</h2>
+        <p>所要は「座学・ハンズオン」などの配分で、合計60分にします。座学は冒頭にまとめて取り、ハンズオンの合間の短い座学はハンズオンの時間に含めます。</p>
+        <table>
+          <thead>
+            <tr>
+              <th>回</th>
+              <th>フェーズ</th>
+              <th>テーマ</th>
+              <th>所要</th>
+              <th>タグ</th>
+              <th>成果物</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>環境</td>
+              <td>知識体系の紹介＋Linux の全体像</td>
+              <td>座学15分 / ハンズオン45分</td>
+              <td>linux</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>環境</td>
+              <td>シェル・環境変数・通信の切り分け</td>
+              <td>座学15分 / ハンズオン45分</td>
+              <td>linux-シェル, linux-アプリ, linux-ネットワーク</td>
+              <td>環境設定手順書</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>Web</td>
+              <td>Web 通信の基礎（HTTP・Cookie・Web API）</td>
+              <td>座学15分 / ハンズオン45分</td>
+              <td>http, web-ブラウザ, sec</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>環境</td>
+              <td>実行環境の整備</td>
+              <td>座学15分 / ハンズオン45分</td>
+              <td>env-mise, env-python</td>
+              <td>mise.toml＋環境構築手順書（README）</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>構成管理</td>
+              <td>Git と GitHub</td>
+              <td>座学15分 / ハンズオン45分</td>
+              <td>git-基礎, git-github, 標準, test-レビュー</td>
+              <td>手順書のリポジトリ＋PR 2本（コンフリクト解決つき）</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td>Python</td>
+              <td>Python の基本</td>
+              <td>座学15分 / ハンズオン45分</td>
+              <td>python-構文</td>
+              <td>TODO の CLI＋アプリのリポジトリ（期限の追加を PR でマージ）</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td>Python</td>
+              <td>読みやすく壊れにくい Python</td>
+              <td>座学15分 / ハンズオン45分</td>
+              <td>python-oop, python-可読性, test-静的解析, 標準</td>
+              <td><code>src/todo/</code> パッケージ＋ruff・mypy の設定と README（PR でマージ）</td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td>Python</td>
+              <td>テストと TDD</td>
+              <td>座学15分 / ハンズオン45分</td>
+              <td>test-自動, test-CI</td>
+              <td>テスト＋CI＋期限順の一覧（TDD の履歴が残る PR でマージ）</td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td>設計</td>
+              <td>要件と図</td>
+              <td>座学15分 / ハンズオン45分</td>
+              <td>設計-要件, pm-見積, pm-進捗</td>
+              <td>要件メモ（業務フロー図・状態遷移図）＋ストーリー S-01〜S-04（Issue とその控え、PR でマージ）</td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td>設計</td>
+              <td>設計書作成</td>
+              <td>座学15分 / ハンズオン45分</td>
+              <td>設計-詳細, 設計-構成, http-構成, db</td>
+              <td>API・DB設計書＋システム構成図（隣の人の質問を反映し、PR でマージ）</td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td>実装</td>
+              <td>TDD による Web バックエンド</td>
+              <td>座学15分 / ハンズオン45分</td>
+              <td>web-サーバ, db, test-自動</td>
+              <td>Web 版（FastAPI＋Jinja2＋SQLite）＋受け入れ条件 (1)〜(15) のテスト（TDD の履歴が残る PR でマージし、ストーリーの Issue を閉じる）</td>
+            </tr>
+            <tr>
+              <td>12</td>
+              <td>総括</td>
+              <td>画面の部分更新と成果発表</td>
+              <td>座学5分 / ハンズオン25分 / 発表準備5分 / 発表25分</td>
+              <td>web-ブラウザ, test-レビュー</td>
+              <td>fetch による部分更新（HTML 断片＋比較用の JSON 版）＋不具合票 BUG-001 とその修正＋発表資料（PR 3本でマージ）</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="level2" aria-labelledby="各回の詳細">
+        <h2 id="各回の詳細">各回の詳細</h2>
+        <section class="level3" aria-labelledby="第1回linux-の全体像">
+          <h3 id="第1回linux-の全体像">第1回　Linux の全体像</h3>
+          <p>tag: <code>linux</code>　冒頭の座学で系統図と全体像の図を使って知識体系を紹介する。Linux は『入門 モダンLinux』の流れに沿って、全体を一度通して見る（各分野の深掘りは第2回以降）</p>
+          <ul>
+            <li><strong>狙い</strong>：Linux がどんな部品でできているかの地図を持ち、黒い画面への抵抗をなくし、「何をしたか」を記録する習慣をつける</li>
+            <li><strong>内容</strong>：次の順に、参考書の節・短い説明・理解のためのコマンドの流れで進める
+              <ol>
+                <li>全体：カーネルとユーザー空間、WSL と Windows の関係（uname・/mnt/c）</li>
+                <li>プロセス：プロセスと PID、シェルもプロセス、PID 1（init／systemd）、親子関係、ジョブとシグナル（ps・pstree・kill）</li>
+                <li>ファイルシステム：ディレクトリの構成、すべてはファイル（/proc・/dev）、権限、標準入出力とリダイレクト・パイプ（ls・chmod・&gt;・|・/proc/$$/fd）</li>
+                <li>ネットワーク：TCP/IP の各層（リンク・インターネット・トランスポート・アプリケーション）と、各層を見るコマンド（ip・ping・ss・curl）</li>
+                <li>ここまでで出なかったが押さえておくコマンド：grep・wc・sort・uniq・find・xargs・man</li>
+                <li>コンテナ：namespace と cgroup、Docker の基本</li>
+                <li>モダンなコマンド：ripgrep・fd・bat・fzf・jq など</li>
+              </ol>
+            </li>
+            <li><strong>演習</strong>：ログファイル（講師配布）から grep と wc で特定のエラー件数を数える。振り返り・宿題・発展課題は設けない</li>
+          </ul>
+        </section>
+        <section class="level3" aria-labelledby="第2回シェル環境変数通信の切り分け">
+          <h3 id="第2回シェル環境変数通信の切り分け">第2回　シェル・環境変数・通信の切り分け</h3>
+          <p>tag: <code>linux-シェル</code> <code>linux-アプリ</code> <code>linux-ネットワーク</code>　第1回で一度通したプロセス・ネットワークの層・DNS・curl -v は繰り返さず、シェル・パッケージ・通信の切り分けを深掘りする</p>
+          <ul>
+            <li><strong>狙い</strong>：「コマンドが見つからない」「ネットにつながらない」を自力で切り分けられるようにする</li>
+            <li><strong>内容</strong>：次の順に、参考書の節・短い説明・理解のためのコマンドの流れで進める
+              <ol>
+                <li>変数：シェル変数と環境変数、export が効く範囲（子にはコピーが渡り、親は変わらない）</li>
+                <li>PATH：コマンドを探す順番（エイリアス → 関数 → 組み込み → PATH）、type -a、自分のコマンドを PATH に足す、子のシェルで PATH を壊して戻す</li>
+                <li>.bashrc：ログインシェルと対話シェルで読まれるファイル、コピーを取ってから追記し、わざと壊して直す</li>
+                <li>apt と sudo：リポジトリ・apt update・install・dpkg -L、sudo で環境変数が消えること</li>
+                <li>通信の切り分け：curl の表示と終了コードで、名前解決（6）・接続（7・28）・TLS（60）・HTTP（404、-f で 22）のどこで止まったかを見分ける</li>
+                <li>社内で必要な設定としてのプロキシ：http_proxy／https_proxy／no_proxy（小文字と大文字）、http と https（CONNECT）の頼み方、apt の設定ファイル、社内CA証明書、git で確かめる</li>
+                <li>環境設定手順書を仕上げる：新しいターミナルで確かめ、元に戻す方法を書く</li>
+              </ol>
+            </li>
+            <li><strong>演習</strong>：子のシェルと <code>.bashrc</code> で PATH を壊して直す／curl で各段階の失敗をわざと起こし、表示と終了コードを記録する。手順3から、打ったコマンドと確認方法をその場で環境設定手順書（第4回で隣の人が使う）に書く。振り返り・宿題・発展課題は設けない</li>
+          </ul>
+        </section>
+        <section class="level3" aria-labelledby="第3回web-通信の基礎httpcookieweb-api">
+          <h3 id="第3回web-通信の基礎httpcookieweb-api">第3回　Web 通信の基礎（HTTP・Cookie・Web API）</h3>
+          <p>tag: <code>http</code> <code>web-ブラウザ</code> <code>sec</code>　第1回の <code>curl -v</code>（リクエスト行・ヘッダ・空行・本文）と第2回の切り分け・プロキシを前提に、届いた後のやり取りを深掘りする。mise・uv はまだないので、素材は Ubuntu の <code>python3</code> の標準ライブラリだけで動くデモのサーバ（<code>docs/session03/assets/web_demo.py</code>。このサイト 8000 と別のサイト 8001）にする</p>
+          <ul>
+            <li><strong>狙い</strong>：ブラウザとサーバの間で何が起きているかを、ヘッダ・Cookie・Web API の実物を読んで説明できるようにする</li>
+            <li><strong>内容</strong>：次の順に、参考書・公式資料の節・短い説明・理解のためのコマンドの流れで進める
+              <ol>
+                <li>デモのサーバとヘッダの中身：<code>curl -v</code> で Host・User-Agent・Accept・Cache-Control・Set-Cookie・Content-Type・Content-Length を読む、<code>curl -I</code>（HEAD）、<code>/headers</code> で送ったヘッダを見る</li>
+                <li>Network タブ：document と stylesheet、再読み込みで <code>ETag</code>／<code>If-None-Match</code> の 304、ブラウザが自動で付けるヘッダ（Accept・Sec-Fetch-*・Cookie）</li>
+                <li>Cookie とセッション：curl の <code>-c</code>・<code>-b</code>、Cookie の値を書き換えられること、ログイン（303 と Set-Cookie の属性 HttpOnly・SameSite・Max-Age）、Cookie の有無で変わる <code>/api/me</code>（401）、ログアウトでサーバのセッションを消す、ブラウザの「アプリケーション」と <code>document.cookie</code></li>
+                <li>CSRF：トークン付きのフォーム、<code>127.0.0.1:8001</code> の罠（同じサイト、403）と <code>localhost:8001</code> の罠（別のサイト、SameSite で Cookie が付かず 401）、オリジンとサイトの違い</li>
+                <li>Web API と JSON：REST（URL はもの、メソッドはすること）、一覧・クエリ文字列・jq、POST の 201 と Location、PATCH・DELETE（204）、わざと失敗させる（415・400・422・405・404）、ETag の 304、公開 API（JSONPlaceholder）をプロキシ越しに呼ぶ</li>
+                <li>CORS とプロキシ：別のオリジンからの fetch がブラウザで止まり、サーバには届いている（ログの Origin）、<code>Access-Control-Allow-Origin</code> で許可した API、curl では読める、<code>no_proxy</code> で 127.0.0.1 に直接つながる</li>
+                <li>DOM・fetch・XSS をコンソールで：DOM の木、<code>textContent</code> の書き換え、fetch で追加して <code>&lt;li&gt;</code> を足す、<code>innerHTML</code> の XSS、エスケープしないページ（<code>/search-unsafe</code>）で <code>document.cookie</code> に HttpOnly の Cookie が出ないこと</li>
+              </ol>
+            </li>
+            <li><strong>演習</strong>：デモのサーバと公開 API を相手に、上の流れでヘッダ・Cookie・JSON を観察する。成果物はない。振り返り・宿題・発展課題は設けない（プリフライト・GitHub の API の回数の制限は講師が見せる補足）</li>
+          </ul>
+        </section>
+        <section class="level3" aria-labelledby="第4回実行環境の整備miseuv">
+          <h3 id="第4回実行環境の整備miseuv">第4回　実行環境の整備（mise・uv）</h3>
+          <p>tag: <code>env-mise</code> <code>env-python</code>　第2回の PATH・<code>.bashrc</code>・プロキシを前提に、Python とパッケージを OS から切り離してディレクトリごとに固定する。第5回でリポジトリにするファイル（mise.toml・pyproject.toml・uv.lock・main.py・環境構築手順書の README.md）は、すべてハンズオンの中で作る</p>
+          <ul>
+            <li><strong>狙い</strong>：バージョン管理ツールで「誰でも同じ環境を再現できる」状態を作り、手順書だけで他人が再現できるかを確かめる</li>
+            <li><strong>内容</strong>：次の順に、参考書・公式資料の節・短い説明・理解のためのコマンドの流れで進める
+              <ol>
+                <li>システムの Python：OS が使っていること、版が PC ごとに違うこと、<code>EXTERNALLY-MANAGED</code>（OS・ツール・パッケージの3つの層）</li>
+                <li>mise を入れる：<code>.bashrc</code> のコピーを取って activate を書く。<code>cd</code> とプロンプトのたびに PATH が変わる仕組み。環境構築手順書のテンプレートをコピーし、ここから書きながら進める</li>
+                <li>mise で固定する：<code>mise use --path .</code> で Python 3.12 と uv を <code>mise.toml</code> に書く、親の <code>mise.toml</code> との関係、<code>cd</code> で切り替わることを確かめる</li>
+                <li>uv：<code>uv init</code>・<code>uv add</code>・<code>uv tree</code>、pyproject.toml と uv.lock と <code>.venv</code> の関係、<code>.venv</code> の中（mise の Python へのリンク）</li>
+                <li>mise.toml の <code>[env]</code>（<code>UV_PYTHON_DOWNLOADS</code>・<code>.venv</code> の自動有効化）と <code>[tasks]</code>（setup・hello）。<code>requires-python</code> に上限を付け、<code>uv sync --locked</code> が止まるのを見て <code>uv lock</code> で直す</li>
+                <li>渡すものを決める：<code>.venv</code> を渡さない理由。別の場所にコピーし、<code>mise trust</code> → <code>mise install</code> → <code>mise run setup</code> → <code>mise run hello</code> で再現する</li>
+                <li>隣の人の手順書で再現する：第2回の環境設定手順書の「確認」で前提を見てから、README だけで再現し、止まった所を指摘し合って直す</li>
+              </ol>
+            </li>
+            <li><strong>演習</strong>：手順2から、打ったコマンドと確認をその場で環境構築手順書（README.md）に書く。隣の人がその手順書だけで再現し、止まった所・推測した所を指摘し合う。振り返り・宿題・発展課題は設けない</li>
+          </ul>
+        </section>
+        <section class="level3" aria-labelledby="第5回git-と-github">
+          <h3 id="第5回git-と-github">第5回　Git と GitHub</h3>
+          <p>tag: <code>git-基礎</code> <code>git-github</code> <code>標準</code>（コミット規約・ブランチ運用） <code>test-レビュー</code>（セルフレビュー）　第4回のハンズオンで作った環境構築手順書の一式をリポジトリにし、Issue からマージまでを1人で2回通す。第6回以降は、ここで通したブランチ・PR・セルフレビュー・マージの流れを前提にする</p>
+          <ul>
+            <li><strong>狙い</strong>：変更履歴で「何を・なぜ変えたか」を説明でき、main を壊さずに変更を入れる流れを一通り体験する</li>
+            <li><strong>内容</strong>：次の順に、参考書・公式資料の節・短い説明・理解のためのコマンドの流れで進める
+              <ol>
+                <li>Git の設定：user.name・user.email・init.defaultBranch・core.autocrlf・core.quotepath・core.editor（<code>--global</code> と <code>.git/config</code> の違い）</li>
+                <li>リポジトリを作る：第4回の一式をコピーし、<code>mise trust</code> と <code>mise run setup</code> で <code>.venv</code> を作ってから <code>git init</code></li>
+                <li>.gitignore を先に書く：uv の <code>.venv</code> が自分を無視していること、<code>.env</code> が消えるのを見て、<code>.gitignore</code> だけを最初にコミットする</li>
+                <li>目的ごとにコミットする：作業ツリー・ステージ・リポジトリ、add・diff --staged・commit・log、「1行目＝何を・本文＝なぜ」、git restore で変更を捨てる</li>
+                <li>リモートに push する：空のリポジトリ、remote add・push -u、origin/main</li>
+                <li>Issue を2つ立て、main から分けた2本のブランチで README の同じ行を変えて push する</li>
+                <li>PR（目的 <code>Closes #番号</code>・変更点・確認方法）を2つ出し、セルフレビューして1本目をマージする。Issue が閉じ、2本目がコンフリクトになるのを見る</li>
+                <li>2本目のブランチに main を取り込んでコンフリクトを両方の目的が成り立つ形で解決し、再レビューしてマージする。pull・branch -d・log --graph で全体を確かめる</li>
+              </ol>
+            </li>
+            <li><strong>演習</strong>：上の流れを各自のリポジトリで1人で通す。PR の本文とセルフレビューのコメントは研修の規約（docs/session05/assets/commit-convention.md）に沿って書く。振り返り・宿題・発展課題は設けない（revert・reset・rebase・ブランチ保護は講師が見せる補足）</li>
+          </ul>
+        </section>
+        <section class="level3" aria-labelledby="第6回python-の基本">
+          <h3 id="第6回python-の基本">第6回　Python の基本</h3>
+          <p>tag: <code>python-構文</code>　雛形の関数を順に書いて1ファイルの TODO の CLI を作り、アプリのリポジトリ（<code>workspace/todo-app/</code>）を作って push する。期限の機能は第5回と同じ Issue → ブランチ → PR → マージの流れで入れる。第7回以降はこのリポジトリを前提にする</p>
+          <ul>
+            <li><strong>狙い</strong>：小さなプログラムを自分で書き、型ヒント付きで読める Python に慣れる。アプリの変更を第5回の流れで入れ始める</li>
+            <li><strong>内容</strong>：次の順に、参考書・公式資料の節・短い説明・理解のためのコマンドやコードの流れで進める
+              <ol>
+                <li>REPL：list と dict、<code>d["k"]</code> と <code>d.get("k")</code>（KeyError）、内包表記、<code>max(..., default=0)</code>、f-string</li>
+                <li>アプリのリポジトリを作る：見本の <code>.gitignore</code>・<code>mise.toml</code>・<code>pyproject.toml</code>（<code>[tool.uv] package = false</code> の意味）・<code>uv.lock</code> をコピーし、<code>mise run setup</code> → <code>git init</code> → 設定をコミット</li>
+                <li>雛形を読む：型ヒントと型の別名、argparse のサブコマンド、<code>match</code> による振り分け、<code>if __name__ == "__main__"</code>、トレースバックの読み方</li>
+                <li>読み込みと保存：pathlib、<code>with</code>、<code>FileNotFoundError</code> だけを捕まえる、JSON と Python の値の対応（<code>ensure_ascii=False</code>）</li>
+                <li>add・list・done：データの操作（値を返す）と表示（<code>main</code> の print）を分ける、for の変数はリストの中身そのもの</li>
+                <li>エラーを確かめて push する：<code>raise</code> と <code>except</code>、標準エラー出力と終了コード（1 と argparse の 2）、空のリポジトリに push</li>
+                <li>期限を足す（Issue #1 → ブランチ）：<code>date</code> と文字列の変換（JSON に日付の型はない）、<code>argparse</code> の <code>type=</code>、期限切れの判定（<code>today</code> を引数で渡す）、<code>--overdue</code> を内包表記で、古いデータを <code>get</code> で読む</li>
+                <li>PR（<code>Closes #1</code>）を出し、セルフレビューしてマージする</li>
+              </ol>
+            </li>
+            <li><strong>演習</strong>：上の流れで CLI（add・list・done・<code>--due</code>・<code>list --overdue</code>）を作り、tasks.json に保存する。期限の追加は PR にしてマージする。振り返り・宿題・発展課題は設けない（EAFP と LBYL・ジェネレータは講師が見せる補足）</li>
+          </ul>
+        </section>
+        <section class="level3" aria-labelledby="第7回読みやすく壊れにくい-python">
+          <h3 id="第7回読みやすく壊れにくい-python">第7回　読みやすく壊れにくい Python</h3>
+          <p>tag: <code>python-oop</code> <code>python-可読性</code> <code>test-静的解析</code> <code>標準</code>（コーディング規約）　第6回の <code>todo.py</code> を動きを変えずに <code>src/todo/</code> パッケージに分け、ruff と mypy で確かめる。整理は Issue #3 → ブランチ → 目的ごとの4つのコミット → PR → セルフレビュー → マージで入れる</p>
+          <ul>
+            <li><strong>狙い</strong>：「動く」から「読みやすく壊れにくい」Python へ引き上げる。機械が確かめる規約と人が見る規約を分けてリポジトリに置く</li>
+            <li><strong>内容</strong>：次の順に、参考書・公式資料の節・短い説明・理解のためのコマンドやコードの流れで進める
+              <ol>
+                <li>Issue とブランチ、パッケージに移す：<code>git mv todo.py src/todo/cli.py</code>、<code>pyproject.toml</code> の <code>package = false</code> を消して <code>[project.scripts]</code>・<code>[build-system]</code>・<code>module-name</code>、<code>uv sync</code>、<code>uv run todo</code>。移しただけのコミット</li>
+                <li>models.py：<code>Enum</code>（Status）、<code>dataclass(frozen=True)</code>（Task、<code>status(today)</code>・<code>replace</code>）、<code>FrozenInstanceError</code>、入力チェック（<code>validate_title</code>・<code>parse_due</code>・<code>InvalidTaskError</code>、ガード節）</li>
+                <li>store.py：<code>JsonStore</code> を読む（<code>_from_json</code> で古いデータも読める）、<code>typing.Protocol</code>（TaskStore）、<code>MemoryStore</code>、ダックタイピング</li>
+                <li>cli.py を置き換える：モジュールの依存の向き、<code>main(argv, store, today)</code> で保存先と「今日」を差し替えられる形、一覧が第6回と同じことと、エラーの文言・終了コードの変化を確かめてコミット</li>
+                <li>ruff と mypy：<code>uv add --dev</code>、キャッシュを <code>.gitignore</code> に、<code>[tool.ruff]</code>（ルールごとの理由のコメント）・<code>[tool.mypy]</code>（strict）、mise の <code>lint</code>・<code>fmt</code>・<code>typecheck</code>・<code>check</code>。属性の打ち間違い・Protocol に合わない名前の変更・未使用の import をわざと入れて指摘を見る</li>
+                <li>README：開発環境・使い方・コードの構成・人が見るコーディング規約</li>
+                <li>PR（<code>Closes #3</code>）を出し、変えたことと変えていないことを書いてセルフレビューし、マージする</li>
+              </ol>
+            </li>
+            <li><strong>演習</strong>：上の流れで CLI をパッケージに分け、<code>mise run check</code> を通して PR でマージする。振り返り・宿題・発展課題は設けない（ABC と Protocol の比較、<code>__post_init__</code> で確かめる案、ルールの選び直しは講師が見せる補足）</li>
+          </ul>
+        </section>
+        <section class="level3" aria-labelledby="第8回テストと-tdd">
+          <h3 id="第8回テストと-tdd">第8回　テストと TDD</h3>
+          <p>tag: <code>test-自動</code> <code>test-CI</code>　第7回の <code>src/todo/</code> と <code>main(argv, store, today)</code> を前提に、今の動作をテストで固定し、CI を置いてから「期限が近い順に並べる」をテスト先行で足す。Issue #5 → ブランチ → テスト・CI・レッドとグリーンのコミット → PR → CI が通ってからマージ、の流れで入れる</p>
+          <ul>
+            <li><strong>狙い</strong>：テストで「動く」を確かめられる形にし、テストを先に書いてから実装する手順と、CI が通ってからマージする習慣を身につける</li>
+            <li><strong>内容</strong>：次の順に、参考書・公式資料の節・短い説明・理解のためのコマンドやコードの流れで進める
+              <ol>
+                <li>Issue とブランチ、pytest を入れる：テストの種類（単体・結合・E2E）、<code>uv add --dev pytest</code>、<code>.pytest_cache/</code>、<code>testpaths</code>・テスト名の N802 を外す・mypy の <code>files</code> に <code>tests</code>、mise の <code>test</code> と <code>check</code>、テストが0件だと失敗すること</li>
+                <li>assert と parametrize：状態のテストを組ごとに、<code>pytest.raises</code>、境目（期限の当日）をわざと壊して失敗の表示を読む</li>
+                <li>fixture と tmp_path：<code>params</code> で同じテストを <code>MemoryStore</code> と <code>JsonStore</code> で動かす、<code>tmp_path</code> で手元の <code>tasks.json</code> に触れない</li>
+                <li>CLI の動作を固定する：<code>main</code> に <code>MemoryStore</code> と固定の日付を渡す、<code>capsys</code>、<code>テスト:</code> のコミット</li>
+                <li>CI を置いて push する：<code>.github/workflows/check.yml</code>（mise-action → <code>mise run setup</code> → <code>mise run check</code>）。GitLab の場合は GitLab CI に読み替える</li>
+                <li>TDD で <code>sort_by_due</code>：レッド（ImportError）を push して CI の赤も見る → 最小のグリーン（mypy だけが気づく）→ 期限なし → 同じ期限（三角測量）→ テストのリファクタ。テストと実装のコミットを分ける</li>
+                <li>TDD で一覧を期限が近い順に表示する（<code>test_cli.py</code> にレッド → <code>run_list</code> でグリーン）</li>
+                <li>README を更新し、PR（<code>Closes #5</code>）を出して Commits でレッド → グリーンの順を確かめ、CI が緑になってからマージする</li>
+              </ol>
+            </li>
+            <li><strong>演習</strong>：上の流れを各自のリポジトリで通す。振り返り・宿題・発展課題は設けない（もう1機能を TDD で足す例・カバレッジ・レッドのコミットの取り出しは講師が見せる補足）</li>
+          </ul>
+        </section>
+        <section class="level3" aria-labelledby="第9回要件と図">
+          <h3 id="第9回要件と図">第9回　要件と図</h3>
+          <p>tag: <code>設計-要件</code> <code>pm-見積</code> <code>pm-進捗</code>　Mermaid を第8回までの CLI の図で練習してから、講師の曖昧な依頼（「CLI の TODO を Web でも使いたい」）を要件メモとストーリーにする。Issue #7 → ブランチ → 自分の版と見本に合わせた版のコミット → ストーリーを Issue #8〜#11 に登録 → PR → マージの流れで入れる</p>
+          <ul>
+            <li><strong>狙い</strong>：作る前に「何を作るか」を決め、図で考え・伝える習慣をつける</li>
+            <li><strong>内容</strong>：次の順に、参考書・公式資料の節・短い説明・理解のための作業の流れで進める
+              <ol>
+                <li>Issue とブランチ：設計書の役割と合格基準（実装者が質問せずに作れるか）、第9回 → 第10回 → 第11回のつながり</li>
+                <li>Mermaid の基本：<code>add</code> の流れを flowchart で、同じ <code>add</code> を sequenceDiagram で書いてプレビューする。図の種類と使い分け（業務フロー図・状態遷移図・シーケンス図・ER図・構成図・クラス図）</li>
+                <li>依頼を聞き、質問する：困りごと → 誰が → 何を → どのくらい（数字）→ やらないこと。答えを要件メモ（目的・非機能要件・制約・対象外・未定）に振り分ける</li>
+                <li>業務フロー図（<code>subgraph</code> のレーン）と状態遷移図（期限切れの条件を不等号まで）を書く</li>
+                <li>ユーザーストーリーと受け入れ条件：したいことを S-01〜S-04 に分け、S-01 の1文と受け入れ条件（数字・文言・境目）を書く</li>
+                <li>見積：S-01 をタスクに分けて幅で見積もり、根拠を一言書く</li>
+                <li>自分の版をコミットし、見本（依頼人と合わせた版、受け入れ条件 (1)〜(15)）に置き換えて <code>git diff</code> で比べる</li>
+                <li>Issue・ラベル・マイルストーン：ラベル <code>ストーリー</code>・<code>タスク</code>、マイルストーン <code>Web 版</code>、ストーリーを Issue に登録して絞り込む</li>
+                <li>PR（<code>Closes #7</code>）を出し、GitHub の画面で図を確かめてマージする</li>
+              </ol>
+            </li>
+            <li><strong>演習</strong>：上の流れを各自のリポジトリで通す。振り返り・宿題・発展課題は設けない（アーキテクチャ特性での見直し・Issue テンプレートの置き場所は講師が見せる補足）</li>
+            <li><strong>PM観点</strong>：見積の根拠を言語化させる。研修の進捗管理として見積と実績を記録・比較することはしない</li>
+          </ul>
+        </section>
+        <section class="level3" aria-labelledby="第10回設計書作成">
+          <h3 id="第10回設計書作成">第10回　設計書作成</h3>
+          <p>tag: <code>設計-詳細</code>（API・DB） <code>設計-構成</code> <code>http-構成</code> <code>db</code>　第9回の受け入れ条件 (1)〜(15) と要件メモから、API設計書・DB設計書・システム構成図を書く。Issue #13 → ブランチ → 自分の版のコミット → 隣の人と交換して質問を反映 → 見本と合わせた版のコミット → PR → マージの流れで入れる</p>
+          <ul>
+            <li><strong>狙い</strong>：実装前に合意するための「伝わる設計書」を書く</li>
+            <li><strong>内容</strong>：次の順に、参考書・公式資料の節・短い説明・理解のための作業の流れで進める
+              <ol>
+                <li>Issue とブランチ、テンプレートを置く：第9回の文書 → 3つの設計書 → 第11回のテストのつながり</li>
+                <li>API設計書の URL とステータスコード：URL は名詞・操作はメソッド、POST → 303 → GET（再読み込みで二重に追加しない）、リクエストとレスポンスの例、200・303・400・404 の選び方</li>
+                <li>API設計書の入力チェックとシーケンス図：受け入れ条件のうまくいかない場合を文言そのままで表にし、追加のシーケンス図を <code>alt</code> で書く。画面設計書は作らず、返す HTML の要点とエラー表示欄を書く</li>
+                <li>DB設計書：<code>Task</code> を <code>tasks</code> テーブルに写す（SQLite の日付と真偽値）、ER図とテーブル定義（NULL の意味）、状態は持たずに計算で求める条件（不等号まで）、並び順</li>
+                <li>システム構成図：3層（ブラウザ・アプリ・DB）、uvicorn の待ち受けとポート、バージョンを固定する場所、環境変数 <code>TODO_DB_PATH</code>。自分の版をコミットする</li>
+                <li>交換して確かめる：隣の人の設計書を、書き手に聞かずに読み、実装者の問いに設計書だけで答える。答えられない点を相手の API設計書の「設計レビューで出た質問」に書き、書き手は本文に反映する（書かないなら理由）</li>
+                <li>見本と合わせる：見本（第11回が前提にする URL・文言・テーブル）に置き換えて <code>git diff</code> で比べ、README とストーリーの控えと一緒にコミットする</li>
+                <li>PR（<code>Closes #13</code>）を出し、GitHub の画面で図を確かめてマージする</li>
+              </ol>
+            </li>
+            <li><strong>演習</strong>：上の流れを各自のリポジトリで通す。振り返り・宿題・発展課題は設けない（HTML 断片の URL を足す例・タグの多対多の ER図・完了済みをもう一度完了にしたときの扱いは講師が見せる補足）</li>
+            <li><strong>図</strong>：URL の木、POST → 303 → GET とフォーム送信のシーケンス図、ステータスコードの選び方、ER図、状態を計算で求める状態遷移図、3層の構成図、環境変数の流れ</li>
+            <li><strong>SE観点</strong>：「実装者が質問せずに作れるか」を合格基準にする。出た質問には口で答えず、設計書に書き足す</li>
+          </ul>
+        </section>
+        <section class="level3" aria-labelledby="第11回tdd-による-web-バックエンド">
+          <h3 id="第11回tdd-による-web-バックエンド">第11回　TDD による Web バックエンド</h3>
+          <p>tag: <code>web-サーバ</code> <code>db</code> <code>test-自動</code>　第10回の設計書と第9回の受け入れ条件 (1)〜(15) から、テストを先に書いて Web 版を作る。第7回の <code>TaskStore</code>（Protocol）に SQLite 版を足して差し替える。Issue #15 → ブランチ → レッドとグリーンのコミット → PR（<code>Closes #15</code>・<code>#8</code>〜<code>#11</code>）→ CI が通ってからマージ、の流れで入れる</p>
+          <ul>
+            <li><strong>狙い</strong>：設計書の仕様を「通るべきテスト」に書き換えてから、Web の画面を実装する</li>
+            <li><strong>内容</strong>：次の順に、参考書・公式資料の節・短い説明・理解のためのコマンドやコードの流れで進める
+              <ol>
+                <li>Issue とブランチ、依存パッケージ：3層に FastAPI・uvicorn・Jinja2・python-multipart を当てはめる、テスト用の httpx2、<code>mise.toml</code> の <code>TODO_DB_PATH</code> と <code>dev</code>・<code>db-reset</code>、<code>.gitignore</code> に <code>var/</code></li>
+                <li>SqliteStore：保存先のテストの <code>params</code> に <code>"sqlite"</code> を足して失敗を見る → 見本の <code>SqliteStore</code>（<code>open</code>・<code>close</code>、<code>with conn:</code> のコミット、<code>?</code> のプレースホルダ、日付と真偽値の変換）で通す</li>
+                <li>レッド：追加のテスト。fixture で <code>get_store</code>・<code>get_today</code> を <code>dependency_overrides</code> で <code>tmp_path</code> の DB と固定日に差し替える（依存性の注入）</li>
+                <li>グリーン：<code>web.py</code>（<code>Depends</code> と <code>yield</code> の依存関係、<code>render_index</code>）とテンプレート（Jinja2 の継承と自動エスケープ）、最小の <code>add_task</code> と 303</li>
+                <li>入力エラー：空のタイトルのテストで 422（FastAPI の検証）と例外を見る → 第7回の <code>validate_title</code>・<code>parse_due</code> の例外を 400 の一覧ページにする</li>
+                <li>完了と 404：303 と、ないタスクの 404 のテスト（文言まで確かめる）→ <code>mark_done</code></li>
+                <li>残りの受け入れ条件のテストを見本からコピーして読み、わざと壊して（並び順・<code>| safe</code>）落ちるのを見る</li>
+                <li><code>mise run dev</code> でブラウザから操作し、curl で 303・400・404 を見る</li>
+                <li>設計書と見比べ、README と受け入れ条件の控えをそろえて PR を出し、CI が緑になってからマージして Issue #8〜#11・#15 を閉じる</li>
+              </ol>
+            </li>
+            <li><strong>演習</strong>：上の流れを各自のリポジトリで通す。手で書くテストは追加・入力エラー・完了・404 で、残りは見本からコピーして読む。振り返り・宿題・発展課題は設けない（Pydantic のフォームモデル・<code>render_index</code> へのまとめ方・境目のテストの足し方は講師が見せる補足）</li>
+            <li><strong>図</strong>：層の構成、保存先のクラス図、依存性の注入の差し替え、fixture とリクエストの流れのシーケンス図、422 と 400 の分かれ道、完了の 404 のシーケンス図、TDD の履歴の gitGraph。実装した機能の流れを API設計書のシーケンス図と突き合わせる</li>
+            <li><strong>PM観点</strong>：PR に <code>Closes #番号</code> を1行ずつ書き、マージでストーリーの Issue を閉じる（マイルストーン <code>Web 版</code> が進む）</li>
+          </ul>
+        </section>
+        <section class="level3" aria-labelledby="第12回画面の部分更新と成果発表">
+          <h3 id="第12回画面の部分更新と成果発表">第12回　画面の部分更新と成果発表</h3>
+          <p>tag: <code>web-ブラウザ</code> <code>test-レビュー</code>（不具合票）　第3回で触った fetch と DOM で、第11回の Web 版の一覧を部分更新にする。Web の基礎（Network タブ・Cookie・CORS・XSS）は第3回で済んでいるので繰り返さず、テストとコードは素材から足して読み、ブラウザで動きを確かめることに時間を使う。後半は1人ずつ発表する。Issue #17 → PR #18（部分更新）、Issue #19 → PR #20（不具合）、Issue #21 → PR #22（発表資料）の順に入れる</p>
+          <ul>
+            <li><strong>狙い</strong>：サーバが HTML 断片を返し、JavaScript は差し替えるだけという作りで画面を部分更新にする。見つけた不具合を票とテストで直す。作ったものを根拠を添えて発表する</li>
+            <li><strong>内容</strong>：次の順に、参考書・公式資料の節・短い説明・理解のためのコマンドやコードの流れで進める
+              <ol>
+                <li>断片の URL と app.js：素材のテスト（断片・<code>data-fragment</code>・app.js の読み込み）を足してレッド → 素材のテンプレート（一覧を <code>_task_list.html</code> に切り出す）・ルート・素朴な <code>app.js</code> を足してグリーン</li>
+                <li>イベントの委譲：素朴な版では、差し替えた一覧の「完了」がふつうの送信（POST 303）になるのを Network で見る → 見本の <code>app.js</code>（<code>document</code> に1つだけイベントを付ける）に替える</li>
+                <li>JSON 版との比較：素材のテストとルートで完了の JSON 版を足し、見本の <code>done-json.js</code> に差し替えて「期限切れだけ」の表示で比べる（返すもの・組み立てる場所・テスト）</li>
+                <li>設計書（API設計書・システム構成図 1.1）を見本にそろえ、PR #18 でマージ</li>
+                <li>受け入れ条件 (15) を部分更新で試し直して不具合を見つけ、Issue #19（ラベル <code>不具合</code>）→ 不具合票 BUG-001 → 再現テスト（レッド）→ 修正（グリーン）→ PR #20 でマージ</li>
+                <li>発表準備：素材の発表資料の型（何を作ったか → 構成 → デモ手順 → 工夫1つ）を埋め、PR の数・レッドのコミット数・テストの件数を根拠に添える。デモを1回通し、PR #22 でマージ</li>
+                <li>発表：1人ずつ発表とデモ、聞き手は良かった点と質問を1つずつ。持ち時間は人数から講師が決める</li>
+              </ol>
+            </li>
+            <li><strong>演習</strong>：上の流れを各自のリポジトリで通す。手で書くのは不具合票・再現テスト・修正と、発表資料の工夫の節。振り返り・宿題・発展課題は設けない（スクラムと KPT は扱わない。ポーリング・SSE・WebSocket・htmx は講師が見せる補足）</li>
+            <li><strong>図</strong>：ページと断片のテンプレートの関係、fetch で差し替えるシーケンス図、イベントの委譲、JSON 版のシーケンス図、不具合が出る画面の状態遷移図、不具合を直す流れ、TDD の履歴の gitGraph</li>
+            <li><strong>SE観点</strong>：不具合票の書き方（再現手順・期待結果と根拠・実際の結果）。発表では主張に根拠（テスト・PR・設計書・不具合票）を付ける</li>
+          </ul>
+        </section>
+      </section>
+      <section class="level2" aria-labelledby="事前準備運営のコツ評価">
+        <h2 id="事前準備運営のコツ評価">事前準備・運営のコツ・評価</h2>
+        <p>最大のリスクは第1・2・4回の環境構築で詰まることです。社内ネットワークと権限まわりは研修開始前に講師が一度通しで確認してください。</p>
+        <p><strong>事前準備</strong></p>
+        <ul class="contains-task-list">
+          <li class="task-list-item"><input type="checkbox" disabled=""> 受講者PCでWSLを有効化できるか（管理者権限・情報システム部門の許可）</li>
+          <li class="task-list-item"><input type="checkbox" disabled=""> 社内プロキシのアドレス、認証の有無、社内CA証明書の入手方法</li>
+          <li class="task-list-item"><input type="checkbox" disabled=""> GitHub／GitLab など利用するGitホスティングとアカウント発行</li>
+          <li class="task-list-item"><input type="checkbox" disabled=""> mise・uv・PyPI・npm へのアクセスがプロキシ越しに通るかの確認</li>
+          <li class="task-list-item"><input type="checkbox" disabled=""> 講師用の模範の TODO アプリ（各回終了時点の状態を用意しておくと、遅れた人が追いつける）</li>
+        </ul>
+        <p><strong>運営のコツ</strong></p>
+        <ul>
+          <li>詰まった人は「30分調べて解決しなければ質問する」ルールにし、質問の書き方（何をして・何を期待し・何が起きたか）も教える</li>
+          <li>実装が遅れても設計書は必ず全員がその回のうちに書く。研修の本題はそちら側</li>
+        </ul>
+        <p><strong>評価の観点</strong></p>
+        <table>
+          <thead>
+            <tr>
+              <th>観点</th>
+              <th>見るもの</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>構成管理</td>
+              <td>コミットの粒度とメッセージ、PRの説明とセルフレビュー</td>
+            </tr>
+            <tr>
+              <td>PM</td>
+              <td>ストーリーを Issue に分けて登録し、見積の根拠を説明できるか</td>
+            </tr>
+            <tr>
+              <td>SE</td>
+              <td>設計書が第三者に伝わるか、不具合票の質</td>
+            </tr>
+            <tr>
+              <td>技術</td>
+              <td>動くこと、テストがあること、ruff を通っていること</td>
+            </tr>
+            <tr>
+              <td>再現性</td>
+              <td>手順書だけで他人が環境を再現できるか</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+  
+
+</body></html>

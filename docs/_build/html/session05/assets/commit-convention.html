@@ -1,0 +1,207 @@
+<!DOCTYPE html><html lang="ja"><head>
+    <meta charset="utf-8">
+    <title>研修の Git の規約（コミット・ブランチ・PR・セルフレビュー）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../../theme.css">
+<script src="../../docs.js" defer></script>
+</head>
+  <body>
+<nav class="page-nav"><a href="../../index.html">目次</a><a href="../../README.html">全体概要</a><a href="../../tags.html">タグ一覧</a></nav>
+    <section class="level1" aria-labelledby="研修の-git-の規約コミットブランチprセルフレビュー">
+      <h1 id="研修の-git-の規約コミットブランチprセルフレビュー">研修の Git の規約（コミット・ブランチ・PR・セルフレビュー）</h1>
+      <p>第5回から使う、研修共通の規約です。手順書のリポジトリ（<code>workspace/session05/</code>）と、第6回に作るアプリのリポジトリ（<code>workspace/todo-app/</code>）の両方で使います。第7回で自分のコーディング規約を決めるときに、見直してかまいません。</p>
+      <section class="level2" aria-labelledby="1-1つのコミットには1つの目的だけを入れる">
+        <h2 id="1-1つのコミットには1つの目的だけを入れる">1. 1つのコミットには1つの目的だけを入れる</h2>
+        <ul>
+          <li>「何のための変更か」を1文で言えない変更は、コミットを分ける</li>
+          <li>例: 「手順書の追加」と「誤字の修正」は別のコミットにする</li>
+          <li>迷ったら小さく分ける。分けたコミットはまとめられるが、混ざったコミットを後から分けるのは難しい</li>
+        </ul>
+      </section>
+      <section class="level2" aria-labelledby="2-メッセージは1行目何を本文なぜ">
+        <h2 id="2-メッセージは1行目何を本文なぜ">2. メッセージは「1行目＝何を」「本文＝なぜ」</h2>
+        <pre class="language-text"><code class="language-text">README の mise のインストール手順に URL を追記する      ← 1行目: 何をしたか（日本語なら30文字程度まで）
+
+隣の人に手順書を試してもらったとき、どこから入れるのかで  ← 本文: なぜそうしたか
+迷ったため。                                            （1行目との間は1行空ける）</code></pre>
+        <ul>
+          <li>1行目は「〜する」の形で、そのコミットを入れると何が起きるかを書く</li>
+          <li>本文には、差分（<code>git diff</code>）を見てもわからないこと（理由、背景、試してやめたこと）を書く</li>
+          <li>1行目だけで理由まで伝わる小さな変更なら、本文は省略してよい</li>
+          <li>日本語で書く</li>
+        </ul>
+      </section>
+      <section class="level2" aria-labelledby="3-コミットしないもの">
+        <h2 id="3-コミットしないもの">3. コミットしないもの</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>もの</th>
+              <th>理由</th>
+              <th>対処</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>.venv/</code> などの仮想環境</td>
+              <td><code>mise.toml</code> と <code>uv.lock</code> から作り直せる。ファイル数が多く、PC ごとに中身が違う</td>
+              <td><code>.gitignore</code> に書く</td>
+            </tr>
+            <tr>
+              <td><code>.env</code>、パスワード、トークン、プロキシの認証情報</td>
+              <td>履歴に一度入ると、後のコミットで消しても過去のコミットから読める</td>
+              <td><code>.gitignore</code> に書く。入れてしまったら講師に相談し、パスワードを変える</td>
+            </tr>
+            <tr>
+              <td><code>__pycache__/</code>、<code>tasks.json</code>・<code>var/</code> などの実行で自動でできるファイル</td>
+              <td>作り直せる。実行するたびに変わる</td>
+              <td><code>.gitignore</code> に書く</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="level2" aria-labelledby="4-コミットの前に確かめる">
+        <h2 id="4-コミットの前に確かめる">4. コミットの前に確かめる</h2>
+        <pre class="language-sh"><code class="language-sh"><span class="token function">git</span> status          <span class="token comment"># 意図しないファイルが入っていないか</span>
+<span class="token function">git</span> diff --staged   <span class="token comment"># これからコミットする差分</span></code></pre>
+      </section>
+      <section class="level2" aria-labelledby="5-ブランチ運用">
+        <h2 id="5-ブランチ運用">5. ブランチ運用</h2>
+        <ul>
+          <li>main に直接コミットしない。main はいつでも動く・読める状態に保ち、変更はブランチ → PR → マージで入れる（例外は、リポジトリを作った直後の最初の数コミットだけ）</li>
+          <li>1 Issue = 1 ブランチ。名前は <code>issue-&lt;番号&gt;-&lt;内容（英小文字とハイフン）&gt;</code>（例: <code>issue-1-target-env</code>）</li>
+          <li>ブランチは必ず最新の main から作る（<code>git switch main</code> → <code>git pull</code> → <code>git switch -c 名前</code>）</li>
+          <li>ブランチは小さく短くする。放置するほど main との差が広がり、コンフリクトしやすい</li>
+          <li>マージは既定のマージコミットで行う。マージしたブランチは消してよい</li>
+        </ul>
+      </section>
+      <section class="level2" aria-labelledby="6-issue-と-pr-の書き方">
+        <h2 id="6-issue-と-pr-の書き方">6. Issue と PR の書き方</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>項目</th>
+              <th>書くこと</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Issue のタイトル</td>
+              <td>やることを「〜する」の形で</td>
+            </tr>
+            <tr>
+              <td>Issue の本文</td>
+              <td>目的（誰が何に困っているか）、完了条件（何ができていれば終わりか）</td>
+            </tr>
+            <tr>
+              <td>PR のタイトル</td>
+              <td>何を変えたか（Issue のタイトルと同じでよい）</td>
+            </tr>
+            <tr>
+              <td>PR の目的</td>
+              <td>なぜ必要か。<code>Closes #番号</code> で Issue と紐付ける（マージで Issue が閉じる）</td>
+            </tr>
+            <tr>
+              <td>PR の変更点</td>
+              <td>何を変えたか。変えていないことや、別の Issue で扱うことも</td>
+            </tr>
+            <tr>
+              <td>PR の確認方法</td>
+              <td>他人が同じ確認をできる手順と、期待する結果</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>テンプレート: <a href="../../templates/pull_request.html">docs/templates/pull_request.md</a>。見本: <a href="../../../../../examples/session05/pr-description.md">examples/session05/pr-description.md</a></p>
+      </section>
+      <section class="level2" aria-labelledby="7-セルフレビューの観点">
+        <h2 id="7-セルフレビューの観点">7. セルフレビューの観点</h2>
+        <p>マージの前に、PR の差分（GitHub「Files changed」／GitLab「Changes」）を自分で上から読みます。他人のつもりで読み、気づいたことは行コメントに残します。</p>
+        <table>
+          <thead>
+            <tr>
+              <th>観点</th>
+              <th>見ること</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>目的</td>
+              <td>PR の目的と変更点が一致している。関係ない変更が混ざっていない</td>
+            </tr>
+            <tr>
+              <td>確認方法</td>
+              <td>書いた手順を自分で実行し、書いたとおりの結果になる</td>
+            </tr>
+            <tr>
+              <td>読みやすさ</td>
+              <td>初めて読む人に伝わる。誤字や手順の抜けがない</td>
+            </tr>
+            <tr>
+              <td>履歴</td>
+              <td>コミットが「何を・なぜ」の単位に分かれている</td>
+            </tr>
+            <tr>
+              <td>安全</td>
+              <td>秘密情報、<code>.venv/</code>、コンフリクトの記号（<code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> など）が入っていない</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>コメントは <strong>事実</strong>（どこで何が）・<strong>理由</strong>（なぜ気になるか）・<strong>提案</strong>（どうするか）をそろえ、先頭に <code>[必須]</code>（直してからマージ）／<code>[提案]</code>／<code>[質問]</code>／<code>[良い点]</code>／<code>[確認]</code>（確かめたこと）を付けます。見本: <a href="../../../../../examples/session05/self-review.md">examples/session05/self-review.md</a></p>
+      </section>
+      <section class="level2" aria-labelledby="8-コンフリクトの解決">
+        <h2 id="8-コンフリクトの解決">8. コンフリクトの解決</h2>
+        <ul>
+          <li>どちらかを選ばず、両方の Issue の目的が成り立つ形にする。片方を捨てると、その Issue は閉じても目的が失われる</li>
+          <li>どちらの目的とも違う新しい案を思いついたら、この PR で決めずに新しい Issue にする</li>
+          <li>記号の行（<code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>・<code>=======</code>・<code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>）はすべて消し、<code>grep</code> で残っていないことを確かめてから <code>git add</code> する</li>
+          <li>解決したら PR の差分をもう一度セルフレビューしてからマージする</li>
+        </ul>
+      </section>
+      <section class="level2" aria-labelledby="悪い例と良い例">
+        <h2 id="悪い例と良い例">悪い例と良い例</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>悪い例</th>
+              <th>何が困るか</th>
+              <th>良い例</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>修正</code></td>
+              <td>何を直したのか、履歴から探せない</td>
+              <td><code>README の uv のバージョン指定の誤りを直す</code></td>
+            </tr>
+            <tr>
+              <td><code>いろいろ</code></td>
+              <td>1つのコミットに複数の目的が混ざっている</td>
+              <td>目的ごとに分けてコミットする</td>
+            </tr>
+            <tr>
+              <td><code>README.md を変更</code></td>
+              <td>ファイル名は <code>git log --stat</code> でわかる。何のための変更かがわからない</td>
+              <td><code>README に mise install の手順を追記する</code></td>
+            </tr>
+            <tr>
+              <td><code>第4回の分</code></td>
+              <td>1つのコミットに複数の目的が混ざっている</td>
+              <td><code>Python と依存パッケージのバージョンを固定する</code></td>
+            </tr>
+            <tr>
+              <td>ブランチ名 <code>test</code>・<code>fix</code></td>
+              <td>何の作業か、どの Issue かわからない</td>
+              <td><code>issue-3-proxy-note</code></td>
+            </tr>
+            <tr>
+              <td>PR の本文が空</td>
+              <td>目的も確認方法もわからず、レビューできない</td>
+              <td>目的（<code>Closes #3</code>）・変更点・確認方法を書く</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+  
+
+</body></html>

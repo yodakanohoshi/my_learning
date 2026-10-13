@@ -1,0 +1,659 @@
+<!DOCTYPE html><html lang="ja"><head>
+    <meta charset="utf-8">
+    <title>第10回 設計書作成</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../theme.css">
+<script src="../docs.js" defer></script>
+</head>
+  <body>
+<nav class="page-nav"><a href="../index.html">目次</a><a href="../README.html">全体概要</a><a href="../tags.html">タグ一覧</a></nav>
+    <section class="level1" aria-labelledby="第10回-設計書作成">
+      <h1 id="第10回-設計書作成">第10回 設計書作成</h1>
+      <p>tag: 設計-詳細, 設計-構成, http-構成, db<br>前提タグ: 設計-要件, git-github<br>所要: 座学15分 / ハンズオン45分</p>
+      <section class="level2" aria-labelledby="ゴール">
+        <h2 id="ゴール">ゴール</h2>
+        <ul>
+          <li>ストーリーの受け入れ条件と要件メモから、API設計書・DB設計書・システム構成図をテンプレートに沿って書ける</li>
+          <li>エンドポイントを「URL・メソッド・リクエストとレスポンスの例・ステータスコード・入力チェックとエラーの文言」で決められる</li>
+          <li>シーケンス図・ER図・構成図を Mermaid で書ける</li>
+          <li>設計書を隣の人と交換して「質問せずに作れるか」を確かめ、出た質問を設計書に書き足せる</li>
+        </ul>
+      </section>
+      <section class="level2" aria-labelledby="事前準備">
+        <h2 id="事前準備">事前準備</h2>
+        <ul>
+          <li>第9回のハンズオンの最後（手順9のマージ）まで済み、<code>~/handsoff/workspace/todo-app</code> の main に <code>docs/requirements.md</code>・<code>docs/stories.md</code> がある。ストーリーの Issue #8〜#11 が Open</li>
+          <li>遅れた人: <a href="../../../../examples/todo-app-snapshots/session-09/README.md">session-09/</a> を <a href="../../../../examples/README.md#%E9%81%85%E3%82%8C%E3%81%9F%E4%BA%BA%E3%81%8C%E8%BF%BD%E3%81%84%E3%81%A4%E3%81%8F%E6%96%B9%E6%B3%95">examples/README.md</a> の手順でコピーし、push してから始める</li>
+          <li>VS Code で Markdown の Mermaid をプレビューできる（第9回と同じ拡張機能）</li>
+          <li>テンプレート: <a href="../templates/api-design.html">API</a>・<a href="../templates/db-design.html">DB</a>・<a href="../templates/architecture.html">システム構成図</a></li>
+        </ul>
+      </section>
+      <section class="level2" aria-labelledby="まとめ">
+        <h2 id="まとめ">まとめ</h2>
+        <p>冒頭の座学で使います。ハンズオンでは、第9回の受け入れ条件 (1)〜(15) と要件メモをもとに3つの設計書の自分の版を書き、隣の人と交換して確かめてから、見本と合わせて PR でマージします。</p>
+        <section class="level3" aria-labelledby="設計書と図">
+          <h3 id="設計書と図">設計書と図</h3>
+          <p>合格基準: <strong>実装者が質問せずに作れるか</strong>。画面設計書は作らない（画面は受け入れ条件と API設計書から組み立てる）。</p>
+          <table>
+            <thead>
+              <tr>
+                <th>設計書（置き場所）</th>
+                <th>主な図</th>
+                <th>必ず書くこと</th>
+                <th>元にするもの</th>
+                <th>参照</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>API設計書（<code>docs/design/api.md</code>）</td>
+                <td>シーケンス図</td>
+                <td>エンドポイント、メソッド、リクエスト・レスポンス例、ステータスコード、入力チェックとエラーの文言</td>
+                <td>ストーリーと受け入れ条件</td>
+                <td>Web技術の基本 3章・5章</td>
+              </tr>
+              <tr>
+                <td>DB設計書（<code>docs/design/db.md</code>）</td>
+                <td>ER図</td>
+                <td>テーブル定義（カラム・型・NULL 可否・キー）、制約、計算で求める値</td>
+                <td>状態遷移図、CLI の <code>Task</code></td>
+                <td>SE基礎 8章</td>
+              </tr>
+              <tr>
+                <td>システム構成図（<code>docs/design/architecture.md</code>）</td>
+                <td>構成図</td>
+                <td>構成要素、通信経路とポート、ミドルウェアとバージョン、環境変数</td>
+                <td>非機能要件・制約</td>
+                <td>Web技術の基本 5章・7章、SE基礎 9章</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="エンドポイントhttp-構成">
+          <h3 id="エンドポイントhttp-構成">エンドポイント（http-構成）</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>決まり</th>
+                <th>例</th>
+                <th>参照</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>URL は名詞（もの）、操作はメソッド（第3回の REST と同じ）</td>
+                <td><code>GET /</code> 一覧、<code>POST /tasks</code> 追加</td>
+                <td>Web技術の基本 3章、MDN HTTP リクエストメソッド</td>
+              </tr>
+              <tr>
+                <td>フォーム送信の後は 303 で一覧へ</td>
+                <td>再読み込みで二重に追加しない（POST → リダイレクト → GET）</td>
+                <td>MDN 303 See Other</td>
+              </tr>
+              <tr>
+                <td>絞り込みはクエリ</td>
+                <td><code>GET /?overdue=1</code> 期限切れだけ</td>
+                <td>Web技術の基本 3章</td>
+              </tr>
+              <tr>
+                <td>返すのは HTML</td>
+                <td>一覧ページ全体。第12回で HTML 断片を返す URL を足す</td>
+                <td>Web技術の基本 5章</td>
+              </tr>
+            </tbody>
+          </table>
+          <table>
+            <thead>
+              <tr>
+                <th>エンドポイント</th>
+                <th>内容</th>
+                <th>成功</th>
+                <th>失敗</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>GET /</code></td>
+                <td>一覧ページ（<code>?overdue=1</code> で期限切れだけ）</td>
+                <td>200</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><code>POST /tasks</code></td>
+                <td>追加（フォーム: <code>title</code>, <code>due</code>）</td>
+                <td>303 → <code>/</code></td>
+                <td>400（一覧ページにエラーの文言）</td>
+              </tr>
+              <tr>
+                <td><code>POST /tasks/{id}/done</code></td>
+                <td>完了にする</td>
+                <td>303 → <code>/</code></td>
+                <td>404（無い id）</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>ステータスコードの意味は第3回の「ステータスコード」の表。このアプリで返す場面は次のとおり。</p>
+          <table>
+            <thead>
+              <tr>
+                <th>コード</th>
+                <th>このアプリで返す場面</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>200</td>
+                <td>一覧ページ</td>
+              </tr>
+              <tr>
+                <td>303</td>
+                <td>追加・完了のあと <code>/</code> へ</td>
+              </tr>
+              <tr>
+                <td>400</td>
+                <td>タイトルが空・101文字以上、期限が日付でない</td>
+              </tr>
+              <tr>
+                <td>404</td>
+                <td><code>POST /tasks/999/done</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="テーブルdb">
+          <h3 id="テーブルdb">テーブル（db）</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>考え方</th>
+                <th>ひとことで</th>
+                <th>参照</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1行1件</td>
+                <td><code>tasks</code> テーブルの1行がタスク1件</td>
+                <td>SE基礎 8章</td>
+              </tr>
+              <tr>
+                <td>型と NULL</td>
+                <td><code>due</code> は NULL 可（期限なし）。NULL の意味を書く</td>
+                <td>SE基礎 8章</td>
+              </tr>
+              <tr>
+                <td>計算できる値は持たない</td>
+                <td>期限切れ（<code>OVERDUE</code>）は <code>done</code> と <code>due</code> と今日から計算する</td>
+                <td>SE基礎 8章</td>
+              </tr>
+              <tr>
+                <td>SQLite の型</td>
+                <td>日付は ISO 8601 の文字列（<code>2026-11-01</code>）、真偽値は 0／1</td>
+                <td>SE基礎 8章</td>
+              </tr>
+              <tr>
+                <td>名前をそろえる</td>
+                <td>テーブル名・カラム名は英字。設計書・DB・コードで同じ名前</td>
+                <td>SE基礎 8章</td>
+              </tr>
+            </tbody>
+          </table>
+          <table>
+            <thead>
+              <tr>
+                <th>カラム</th>
+                <th>型</th>
+                <th>NULL</th>
+                <th>キー・既定値</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>id</code></td>
+                <td>INTEGER</td>
+                <td>不可</td>
+                <td>PK、AUTOINCREMENT</td>
+              </tr>
+              <tr>
+                <td><code>title</code></td>
+                <td>TEXT</td>
+                <td>不可</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><code>due</code></td>
+                <td>TEXT（<code>YYYY-MM-DD</code>）</td>
+                <td>可（期限なし）</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><code>done</code></td>
+                <td>INTEGER（0／1）</td>
+                <td>不可</td>
+                <td>既定 0</td>
+              </tr>
+              <tr>
+                <td><code>created_at</code></td>
+                <td>TEXT</td>
+                <td>不可</td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="構成設計-構成">
+          <h3 id="構成設計-構成">構成（設計-構成）</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>項目</th>
+                <th>値</th>
+                <th>参照</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>経路</td>
+                <td>ブラウザ → uvicorn（FastAPI＋Jinja2）→ SQLite ファイル</td>
+                <td>Web技術の基本 5章</td>
+              </tr>
+              <tr>
+                <td>待ち受け</td>
+                <td><code>127.0.0.1:8000</code>（自分の PC だけ）</td>
+                <td>Web技術の基本 7章</td>
+              </tr>
+              <tr>
+                <td>DB の場所</td>
+                <td>環境変数 <code>TODO_DB_PATH</code>（既定 <code>var/todo.db</code>）</td>
+                <td>SE基礎 9章</td>
+              </tr>
+              <tr>
+                <td>バージョン</td>
+                <td>Python 3.12（<code>mise.toml</code>）、ライブラリは <code>pyproject.toml</code> と <code>uv.lock</code></td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="mermaid図ごとの書き方">
+          <h3 id="mermaid図ごとの書き方">Mermaid（図ごとの書き方）</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>図</th>
+                <th>1行目</th>
+                <th>例</th>
+                <th>参照</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>シーケンス図</td>
+                <td><code>sequenceDiagram</code></td>
+                <td><code>ブラウザ-&gt;&gt;アプリ: POST /tasks</code>、<code>alt 入力が正しい</code> 〜 <code>else 正しくない</code> 〜 <code>end</code></td>
+                <td>Mermaid 公式 Sequence diagrams</td>
+              </tr>
+              <tr>
+                <td>ER図</td>
+                <td><code>erDiagram</code></td>
+                <td><code>tasks { INTEGER id PK "連番" }</code>。名前は英字、説明は <code>"期限"</code>。関係は <code>users \|\|--o{ tasks : "持つ"</code></td>
+                <td>Mermaid 公式 Entity Relationship Diagrams</td>
+              </tr>
+              <tr>
+                <td>構成図</td>
+                <td><code>flowchart LR</code></td>
+                <td><code>subgraph U["uvicorn 127.0.0.1:8000"]</code>、<code>B -- "HTTP" --&gt; A</code>、<code>D[(SQLite)]</code></td>
+                <td>Mermaid 公式 Flowcharts</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="設計書の確かめ方">
+          <h3 id="設計書の確かめ方">設計書の確かめ方</h3>
+          <ul>
+            <li>「この設計書だけで実装するとしたら」質問したい箇所を全部書く。質問が少ないほど良い設計書</li>
+            <li>指摘は「どこが・なぜ困るか・どうしたらよいか」</li>
+            <li>出た質問には口で答えず、設計書に書き足す（次に読む人は書き手に聞けない）</li>
+          </ul>
+          <table>
+            <thead>
+              <tr>
+                <th>設計書</th>
+                <th>観点</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>共通</td>
+                <td>どのストーリー（Issue）のためかわかる。受け入れ条件がどれも、どこかの設計で満たせる。同じものを同じ名前で呼ぶ</td>
+              </tr>
+              <tr>
+                <td>API</td>
+                <td>全操作に URL・メソッド・リクエスト例・レスポンス例。状況ごとのステータス。エラーの文言（そのまま）と表示場所</td>
+              </tr>
+              <tr>
+                <td>DB</td>
+                <td>全カラムに型・NULL 可否・キー。NULL の意味。計算で求める値の条件（不等号まで）。同じ情報を2か所に持たない</td>
+              </tr>
+              <tr>
+                <td>構成図</td>
+                <td>構成要素・経路とポート・バージョン。設定を環境変数で切り替える方法</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+      <section class="level2" aria-labelledby="ハンズオン">
+        <h2 id="ハンズオン">ハンズオン</h2>
+        <p>1ステップ1コマンド。各ステップは「🖋 やること → 📚 参考書・公式資料の節 → 📒 説明 → コマンドや書くもの」。作業場所は <code>~/handsoff/workspace/todo-app/</code>。見本は <a href="../../../../examples/todo-app-snapshots/session-10/README.md">session-10/</a>（<a href="../../../../examples/session10/README.md">examples/session10/</a>）。</p>
+        <section class="level3" aria-labelledby="1-issue-とブランチテンプレートを置く3分">
+          <h3 id="1-issue-とブランチテンプレートを置く3分">1. Issue とブランチ、テンプレートを置く（3分）</h3>
+          <section class="level4" aria-labelledby="-issue-を立てるブラウザ">
+            <h4 id="-issue-を立てるブラウザ">🖋 Issue を立てる（ブラウザ）</h4>
+            <p>📚 Pro Git 6.2 プロジェクトへの貢献</p>
+            <p>📒 第9回の PR が #12 なので、この Issue は #13 になる（GitLab では出た番号を使う）。本文は<a href="../templates/issue_task.html">タスク用テンプレート</a>で書き、ラベル <code>タスク</code> を付ける</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Issue</th>
+                  <th>タイトル</th>
+                  <th>目的</th>
+                  <th>完了条件</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>#13</td>
+                  <td>Web 版の API・DB設計書とシステム構成図を書く</td>
+                  <td>作る前に、どう作るかを決めて残す</td>
+                  <td><code>docs/design/</code> の3つが main にあり、隣の人の質問を反映している</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+          <section class="level4" aria-labelledby="-ブランチを作る">
+            <h4 id="-ブランチを作る">🖋 ブランチを作る</h4>
+            <p>📒 3つの設計書は、第9回の文書から作る。第11回は、この設計書の URL・ステータスコード・エラーの文言・テーブルでテストと実装を書く</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cd</span> ~/handsoff/workspace/todo-app
+<span class="token function">git</span> switch main; git pull; git switch -c issue-13-design</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-テンプレートを置く">
+            <h4 id="-テンプレートを置く">🖋 テンプレートを置く</h4>
+            <p>📒 設計書は <code>docs/design/</code> にまとめる。テンプレートの <code>&lt;!-- --&gt;</code> は書き方の注意で、書き終えたら消してよい</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mkdir</span> -p docs/design
+<span class="token function">cp</span> ~/handsoff/docs/templates/api-design.md docs/design/api.md
+<span class="token function">cp</span> ~/handsoff/docs/templates/db-design.md docs/design/db.md
+<span class="token function">cp</span> ~/handsoff/docs/templates/architecture.md docs/design/architecture.md
+<span class="token function">ls</span> docs/design</code></pre>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="2-api設計書-url-とステータスコード7分">
+          <h3 id="2-api設計書-url-とステータスコード7分">2. API設計書: URL とステータスコード（7分）</h3>
+          <section class="level4" aria-labelledby="-操作を-url-とメソッドに当てはめる">
+            <h4 id="-操作を-url-とメソッドに当てはめる">🖋 操作を URL とメソッドに当てはめる</h4>
+            <p>📚 Web技術の基本 3章 HTTPでやりとりする仕組み、MDN HTTP リクエストメソッド</p>
+            <p>📒 URL は「何を」（もの）、メソッドは「どうする」。見るだけなら GET、追加・変更は POST（HTML のフォームは GET と POST しか送れない）。S-01〜S-04 を URL とメソッドに当てはめ、<code>docs/design/api.md</code> の「1. エンドポイント一覧」に A-01〜A-03 の3行を書く</p>
+          </section>
+          <section class="level4" aria-labelledby="-post-の後は-303-で一覧へ戻す">
+            <h4 id="-post-の後は-303-で一覧へ戻す">🖋 POST の後は 303 で一覧へ戻す</h4>
+            <p>📚 Web技術の基本 3章、MDN 303 See Other</p>
+            <p>📒 POST にそのまま一覧ページを返すと、再読み込みで同じ POST がもう一度送られ、タスクが二重に追加される。303 で <code>/</code> を GET させれば、再読み込みしても GET が繰り返されるだけになる</p>
+          </section>
+          <section class="level4" aria-labelledby="-リクエストとレスポンスの例を書く">
+            <h4 id="-リクエストとレスポンスの例を書く">🖋 リクエストとレスポンスの例を書く</h4>
+            <p>📚 Web技術の基本 3章</p>
+            <p>📒 「2. 各エンドポイント」の A-02 にパラメータの表と、成功・失敗の例を書く。失敗のレスポンスは HTML の要点（エラーの文言をどこに出すか、入力した値を残すか）だけでよい。ヘッダと本文の読み方は第3回</p>
+            <pre class="language-text"><code class="language-text">POST /tasks HTTP/1.1
+Host: 127.0.0.1:8000
+Content-Type: application/x-www-form-urlencoded
+
+title=%E7%89%9B%E4%B9%B3%E3%82%92%E8%B2%B7%E3%81%86&amp;due=2026-11-01
+
+HTTP/1.1 303 See Other                           ← 成功
+Location: /
+
+HTTP/1.1 400 Bad Request                         ← 失敗: 入力が正しくない
+Content-Type: text/html; charset=utf-8
+
+&lt;input name="title" value="   "&gt;                 ← 入力した値を残す
+&lt;p class="error" role="alert"&gt;タイトルを入力してください&lt;/p&gt;  ← エラー表示欄
+&lt;ul id="task-list"&gt;…&lt;/ul&gt;                        ← 一覧もそのまま出す</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-ステータスコードを選ぶ">
+            <h4 id="-ステータスコードを選ぶ">🖋 ステータスコードを選ぶ</h4>
+            <p>📚 MDN HTTP レスポンスステータスコード</p>
+            <p>📒 状況ごとに1つ選び、「3. ステータスコード」の表を埋める。入力が悪い（400）と対象が無い（404）を分ける</p>
+            <blockquote>
+              <p>座学: 200 で一覧ページを返さずに 303 にする理由と、400 と 404 を分ける理由（→ まとめ「エンドポイント」）</p>
+            </blockquote>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="3-api設計書-入力チェックとシーケンス図6分">
+          <h3 id="3-api設計書-入力チェックとシーケンス図6分">3. API設計書: 入力チェックとシーケンス図（6分）</h3>
+          <section class="level4" aria-labelledby="-受け入れ条件から入力チェックの表を作る">
+            <h4 id="-受け入れ条件から入力チェックの表を作る">🖋 受け入れ条件から入力チェックの表を作る</h4>
+            <p>📚 SE基礎 4章 モデル</p>
+            <p>📒 <code>docs/stories.md</code> のうまくいかない場合を1行ずつ「4. 入力チェックとエラー表示」の表に写す。文言は一字も変えない（第11回のテストで同じ文言を確かめる）。表の下には、表示する場所と入力した値を残すかを書く</p>
+          </section>
+          <section class="level4" aria-labelledby="-追加のシーケンス図を書く">
+            <h4 id="-追加のシーケンス図を書く">🖋 追加のシーケンス図を書く</h4>
+            <p>📚 Mermaid 公式 Sequence diagrams</p>
+            <p>📒 「5. シーケンス図」のテンプレート（下）に矢印を2本足す。アプリが入力をチェックする矢印（<code>アプリ-&gt;&gt;アプリ:</code>）と、入力が正しくないときに一覧を読む <code>DB</code> への矢印（400 でも一覧を出すため）。図の上に、この図で何を伝えるかを1文で書く</p>
+            <figure class="mermaid"><svg id="mermaid-49" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width: 942px; background-color: transparent;" viewBox="-50 -10 942 579" role="graphics-document document" aria-roledescription="sequence"><g><rect x="692" y="493" fill="#eaeaea" stroke="#666" width="150" height="65" name="DB" rx="3" ry="3" class="actor actor-bottom"/><text x="767" y="525.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="767" dy="0">DB</tspan></text></g><g><rect x="492" y="493" fill="#eaeaea" stroke="#666" width="150" height="65" name="アプリ" rx="3" ry="3" class="actor actor-bottom"/><text x="567" y="525.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="567" dy="0">アプリ</tspan></text></g><g><rect x="200" y="493" fill="#eaeaea" stroke="#666" width="150" height="65" name="ブラウザ" rx="3" ry="3" class="actor actor-bottom"/><text x="275" y="525.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="275" dy="0">ブラウザ</tspan></text></g><g/><g><line id="actor3" x1="767" y1="65" x2="767" y2="493" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="DB" data-et="life-line" data-id="DB"/><g id="root-3" data-et="participant" data-type="participant" data-id="DB"><rect x="692" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="DB" rx="3" ry="3" class="actor actor-top"/><text x="767" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="767" dy="0">DB</tspan></text></g></g><g><line id="actor2" x1="567" y1="65" x2="567" y2="493" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="アプリ" data-et="life-line" data-id="アプリ"/><g id="root-2" data-et="participant" data-type="participant" data-id="アプリ"><rect x="492" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="アプリ" rx="3" ry="3" class="actor actor-top"/><text x="567" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="567" dy="0">アプリ</tspan></text></g></g><g><line id="actor1" x1="275" y1="65" x2="275" y2="493" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="ブラウザ" data-et="life-line" data-id="ブラウザ"/><g id="root-1" data-et="participant" data-type="participant" data-id="ブラウザ"><rect x="200" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="ブラウザ" rx="3" ry="3" class="actor actor-top"/><text x="275" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="275" dy="0">ブラウザ</tspan></text></g></g><g><line id="actor0" x1="75" y1="80" x2="75" y2="493" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="利用者" data-et="life-line" data-id="利用者"/></g><style>#mermaid-49{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;fill:#2b2b2b;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-49 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-49 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-49 .error-icon{fill:#fdfcfa;}#mermaid-49 .error-text{fill:#020305;stroke:#020305;}#mermaid-49 .edge-thickness-normal{stroke-width:1px;}#mermaid-49 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-49 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-49 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-49 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-49 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-49 .marker{fill:#6b6b6b;stroke:#6b6b6b;}#mermaid-49 .marker.cross{stroke:#6b6b6b;}#mermaid-49 svg{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;}#mermaid-49 p{margin:0;}#mermaid-49 .actor{stroke:#3d5468;fill:#f6f4f0;stroke-width:1;}#mermaid-49 rect.actor.outer-path[data-look="neo"]{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-49 rect.note[data-look="neo"]{stroke:hsl(40, 0%, 84.1176470588%);fill:#f3f1ed;filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-49 text.actor&gt;tspan{fill:#2b2b2b;stroke:none;}#mermaid-49 .actor-line{stroke:#3d5468;}#mermaid-49 .innerArc{stroke-width:1.5;stroke-dasharray:none;}#mermaid-49 .messageLine0{stroke-width:1.5;stroke-dasharray:none;stroke:#2b2b2b;}#mermaid-49 .messageLine1{stroke-width:1.5;stroke-dasharray:2,2;stroke:#2b2b2b;}#mermaid-49 [id$="-arrowhead"] path{fill:#2b2b2b;stroke:#2b2b2b;}#mermaid-49 .sequenceNumber{fill:#949494;}#mermaid-49 [id$="-sequencenumber"]{fill:#2b2b2b;}#mermaid-49 [id$="-crosshead"] path{fill:#2b2b2b;stroke:#2b2b2b;}#mermaid-49 .messageText{fill:#2b2b2b;stroke:none;}#mermaid-49 .labelBox{stroke:#3d5468;fill:#f6f4f0;filter:none;}#mermaid-49 .labelText,#mermaid-49 .labelText&gt;tspan{fill:#2b2b2b;stroke:none;}#mermaid-49 .loopText,#mermaid-49 .loopText&gt;tspan{fill:#2b2b2b;stroke:none;}#mermaid-49 .sectionTitle,#mermaid-49 .sectionTitle&gt;tspan{fill:#2b2b2b;stroke:none;}#mermaid-49 .loopLine{stroke-width:2px;stroke-dasharray:2,2;stroke:#3d5468;fill:#3d5468;}#mermaid-49 .note{stroke:hsl(40, 0%, 84.1176470588%);fill:#f3f1ed;}#mermaid-49 .noteText,#mermaid-49 .noteText&gt;tspan{fill:#333;stroke:none;font-weight:normal;}#mermaid-49 .activation0{fill:#eef1f4;stroke:hsl(210, 21.4285714286%, 84.5098039216%);}#mermaid-49 .activation1{fill:#eef1f4;stroke:hsl(210, 21.4285714286%, 84.5098039216%);}#mermaid-49 .activation2{fill:#eef1f4;stroke:hsl(210, 21.4285714286%, 84.5098039216%);}#mermaid-49 .actorPopupMenu{position:absolute;}#mermaid-49 .actorPopupMenuPanel{position:absolute;fill:#f6f4f0;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);filter:drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));}#mermaid-49 .actor-man circle,#mermaid-49 line{fill:#f6f4f0;stroke-width:2px;}#mermaid-49 g rect.rect{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));stroke:#3d5468;}#mermaid-49 .node .neo-node{stroke:#3d5468;}#mermaid-49 [data-look="neo"].node rect,#mermaid-49 [data-look="neo"].cluster rect,#mermaid-49 [data-look="neo"].node polygon{stroke:url(#mermaid-49-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-49 [data-look="neo"].swimlane.cluster rect{filter:none;}#mermaid-49 [data-look="neo"].node path{stroke:url(#mermaid-49-gradient);stroke-width:1px;}#mermaid-49 [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-49 [data-look="neo"].node .neo-line path{stroke:#3d5468;filter:none;}#mermaid-49 [data-look="neo"].node circle{stroke:url(#mermaid-49-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-49 [data-look="neo"].node circle .state-start{fill:#000000;}#mermaid-49 [data-look="neo"].icon-shape .icon{fill:url(#mermaid-49-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-49 [data-look="neo"].icon-shape .icon-neo path{stroke:url(#mermaid-49-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-49 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g/><defs><symbol id="mermaid-49-computer" width="24" height="24"><path transform="scale(.5)" d="M2 2v13h20v-13h-20zm18 11h-16v-9h16v9zm-10.228 6l.466-1h3.524l.467 1h-4.457zm14.228 3h-24l2-6h2.104l-1.33 4h18.45l-1.297-4h2.073l2 6zm-5-10h-14v-7h14v7z"/></symbol></defs><defs><symbol id="mermaid-49-database" fill-rule="evenodd" clip-rule="evenodd"><path transform="scale(.5)" d="M12.258.001l.256.004.255.005.253.008.251.01.249.012.247.015.246.016.242.019.241.02.239.023.236.024.233.027.231.028.229.031.225.032.223.034.22.036.217.038.214.04.211.041.208.043.205.045.201.046.198.048.194.05.191.051.187.053.183.054.18.056.175.057.172.059.168.06.163.061.16.063.155.064.15.066.074.033.073.033.071.034.07.034.069.035.068.035.067.035.066.035.064.036.064.036.062.036.06.036.06.037.058.037.058.037.055.038.055.038.053.038.052.038.051.039.05.039.048.039.047.039.045.04.044.04.043.04.041.04.04.041.039.041.037.041.036.041.034.041.033.042.032.042.03.042.029.042.027.042.026.043.024.043.023.043.021.043.02.043.018.044.017.043.015.044.013.044.012.044.011.045.009.044.007.045.006.045.004.045.002.045.001.045v17l-.001.045-.002.045-.004.045-.006.045-.007.045-.009.044-.011.045-.012.044-.013.044-.015.044-.017.043-.018.044-.02.043-.021.043-.023.043-.024.043-.026.043-.027.042-.029.042-.03.042-.032.042-.033.042-.034.041-.036.041-.037.041-.039.041-.04.041-.041.04-.043.04-.044.04-.045.04-.047.039-.048.039-.05.039-.051.039-.052.038-.053.038-.055.038-.055.038-.058.037-.058.037-.06.037-.06.036-.062.036-.064.036-.064.036-.066.035-.067.035-.068.035-.069.035-.07.034-.071.034-.073.033-.074.033-.15.066-.155.064-.16.063-.163.061-.168.06-.172.059-.175.057-.18.056-.183.054-.187.053-.191.051-.194.05-.198.048-.201.046-.205.045-.208.043-.211.041-.214.04-.217.038-.22.036-.223.034-.225.032-.229.031-.231.028-.233.027-.236.024-.239.023-.241.02-.242.019-.246.016-.247.015-.249.012-.251.01-.253.008-.255.005-.256.004-.258.001-.258-.001-.256-.004-.255-.005-.253-.008-.251-.01-.249-.012-.247-.015-.245-.016-.243-.019-.241-.02-.238-.023-.236-.024-.234-.027-.231-.028-.228-.031-.226-.032-.223-.034-.22-.036-.217-.038-.214-.04-.211-.041-.208-.043-.204-.045-.201-.046-.198-.048-.195-.05-.19-.051-.187-.053-.184-.054-.179-.056-.176-.057-.172-.059-.167-.06-.164-.061-.159-.063-.155-.064-.151-.066-.074-.033-.072-.033-.072-.034-.07-.034-.069-.035-.068-.035-.067-.035-.066-.035-.064-.036-.063-.036-.062-.036-.061-.036-.06-.037-.058-.037-.057-.037-.056-.038-.055-.038-.053-.038-.052-.038-.051-.039-.049-.039-.049-.039-.046-.039-.046-.04-.044-.04-.043-.04-.041-.04-.04-.041-.039-.041-.037-.041-.036-.041-.034-.041-.033-.042-.032-.042-.03-.042-.029-.042-.027-.042-.026-.043-.024-.043-.023-.043-.021-.043-.02-.043-.018-.044-.017-.043-.015-.044-.013-.044-.012-.044-.011-.045-.009-.044-.007-.045-.006-.045-.004-.045-.002-.045-.001-.045v-17l.001-.045.002-.045.004-.045.006-.045.007-.045.009-.044.011-.045.012-.044.013-.044.015-.044.017-.043.018-.044.02-.043.021-.043.023-.043.024-.043.026-.043.027-.042.029-.042.03-.042.032-.042.033-.042.034-.041.036-.041.037-.041.039-.041.04-.041.041-.04.043-.04.044-.04.046-.04.046-.039.049-.039.049-.039.051-.039.052-.038.053-.038.055-.038.056-.038.057-.037.058-.037.06-.037.061-.036.062-.036.063-.036.064-.036.066-.035.067-.035.068-.035.069-.035.07-.034.072-.034.072-.033.074-.033.151-.066.155-.064.159-.063.164-.061.167-.06.172-.059.176-.057.179-.056.184-.054.187-.053.19-.051.195-.05.198-.048.201-.046.204-.045.208-.043.211-.041.214-.04.217-.038.22-.036.223-.034.226-.032.228-.031.231-.028.234-.027.236-.024.238-.023.241-.02.243-.019.245-.016.247-.015.249-.012.251-.01.253-.008.255-.005.256-.004.258-.001.258.001zm-9.258 20.499v.01l.001.021.003.021.004.022.005.021.006.022.007.022.009.023.01.022.011.023.012.023.013.023.015.023.016.024.017.023.018.024.019.024.021.024.022.025.023.024.024.025.052.049.056.05.061.051.066.051.07.051.075.051.079.052.084.052.088.052.092.052.097.052.102.051.105.052.11.052.114.051.119.051.123.051.127.05.131.05.135.05.139.048.144.049.147.047.152.047.155.047.16.045.163.045.167.043.171.043.176.041.178.041.183.039.187.039.19.037.194.035.197.035.202.033.204.031.209.03.212.029.216.027.219.025.222.024.226.021.23.02.233.018.236.016.24.015.243.012.246.01.249.008.253.005.256.004.259.001.26-.001.257-.004.254-.005.25-.008.247-.011.244-.012.241-.014.237-.016.233-.018.231-.021.226-.021.224-.024.22-.026.216-.027.212-.028.21-.031.205-.031.202-.034.198-.034.194-.036.191-.037.187-.039.183-.04.179-.04.175-.042.172-.043.168-.044.163-.045.16-.046.155-.046.152-.047.148-.048.143-.049.139-.049.136-.05.131-.05.126-.05.123-.051.118-.052.114-.051.11-.052.106-.052.101-.052.096-.052.092-.052.088-.053.083-.051.079-.052.074-.052.07-.051.065-.051.06-.051.056-.05.051-.05.023-.024.023-.025.021-.024.02-.024.019-.024.018-.024.017-.024.015-.023.014-.024.013-.023.012-.023.01-.023.01-.022.008-.022.006-.022.006-.022.004-.022.004-.021.001-.021.001-.021v-4.127l-.077.055-.08.053-.083.054-.085.053-.087.052-.09.052-.093.051-.095.05-.097.05-.1.049-.102.049-.105.048-.106.047-.109.047-.111.046-.114.045-.115.045-.118.044-.12.043-.122.042-.124.042-.126.041-.128.04-.13.04-.132.038-.134.038-.135.037-.138.037-.139.035-.142.035-.143.034-.144.033-.147.032-.148.031-.15.03-.151.03-.153.029-.154.027-.156.027-.158.026-.159.025-.161.024-.162.023-.163.022-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.011-.178.01-.179.008-.179.008-.181.006-.182.005-.182.004-.184.003-.184.002h-.37l-.184-.002-.184-.003-.182-.004-.182-.005-.181-.006-.179-.008-.179-.008-.178-.01-.176-.011-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.022-.162-.023-.161-.024-.159-.025-.157-.026-.156-.027-.155-.027-.153-.029-.151-.03-.15-.03-.148-.031-.146-.032-.145-.033-.143-.034-.141-.035-.14-.035-.137-.037-.136-.037-.134-.038-.132-.038-.13-.04-.128-.04-.126-.041-.124-.042-.122-.042-.12-.044-.117-.043-.116-.045-.113-.045-.112-.046-.109-.047-.106-.047-.105-.048-.102-.049-.1-.049-.097-.05-.095-.05-.093-.052-.09-.051-.087-.052-.085-.053-.083-.054-.08-.054-.077-.054v4.127zm0-5.654v.011l.001.021.003.021.004.021.005.022.006.022.007.022.009.022.01.022.011.023.012.023.013.023.015.024.016.023.017.024.018.024.019.024.021.024.022.024.023.025.024.024.052.05.056.05.061.05.066.051.07.051.075.052.079.051.084.052.088.052.092.052.097.052.102.052.105.052.11.051.114.051.119.052.123.05.127.051.131.05.135.049.139.049.144.048.147.048.152.047.155.046.16.045.163.045.167.044.171.042.176.042.178.04.183.04.187.038.19.037.194.036.197.034.202.033.204.032.209.03.212.028.216.027.219.025.222.024.226.022.23.02.233.018.236.016.24.014.243.012.246.01.249.008.253.006.256.003.259.001.26-.001.257-.003.254-.006.25-.008.247-.01.244-.012.241-.015.237-.016.233-.018.231-.02.226-.022.224-.024.22-.025.216-.027.212-.029.21-.03.205-.032.202-.033.198-.035.194-.036.191-.037.187-.039.183-.039.179-.041.175-.042.172-.043.168-.044.163-.045.16-.045.155-.047.152-.047.148-.048.143-.048.139-.05.136-.049.131-.05.126-.051.123-.051.118-.051.114-.052.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.051.07-.052.065-.051.06-.05.056-.051.051-.049.023-.025.023-.024.021-.025.02-.024.019-.024.018-.024.017-.024.015-.023.014-.023.013-.024.012-.022.01-.023.01-.023.008-.022.006-.022.006-.022.004-.021.004-.022.001-.021.001-.021v-4.139l-.077.054-.08.054-.083.054-.085.052-.087.053-.09.051-.093.051-.095.051-.097.05-.1.049-.102.049-.105.048-.106.047-.109.047-.111.046-.114.045-.115.044-.118.044-.12.044-.122.042-.124.042-.126.041-.128.04-.13.039-.132.039-.134.038-.135.037-.138.036-.139.036-.142.035-.143.033-.144.033-.147.033-.148.031-.15.03-.151.03-.153.028-.154.028-.156.027-.158.026-.159.025-.161.024-.162.023-.163.022-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.011-.178.009-.179.009-.179.007-.181.007-.182.005-.182.004-.184.003-.184.002h-.37l-.184-.002-.184-.003-.182-.004-.182-.005-.181-.007-.179-.007-.179-.009-.178-.009-.176-.011-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.022-.162-.023-.161-.024-.159-.025-.157-.026-.156-.027-.155-.028-.153-.028-.151-.03-.15-.03-.148-.031-.146-.033-.145-.033-.143-.033-.141-.035-.14-.036-.137-.036-.136-.037-.134-.038-.132-.039-.13-.039-.128-.04-.126-.041-.124-.042-.122-.043-.12-.043-.117-.044-.116-.044-.113-.046-.112-.046-.109-.046-.106-.047-.105-.048-.102-.049-.1-.049-.097-.05-.095-.051-.093-.051-.09-.051-.087-.053-.085-.052-.083-.054-.08-.054-.077-.054v4.139zm0-5.666v.011l.001.02.003.022.004.021.005.022.006.021.007.022.009.023.01.022.011.023.012.023.013.023.015.023.016.024.017.024.018.023.019.024.021.025.022.024.023.024.024.025.052.05.056.05.061.05.066.051.07.051.075.052.079.051.084.052.088.052.092.052.097.052.102.052.105.051.11.052.114.051.119.051.123.051.127.05.131.05.135.05.139.049.144.048.147.048.152.047.155.046.16.045.163.045.167.043.171.043.176.042.178.04.183.04.187.038.19.037.194.036.197.034.202.033.204.032.209.03.212.028.216.027.219.025.222.024.226.021.23.02.233.018.236.017.24.014.243.012.246.01.249.008.253.006.256.003.259.001.26-.001.257-.003.254-.006.25-.008.247-.01.244-.013.241-.014.237-.016.233-.018.231-.02.226-.022.224-.024.22-.025.216-.027.212-.029.21-.03.205-.032.202-.033.198-.035.194-.036.191-.037.187-.039.183-.039.179-.041.175-.042.172-.043.168-.044.163-.045.16-.045.155-.047.152-.047.148-.048.143-.049.139-.049.136-.049.131-.051.126-.05.123-.051.118-.052.114-.051.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.052.07-.051.065-.051.06-.051.056-.05.051-.049.023-.025.023-.025.021-.024.02-.024.019-.024.018-.024.017-.024.015-.023.014-.024.013-.023.012-.023.01-.022.01-.023.008-.022.006-.022.006-.022.004-.022.004-.021.001-.021.001-.021v-4.153l-.077.054-.08.054-.083.053-.085.053-.087.053-.09.051-.093.051-.095.051-.097.05-.1.049-.102.048-.105.048-.106.048-.109.046-.111.046-.114.046-.115.044-.118.044-.12.043-.122.043-.124.042-.126.041-.128.04-.13.039-.132.039-.134.038-.135.037-.138.036-.139.036-.142.034-.143.034-.144.033-.147.032-.148.032-.15.03-.151.03-.153.028-.154.028-.156.027-.158.026-.159.024-.161.024-.162.023-.163.023-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.01-.178.01-.179.009-.179.007-.181.006-.182.006-.182.004-.184.003-.184.001-.185.001-.185-.001-.184-.001-.184-.003-.182-.004-.182-.006-.181-.006-.179-.007-.179-.009-.178-.01-.176-.01-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.023-.162-.023-.161-.024-.159-.024-.157-.026-.156-.027-.155-.028-.153-.028-.151-.03-.15-.03-.148-.032-.146-.032-.145-.033-.143-.034-.141-.034-.14-.036-.137-.036-.136-.037-.134-.038-.132-.039-.13-.039-.128-.041-.126-.041-.124-.041-.122-.043-.12-.043-.117-.044-.116-.044-.113-.046-.112-.046-.109-.046-.106-.048-.105-.048-.102-.048-.1-.05-.097-.049-.095-.051-.093-.051-.09-.052-.087-.052-.085-.053-.083-.053-.08-.054-.077-.054v4.153zm8.74-8.179l-.257.004-.254.005-.25.008-.247.011-.244.012-.241.014-.237.016-.233.018-.231.021-.226.022-.224.023-.22.026-.216.027-.212.028-.21.031-.205.032-.202.033-.198.034-.194.036-.191.038-.187.038-.183.04-.179.041-.175.042-.172.043-.168.043-.163.045-.16.046-.155.046-.152.048-.148.048-.143.048-.139.049-.136.05-.131.05-.126.051-.123.051-.118.051-.114.052-.11.052-.106.052-.101.052-.096.052-.092.052-.088.052-.083.052-.079.052-.074.051-.07.052-.065.051-.06.05-.056.05-.051.05-.023.025-.023.024-.021.024-.02.025-.019.024-.018.024-.017.023-.015.024-.014.023-.013.023-.012.023-.01.023-.01.022-.008.022-.006.023-.006.021-.004.022-.004.021-.001.021-.001.021.001.021.001.021.004.021.004.022.006.021.006.023.008.022.01.022.01.023.012.023.013.023.014.023.015.024.017.023.018.024.019.024.02.025.021.024.023.024.023.025.051.05.056.05.06.05.065.051.07.052.074.051.079.052.083.052.088.052.092.052.096.052.101.052.106.052.11.052.114.052.118.051.123.051.126.051.131.05.136.05.139.049.143.048.148.048.152.048.155.046.16.046.163.045.168.043.172.043.175.042.179.041.183.04.187.038.191.038.194.036.198.034.202.033.205.032.21.031.212.028.216.027.22.026.224.023.226.022.231.021.233.018.237.016.241.014.244.012.247.011.25.008.254.005.257.004.26.001.26-.001.257-.004.254-.005.25-.008.247-.011.244-.012.241-.014.237-.016.233-.018.231-.021.226-.022.224-.023.22-.026.216-.027.212-.028.21-.031.205-.032.202-.033.198-.034.194-.036.191-.038.187-.038.183-.04.179-.041.175-.042.172-.043.168-.043.163-.045.16-.046.155-.046.152-.048.148-.048.143-.048.139-.049.136-.05.131-.05.126-.051.123-.051.118-.051.114-.052.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.051.07-.052.065-.051.06-.05.056-.05.051-.05.023-.025.023-.024.021-.024.02-.025.019-.024.018-.024.017-.023.015-.024.014-.023.013-.023.012-.023.01-.023.01-.022.008-.022.006-.023.006-.021.004-.022.004-.021.001-.021.001-.021-.001-.021-.001-.021-.004-.021-.004-.022-.006-.021-.006-.023-.008-.022-.01-.022-.01-.023-.012-.023-.013-.023-.014-.023-.015-.024-.017-.023-.018-.024-.019-.024-.02-.025-.021-.024-.023-.024-.023-.025-.051-.05-.056-.05-.06-.05-.065-.051-.07-.052-.074-.051-.079-.052-.083-.052-.088-.052-.092-.052-.096-.052-.101-.052-.106-.052-.11-.052-.114-.052-.118-.051-.123-.051-.126-.051-.131-.05-.136-.05-.139-.049-.143-.048-.148-.048-.152-.048-.155-.046-.16-.046-.163-.045-.168-.043-.172-.043-.175-.042-.179-.041-.183-.04-.187-.038-.191-.038-.194-.036-.198-.034-.202-.033-.205-.032-.21-.031-.212-.028-.216-.027-.22-.026-.224-.023-.226-.022-.231-.021-.233-.018-.237-.016-.241-.014-.244-.012-.247-.011-.25-.008-.254-.005-.257-.004-.26-.001-.26.001z"/></symbol></defs><defs><symbol id="mermaid-49-clock" width="24" height="24"><path transform="scale(.5)" d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm5.848 12.459c.202.038.202.333.001.372-1.907.361-6.045 1.111-6.547 1.111-.719 0-1.301-.582-1.301-1.301 0-.512.77-5.447 1.125-7.445.034-.192.312-.181.343.014l.985 6.238 5.394 1.011z"/></symbol></defs><defs><marker id="mermaid-49-arrowhead" refX="7.9" refY="5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M -1 0 L 10 5 L 0 10 z"/></marker></defs><defs><marker id="mermaid-49-crosshead" markerWidth="15" markerHeight="8" orient="auto" refX="4" refY="4.5"><path fill="none" stroke="#000000" stroke-width="1pt" d="M 1,2 L 6,7 M 6,2 L 1,7" style="stroke-dasharray: 0, 0;"/></marker></defs><defs><marker id="mermaid-49-filled-head" refX="15.5" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L14,7 L9,1 Z"/></marker></defs><defs><marker id="mermaid-49-sequencenumber" refX="15" refY="15" markerWidth="60" markerHeight="40" orient="auto"><circle cx="15" cy="15" r="6"/></marker></defs><defs><marker id="mermaid-49-solidTopArrowHead" refX="7.9" refY="7.25" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 10 8 L 0 8 z"/></marker></defs><defs><marker id="mermaid-49-solidBottomArrowHead" refX="7.9" refY="0.75" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 10 0 L 0 8 z"/></marker></defs><defs><marker id="mermaid-49-stickTopArrowHead" refX="7.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 7 7" stroke="black" stroke-width="1.5" fill="none"/></marker></defs><defs><marker id="mermaid-49-stickBottomArrowHead" refX="7.5" refY="0" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 7 L 7 0" stroke="black" stroke-width="1.5" fill="none"/></marker></defs><g data-et="control-structure" data-id="i9"><line x1="264" y1="163" x2="778" y2="163" class="loopLine"/><line x1="778" y1="163" x2="778" y2="473" class="loopLine"/><line x1="264" y1="473" x2="778" y2="473" class="loopLine"/><line x1="264" y1="163" x2="264" y2="473" class="loopLine"/><line x1="264" y1="389" x2="778" y2="389" class="loopLine" style="stroke-dasharray: 3, 3;"/><polygon points="264,163 314,163 314,176 305.6,183 264,183" class="labelBox"/><text x="289" y="176" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="labelText" style="font-size: 16px; font-weight: 400;">alt</text><text x="546" y="181" text-anchor="middle" class="loopText" style="font-size: 16px; font-weight: 400;"><tspan x="546">[入力が正しい]</tspan></text><text x="521" y="407" text-anchor="middle" class="sectionTitle" style="font-size: 16px; font-weight: 400;">[入力が正しくない]</text></g><g class="actor-man actor-top" name="利用者" data-et="participant" data-type="actor" data-id="利用者" style="stroke: rgb(61, 84, 104);"><line id="actor-man-torso0" x1="75" y1="25" x2="75" y2="45"/><line id="actor-man-arms0" x1="57" y1="33" x2="93" y2="33"/><line x1="57" y1="60" x2="75" y2="45"/><line x1="75" y1="45" x2="91" y2="60"/><circle cx="75" cy="10" r="15" width="150" height="65"/><text x="75" y="67.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-man" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="75" dy="0">利用者</tspan></text></g><text x="174" y="80" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">フォームを送る</text><line x1="76" y1="109" x2="271" y2="109" class="messageLine0" data-et="message" data-id="i0" data-from="利用者" data-to="ブラウザ" stroke-width="2" stroke="none" marker-end="url(#mermaid-49-arrowhead)" style="fill: none;"/><text x="420" y="124" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">POST /tasks</text><line x1="276" y1="153" x2="563" y2="153" class="messageLine0" data-et="message" data-id="i1" data-from="ブラウザ" data-to="アプリ" stroke-width="2" stroke="none" marker-end="url(#mermaid-49-arrowhead)" style="fill: none;"/><text x="666" y="213" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">保存する</text><line x1="568" y1="242" x2="763" y2="242" class="messageLine0" data-et="message" data-id="i3" data-from="アプリ" data-to="DB" stroke-width="2" stroke="none" marker-end="url(#mermaid-49-arrowhead)" style="fill: none;"/><text x="423" y="257" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">303 Location: /</text><line x1="566" y1="286" x2="279" y2="286" class="messageLine1" data-et="message" data-id="i4" data-from="アプリ" data-to="ブラウザ" stroke-width="2" stroke="none" marker-end="url(#mermaid-49-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><text x="420" y="301" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">GET /</text><line x1="276" y1="330" x2="563" y2="330" class="messageLine0" data-et="message" data-id="i5" data-from="ブラウザ" data-to="アプリ" stroke-width="2" stroke="none" marker-end="url(#mermaid-49-arrowhead)" style="fill: none;"/><text x="423" y="345" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">200 一覧ページ</text><line x1="566" y1="374" x2="279" y2="374" class="messageLine1" data-et="message" data-id="i6" data-from="アプリ" data-to="ブラウザ" stroke-width="2" stroke="none" marker-end="url(#mermaid-49-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><text x="423" y="434" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">400 一覧ページとエラーの文言</text><line x1="566" y1="463" x2="279" y2="463" class="messageLine1" data-et="message" data-id="i8" data-from="アプリ" data-to="ブラウザ" stroke-width="2" stroke="none" marker-end="url(#mermaid-49-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><g class="actor-man actor-bottom" name="利用者" style="stroke: rgb(61, 84, 104);"><line id="actor-man-torso3" x1="75" y1="518" x2="75" y2="538"/><line id="actor-man-arms3" x1="57" y1="526" x2="93" y2="526"/><line x1="57" y1="553" x2="75" y2="538"/><line x1="75" y1="538" x2="91" y2="553"/><circle cx="75" cy="503" r="15" width="150" height="65"/><text x="75" y="560.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-man" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="75" dy="0">利用者</tspan></text></g><style>/* mermaid-cli で画像にするときのフォント（HTML 版と同じ BIZ UDPGothic） */
+@import url("https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&amp;display=swap");
+svg { -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+</style></svg></figure>
+            <ul>
+              <li>確認: 受け入れ条件 (1)〜(6) と (14) の各行が、API設計書のどこかに対応する</li>
+            </ul>
+            <blockquote>
+              <p>座学: 画面設計書を作らない代わりに、API設計書に書くもの（返す HTML の要点・エラー表示欄・文言）（→ まとめ「設計書と図」）</p>
+            </blockquote>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="4-db設計書-テーブルと計算で求める値7分">
+          <h3 id="4-db設計書-テーブルと計算で求める値7分">4. DB設計書: テーブルと計算で求める値（7分）</h3>
+          <section class="level4" aria-labelledby="-task-をテーブルに写す">
+            <h4 id="-task-をテーブルに写す">🖋 Task をテーブルに写す</h4>
+            <p>📚 SE基礎 8章 データの取り扱い</p>
+            <p>📒 CLI の <code>Task</code>（<code>models.py</code>）の項目を、<code>tasks</code> テーブルのカラムにする。SQLite には日付と真偽値の型がないので、日付は ISO 8601 の文字列、真偽値は 0／1 で持つ。ISO 8601 の日付は、文字列の大小と日付の前後が一致する</p>
+          </section>
+          <section class="level4" aria-labelledby="-er図とテーブル定義を書く">
+            <h4 id="-er図とテーブル定義を書く">🖋 ER図とテーブル定義を書く</h4>
+            <p>📚 Mermaid 公式 Entity Relationship Diagrams</p>
+            <p>📒 <code>docs/design/db.md</code> のER図に <code>done</code> と <code>created_at</code> を足し、「2. テーブル定義」と「3. 制約」の表を埋める。NULL を許すカラムには NULL の意味（<code>due</code> なら「期限なし」）を書く。テーブルが1つなら関係の線はない。線は、ログイン（対象外）を入れて <code>users</code> を足すときに下のように引く</p>
+            <figure class="mermaid"><svg id="mermaid-50" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="erDiagram" style="max-width: 300.807px; background-color: transparent;" viewBox="0 0 300.806640625 359.25" role="graphics-document document" aria-roledescription="er"><style>#mermaid-50{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;fill:#2b2b2b;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-50 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-50 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-50 .error-icon{fill:#fdfcfa;}#mermaid-50 .error-text{fill:#020305;stroke:#020305;}#mermaid-50 .edge-thickness-normal{stroke-width:1px;}#mermaid-50 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-50 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-50 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-50 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-50 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-50 .marker{fill:#6b6b6b;stroke:#6b6b6b;}#mermaid-50 .marker.cross{stroke:#6b6b6b;}#mermaid-50 svg{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;}#mermaid-50 p{margin:0;}#mermaid-50 .entityBox{fill:#f6f4f0;stroke:#3d5468;}#mermaid-50 .relationshipLabelBox{fill:#fdfcfa;opacity:0.7;background-color:#fdfcfa;}#mermaid-50 .relationshipLabelBox rect{opacity:0.5;}#mermaid-50 .labelBkg{background-color:rgba(253, 252, 250, 0.5);}#mermaid-50 .edgeLabel{background-color:#eef1f4;}#mermaid-50 .edgeLabel .label rect{fill:#eef1f4;}#mermaid-50 .edgeLabel .label text{fill:#2b2b2b;}#mermaid-50 .edgeLabel .label{fill:#3d5468;font-size:14px;}#mermaid-50 .label{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;color:#2b2b2b;}#mermaid-50 .edge-pattern-dashed{stroke-dasharray:8,8;}#mermaid-50 .node rect,#mermaid-50 .node circle,#mermaid-50 .node ellipse,#mermaid-50 .node polygon{fill:#f6f4f0;stroke:#3d5468;stroke-width:1px;}#mermaid-50 .relationshipLine{stroke:#6b6b6b;stroke-width:1px;fill:none;}#mermaid-50 .marker{fill:none!important;stroke:#6b6b6b!important;stroke-width:1;}#mermaid-50 [data-look=neo].labelBkg{background-color:rgba(253, 252, 250, 0.5);}#mermaid-50 .cluster rect{fill:#fbfaf7;stroke:#c9c5bd;stroke-width:1px;}#mermaid-50 .cluster text{fill:#020305;}#mermaid-50 .cluster-label text{fill:#020305;}#mermaid-50 .node .neo-node{stroke:#3d5468;}#mermaid-50 [data-look="neo"].node rect,#mermaid-50 [data-look="neo"].cluster rect,#mermaid-50 [data-look="neo"].node polygon{stroke:url(#mermaid-50-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-50 [data-look="neo"].swimlane.cluster rect{filter:none;}#mermaid-50 [data-look="neo"].node path{stroke:url(#mermaid-50-gradient);stroke-width:1px;}#mermaid-50 [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-50 [data-look="neo"].node .neo-line path{stroke:#3d5468;filter:none;}#mermaid-50 [data-look="neo"].node circle{stroke:url(#mermaid-50-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-50 [data-look="neo"].node circle .state-start{fill:#000000;}#mermaid-50 [data-look="neo"].icon-shape .icon{fill:url(#mermaid-50-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-50 [data-look="neo"].icon-shape .icon-neo path{stroke:url(#mermaid-50-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-50 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><defs><marker id="mermaid-50_er-onlyOneStart" class="marker onlyOne er" refX="0" refY="9" markerWidth="18" markerHeight="18" orient="auto"><path d="M9,0 L9,18 M15,0 L15,18"/></marker></defs><defs><marker id="mermaid-50_er-onlyOneEnd" class="marker onlyOne er" refX="18" refY="9" markerWidth="18" markerHeight="18" orient="auto"><path d="M3,0 L3,18 M9,0 L9,18"/></marker></defs><defs><marker id="mermaid-50_er-zeroOrOneStart" class="marker zeroOrOne er" refX="0" refY="9" markerWidth="30" markerHeight="18" orient="auto"><circle fill="white" cx="21" cy="9" r="6"/><path d="M9,0 L9,18"/></marker></defs><defs><marker id="mermaid-50_er-zeroOrOneEnd" class="marker zeroOrOne er" refX="30" refY="9" markerWidth="30" markerHeight="18" orient="auto"><circle fill="white" cx="9" cy="9" r="6"/><path d="M21,0 L21,18"/></marker></defs><defs><marker id="mermaid-50_er-oneOrMoreStart" class="marker oneOrMore er" refX="18" refY="18" markerWidth="45" markerHeight="36" orient="auto"><path d="M0,18 Q 18,0 36,18 Q 18,36 0,18 M42,9 L42,27"/></marker></defs><defs><marker id="mermaid-50_er-oneOrMoreEnd" class="marker oneOrMore er" refX="27" refY="18" markerWidth="45" markerHeight="36" orient="auto"><path d="M3,9 L3,27 M9,18 Q27,0 45,18 Q27,36 9,18"/></marker></defs><defs><marker id="mermaid-50_er-zeroOrMoreStart" class="marker zeroOrMore er" refX="18" refY="18" markerWidth="57" markerHeight="36" orient="auto"><circle fill="white" cx="48" cy="18" r="6"/><path d="M0,18 Q18,0 36,18 Q18,36 0,18"/></marker></defs><defs><marker id="mermaid-50_er-zeroOrMoreEnd" class="marker zeroOrMore er" refX="39" refY="18" markerWidth="57" markerHeight="36" orient="auto"><circle fill="white" cx="9" cy="18" r="6"/><path d="M21,18 Q39,0 57,18 Q39,36 21,18"/></marker></defs><g class="root"><g class="clusters"/><g class="edgePaths"><path d="M150.403,112.25L150.403,120.583C150.403,128.917,150.403,145.583,150.403,162.25C150.403,178.917,150.403,195.583,150.403,203.917L150.403,212.25" id="mermaid-50-id_entity-users-0_entity-tasks-1_0" class="edge-thickness-normal edge-pattern-solid relationshipLine" style="undefined;;;undefined" data-edge="true" data-et="edge" data-id="id_entity-users-0_entity-tasks-1_0" data-points="W3sieCI6MTUwLjQwMzMyMDMxMjUsInkiOjExMi4yNX0seyJ4IjoxNTAuNDAzMzIwMzEyNSwieSI6MTYyLjI0OTk5OTA0NjMyNTY4fSx7IngiOjE1MC40MDMzMjAzMTI1LCJ5IjoyMTIuMjQ5OTk4MDkyNjUxMzd9XQ==" data-look="classic" marker-start="url(#mermaid-50_er-onlyOneStart)" marker-end="url(#mermaid-50_er-zeroOrMoreEnd)"/></g><g class="edgeLabels"><g class="edgeLabel" transform="translate(150.4033203125, 162.24999904632568)"><g class="label" data-id="id_entity-users-0_entity-tasks-1_0" transform="translate(0, -9.000000476837158)"><g><rect class="background" style="" x="-16.1640625" y="-0.9999990463256836" width="32.328125" height="19.999999046325684"/><text y="-10.1" text-anchor="middle" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">持つ</tspan></tspan></text></g></g></g></g><g class="nodes"><g class="node default" id="mermaid-50-entity-users-0" data-look="classic" transform="translate(150.4033203125, 60.125)"><g class="outer-path" style=""><path d="M-122.4033203125 -52.124999046325684 L122.4033203125 -52.124999046325684 L122.4033203125 52.124999046325684 L-122.4033203125 52.124999046325684" stroke="none" stroke-width="0" fill="#f6f4f0"/><path d="M-122.4033203125 -52.124999046325684 C-72.97763388050235 -52.124999046325684, -23.551947448504706 -52.124999046325684, 122.4033203125 -52.124999046325684 M-122.4033203125 -52.124999046325684 C-35.840301900367635 -52.124999046325684, 50.72271651176473 -52.124999046325684, 122.4033203125 -52.124999046325684 M122.4033203125 -52.124999046325684 C122.4033203125 -22.951059706346715, 122.4033203125 6.222879633632253, 122.4033203125 52.124999046325684 M122.4033203125 -52.124999046325684 C122.4033203125 -14.458172138108033, 122.4033203125 23.208654770109618, 122.4033203125 52.124999046325684 M122.4033203125 52.124999046325684 C33.86458267615873 52.124999046325684, -54.674154960182534 52.124999046325684, -122.4033203125 52.124999046325684 M122.4033203125 52.124999046325684 C50.6299443312501 52.124999046325684, -21.143431649999798 52.124999046325684, -122.4033203125 52.124999046325684 M-122.4033203125 52.124999046325684 C-122.4033203125 24.03599327756208, -122.4033203125 -4.053012491201521, -122.4033203125 -52.124999046325684 M-122.4033203125 52.124999046325684 C-122.4033203125 15.254254696634263, -122.4033203125 -21.616489653057158, -122.4033203125 -52.124999046325684" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-odd"><path d="M-122.4033203125 -17.374999046325684 L122.4033203125 -17.374999046325684 L122.4033203125 17.375 L-122.4033203125 17.375" stroke="none" stroke-width="0" fill="hsl(40, 25%, 100%)"/><path d="M-122.4033203125 -17.374999046325684 C-65.66041531678265 -17.374999046325684, -8.917510321065294 -17.374999046325684, 122.4033203125 -17.374999046325684 M-122.4033203125 -17.374999046325684 C-56.36108776110383 -17.374999046325684, 9.681144790292336 -17.374999046325684, 122.4033203125 -17.374999046325684 M122.4033203125 -17.374999046325684 C122.4033203125 -6.278335721399797, 122.4033203125 4.81832760352609, 122.4033203125 17.375 M122.4033203125 -17.374999046325684 C122.4033203125 -4.349034254457656, 122.4033203125 8.676930537410371, 122.4033203125 17.375 M122.4033203125 17.375 C71.11616582420265 17.375, 19.829011335905292 17.375, -122.4033203125 17.375 M122.4033203125 17.375 C59.56156951219725 17.375, -3.2801812881054957 17.375, -122.4033203125 17.375 M-122.4033203125 17.375 C-122.4033203125 5.967763007585294, -122.4033203125 -5.439473984829412, -122.4033203125 -17.374999046325684 M-122.4033203125 17.375 C-122.4033203125 7.615121932969389, -122.4033203125 -2.144756134061222, -122.4033203125 -17.374999046325684" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-even"><path d="M-122.4033203125 17.375 L122.4033203125 17.375 L122.4033203125 52.124999046325684 L-122.4033203125 52.124999046325684" stroke="none" stroke-width="0" fill="hsl(40, 25%, 100%)"/><path d="M-122.4033203125 17.375 C-31.29848100255809 17.375, 59.80635830738382 17.375, 122.4033203125 17.375 M-122.4033203125 17.375 C-70.60799232971533 17.375, -18.812664346930646 17.375, 122.4033203125 17.375 M122.4033203125 17.375 C122.4033203125 29.142975182410957, 122.4033203125 40.910950364821915, 122.4033203125 52.124999046325684 M122.4033203125 17.375 C122.4033203125 24.362799951094182, 122.4033203125 31.350599902188364, 122.4033203125 52.124999046325684 M122.4033203125 52.124999046325684 C63.01578044705264 52.124999046325684, 3.628240581605283 52.124999046325684, -122.4033203125 52.124999046325684 M122.4033203125 52.124999046325684 C35.208138802553876 52.124999046325684, -51.98704270739225 52.124999046325684, -122.4033203125 52.124999046325684 M-122.4033203125 52.124999046325684 C-122.4033203125 38.47952362300587, -122.4033203125 24.83404819968605, -122.4033203125 17.375 M-122.4033203125 52.124999046325684 C-122.4033203125 42.37598708936935, -122.4033203125 32.62697513241302, -122.4033203125 17.375" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="label name" transform="translate(-17.1171875, -42.749999046325684)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">users</tspan></tspan></text></g><g class="label attribute-type" transform="translate(-109.9033203125, -7.999999046325684)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">INTEGER</tspan></tspan></text></g><g class="label attribute-name" transform="translate(-22.6689453125, -7.999999046325684)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">id</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(37.5654296875, -7.999999046325684)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">PK</tspan></tspan></text></g><g class="label attribute-comment" transform="translate(81.9033203125, -7.999999046325684)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">連番</tspan></tspan></text></g><g class="label attribute-type" transform="translate(-109.9033203125, 26.75)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">TEXT</tspan></tspan></text></g><g class="label attribute-name" transform="translate(-22.6689453125, 26.75)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">name</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(37.5654296875, 26.75)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-comment" transform="translate(81.9033203125, 26.75)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">名前</tspan></tspan></text></g><g class="divider"><path d="M-122.4033203125 -17.375049046325685 L-122.4033203125 -17.374949046325682 L122.4033203125 -17.374949046325682 L122.4033203125 -17.375049046325685" stroke="none" stroke-width="0" fill="#f6f4f0" fill-rule="evenodd"/><path d="M-122.4033203125 -17.375049046325685 C-122.4033203125 -17.37502125377893, -122.4033203125 -17.374993461232172, -122.4033203125 -17.374949046325682 M-122.4033203125 -17.375049046325685 C-122.4033203125 -17.375020338350275, -122.4033203125 -17.37499163037486, -122.4033203125 -17.374949046325682 M-122.4033203125 -17.374949046325682 C-66.93541085962207 -17.374949046325682, -11.46750140674412 -17.374949046325682, 122.4033203125 -17.374949046325682 M-122.4033203125 -17.374949046325682 C-60.19856652507382 -17.374949046325682, 2.0061872623523556 -17.374949046325682, 122.4033203125 -17.374949046325682 M122.4033203125 -17.374949046325682 C122.4033203125 -17.37497954443418, 122.4033203125 -17.37501004254268, 122.4033203125 -17.375049046325685 M122.4033203125 -17.374949046325682 C122.4033203125 -17.37497803464822, 122.4033203125 -17.37500702297076, 122.4033203125 -17.375049046325685 M122.4033203125 -17.375049046325685 C50.39576978846323 -17.375049046325685, -21.611780735573547 -17.375049046325685, -122.4033203125 -17.375049046325685 M122.4033203125 -17.375049046325685 C57.42776453428526 -17.375049046325685, -7.547791243929481 -17.375049046325685, -122.4033203125 -17.375049046325685" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M-35.1689953125 -17.374999046325684 L-35.1688953125 -17.374999046325684 L-35.1688953125 52.124999046325684 L-35.1689953125 52.124999046325684" stroke="none" stroke-width="0" fill="#f6f4f0" fill-rule="evenodd"/><path d="M-35.1689953125 -17.374999046325684 C-35.16897320152335 -17.374999046325684, -35.168951090546706 -17.374999046325684, -35.1688953125 -17.374999046325684 M-35.1689953125 -17.374999046325684 C-35.16895611788765 -17.374999046325684, -35.1689169232753 -17.374999046325684, -35.1688953125 -17.374999046325684 M-35.1688953125 -17.374999046325684 C-35.1688953125 9.483066619501312, -35.1688953125 36.34113228532831, -35.1688953125 52.124999046325684 M-35.1688953125 -17.374999046325684 C-35.1688953125 5.067136158632238, -35.1688953125 27.50927136359016, -35.1688953125 52.124999046325684 M-35.1688953125 52.124999046325684 C-35.16891743628887 52.124999046325684, -35.168939560077746 52.124999046325684, -35.1689953125 52.124999046325684 M-35.1688953125 52.124999046325684 C-35.16893039059568 52.124999046325684, -35.168965468691376 52.124999046325684, -35.1689953125 52.124999046325684 M-35.1689953125 52.124999046325684 C-35.1689953125 27.300532809919474, -35.1689953125 2.4760665735132648, -35.1689953125 -17.374999046325684 M-35.1689953125 52.124999046325684 C-35.1689953125 37.47109312112857, -35.1689953125 22.817187195931457, -35.1689953125 -17.374999046325684" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M25.0653796875 -17.374999046325684 L25.0654796875 -17.374999046325684 L25.0654796875 52.124999046325684 L25.0653796875 52.124999046325684" stroke="none" stroke-width="0" fill="#f6f4f0" fill-rule="evenodd"/><path d="M25.0653796875 -17.374999046325684 C25.06540257791522 -17.374999046325684, 25.06542546833044 -17.374999046325684, 25.0654796875 -17.374999046325684 M25.0653796875 -17.374999046325684 C25.065403447976703 -17.374999046325684, 25.065427208453407 -17.374999046325684, 25.0654796875 -17.374999046325684 M25.0654796875 -17.374999046325684 C25.0654796875 -0.42881258240668885, 25.0654796875 16.517373881512306, 25.0654796875 52.124999046325684 M25.0654796875 -17.374999046325684 C25.0654796875 10.02906227365779, 25.0654796875 37.43312359364126, 25.0654796875 52.124999046325684 M25.0654796875 52.124999046325684 C25.0654564040397 52.124999046325684, 25.065433120579403 52.124999046325684, 25.0653796875 52.124999046325684 M25.0654796875 52.124999046325684 C25.06545406607414 52.124999046325684, 25.065428444648276 52.124999046325684, 25.0653796875 52.124999046325684 M25.0653796875 52.124999046325684 C25.0653796875 34.293851384094964, 25.0653796875 16.462703721864244, 25.0653796875 -17.374999046325684 M25.0653796875 52.124999046325684 C25.0653796875 34.1292961885984, 25.0653796875 16.133593330871122, 25.0653796875 -17.374999046325684" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M69.4032703125 -17.374999046325684 L69.4033703125 -17.374999046325684 L69.4033703125 52.124999046325684 L69.4032703125 52.124999046325684" stroke="none" stroke-width="0" fill="#f6f4f0" fill-rule="evenodd"/><path d="M69.4032703125 -17.374999046325684 C69.40329728424634 -17.374999046325684, 69.40332425599266 -17.374999046325684, 69.4033703125 -17.374999046325684 M69.4032703125 -17.374999046325684 C69.40329314754017 -17.374999046325684, 69.40331598258034 -17.374999046325684, 69.4033703125 -17.374999046325684 M69.4033703125 -17.374999046325684 C69.4033703125 0.24052663418614628, 69.4033703125 17.856052314697976, 69.4033703125 52.124999046325684 M69.4033703125 -17.374999046325684 C69.4033703125 -0.5201013816813145, 69.4033703125 16.334796282963055, 69.4033703125 52.124999046325684 M69.4033703125 52.124999046325684 C69.4033458121406 52.124999046325684, 69.4033213117812 52.124999046325684, 69.4032703125 52.124999046325684 M69.4033703125 52.124999046325684 C69.40334331904049 52.124999046325684, 69.40331632558099 52.124999046325684, 69.4032703125 52.124999046325684 M69.4032703125 52.124999046325684 C69.4032703125 32.436801370389446, 69.4032703125 12.748603694453209, 69.4032703125 -17.374999046325684 M69.4032703125 52.124999046325684 C69.4032703125 35.98678703499972, 69.4032703125 19.84857502367376, 69.4032703125 -17.374999046325684" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M-122.4033203125 -17.375049046325685 L-122.4033203125 -17.374949046325682 L122.4033203125 -17.374949046325682 L122.4033203125 -17.375049046325685" stroke="none" stroke-width="0" fill="#f6f4f0" fill-rule="evenodd"/><path d="M-122.4033203125 -17.375049046325685 C-122.4033203125 -17.375010008274323, -122.4033203125 -17.374970970222957, -122.4033203125 -17.374949046325682 M-122.4033203125 -17.375049046325685 C-122.4033203125 -17.375021415011954, -122.4033203125 -17.374993783698226, -122.4033203125 -17.374949046325682 M-122.4033203125 -17.374949046325682 C-26.498559219561685 -17.374949046325682, 69.40620187337663 -17.374949046325682, 122.4033203125 -17.374949046325682 M-122.4033203125 -17.374949046325682 C-28.105687071679625 -17.374949046325682, 66.19194616914075 -17.374949046325682, 122.4033203125 -17.374949046325682 M122.4033203125 -17.374949046325682 C122.4033203125 -17.37498103484891, 122.4033203125 -17.37501302337214, 122.4033203125 -17.375049046325685 M122.4033203125 -17.374949046325682 C122.4033203125 -17.374985836137334, 122.4033203125 -17.375022625948986, 122.4033203125 -17.375049046325685 M122.4033203125 -17.375049046325685 C44.18394769104762 -17.375049046325685, -34.03542493040476 -17.375049046325685, -122.4033203125 -17.375049046325685 M122.4033203125 -17.375049046325685 C67.77223929310038 -17.375049046325685, 13.141158273700768 -17.375049046325685, -122.4033203125 -17.375049046325685" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g></g><g class="node default" id="mermaid-50-entity-tasks-1" data-look="classic" transform="translate(150.4033203125, 281.74999809265137)"><g class="outer-path" style=""><path d="M-142.4033203125 -69.49999856948853 L142.4033203125 -69.49999856948853 L142.4033203125 69.49999856948853 L-142.4033203125 69.49999856948853" stroke="none" stroke-width="0" fill="#f6f4f0"/><path d="M-142.4033203125 -69.49999856948853 C-42.59944311366516 -69.49999856948853, 57.20443408516968 -69.49999856948853, 142.4033203125 -69.49999856948853 M-142.4033203125 -69.49999856948853 C-68.00844141562175 -69.49999856948853, 6.3864374812565075 -69.49999856948853, 142.4033203125 -69.49999856948853 M142.4033203125 -69.49999856948853 C142.4033203125 -18.65519771382992, 142.4033203125 32.189603141828684, 142.4033203125 69.49999856948853 M142.4033203125 -69.49999856948853 C142.4033203125 -41.4374593287025, 142.4033203125 -13.374920087916472, 142.4033203125 69.49999856948853 M142.4033203125 69.49999856948853 C51.56585296509765 69.49999856948853, -39.271614382304705 69.49999856948853, -142.4033203125 69.49999856948853 M142.4033203125 69.49999856948853 C64.61366832158245 69.49999856948853, -13.175983669335096 69.49999856948853, -142.4033203125 69.49999856948853 M-142.4033203125 69.49999856948853 C-142.4033203125 25.92040138907265, -142.4033203125 -17.659195791343222, -142.4033203125 -69.49999856948853 M-142.4033203125 69.49999856948853 C-142.4033203125 28.238976621401605, -142.4033203125 -13.022045326685316, -142.4033203125 -69.49999856948853" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-odd"><path d="M-142.4033203125 -34.749998569488525 L142.4033203125 -34.749998569488525 L142.4033203125 4.76837158203125e-7 L-142.4033203125 4.76837158203125e-7" stroke="none" stroke-width="0" fill="hsl(40, 25%, 100%)"/><path d="M-142.4033203125 -34.749998569488525 C-76.3525057388316 -34.749998569488525, -10.301691165163191 -34.749998569488525, 142.4033203125 -34.749998569488525 M-142.4033203125 -34.749998569488525 C-53.49588880180207 -34.749998569488525, 35.411542708895865 -34.749998569488525, 142.4033203125 -34.749998569488525 M142.4033203125 -34.749998569488525 C142.4033203125 -23.317881085097135, 142.4033203125 -11.885763600705744, 142.4033203125 4.76837158203125e-7 M142.4033203125 -34.749998569488525 C142.4033203125 -27.0378409403949, 142.4033203125 -19.325683311301276, 142.4033203125 4.76837158203125e-7 M142.4033203125 4.76837158203125e-7 C37.627932356560535 4.76837158203125e-7, -67.14745559937893 4.76837158203125e-7, -142.4033203125 4.76837158203125e-7 M142.4033203125 4.76837158203125e-7 C75.05995414942355 4.76837158203125e-7, 7.716587986347093 4.76837158203125e-7, -142.4033203125 4.76837158203125e-7 M-142.4033203125 4.76837158203125e-7 C-142.4033203125 -9.160823455471542, -142.4033203125 -18.321647387780242, -142.4033203125 -34.749998569488525 M-142.4033203125 4.76837158203125e-7 C-142.4033203125 -13.088718688061272, -142.4033203125 -26.177437852959702, -142.4033203125 -34.749998569488525" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-even"><path d="M-142.4033203125 4.76837158203125e-7 L142.4033203125 4.76837158203125e-7 L142.4033203125 34.74999952316284 L-142.4033203125 34.74999952316284" stroke="none" stroke-width="0" fill="hsl(40, 25%, 100%)"/><path d="M-142.4033203125 4.76837158203125e-7 C-48.26804089107915 4.76837158203125e-7, 45.867238530341695 4.76837158203125e-7, 142.4033203125 4.76837158203125e-7 M-142.4033203125 4.76837158203125e-7 C-52.2706593698164 4.76837158203125e-7, 37.8620015728672 4.76837158203125e-7, 142.4033203125 4.76837158203125e-7 M142.4033203125 4.76837158203125e-7 C142.4033203125 7.448680666234818, 142.4033203125 14.897360855632478, 142.4033203125 34.74999952316284 M142.4033203125 4.76837158203125e-7 C142.4033203125 9.604536034974398, 142.4033203125 19.209071593111638, 142.4033203125 34.74999952316284 M142.4033203125 34.74999952316284 C46.66824663078236 34.74999952316284, -49.066827050935274 34.74999952316284, -142.4033203125 34.74999952316284 M142.4033203125 34.74999952316284 C62.58551041355865 34.74999952316284, -17.232299485382697 34.74999952316284, -142.4033203125 34.74999952316284 M-142.4033203125 34.74999952316284 C-142.4033203125 27.677957643975063, -142.4033203125 20.605915764787287, -142.4033203125 4.76837158203125e-7 M-142.4033203125 34.74999952316284 C-142.4033203125 27.044884602727727, -142.4033203125 19.33976968229261, -142.4033203125 4.76837158203125e-7" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-odd"><path d="M-142.4033203125 34.74999952316284 L142.4033203125 34.74999952316284 L142.4033203125 69.49999856948853 L-142.4033203125 69.49999856948853" stroke="none" stroke-width="0" fill="hsl(40, 25%, 100%)"/><path d="M-142.4033203125 34.74999952316284 C-46.16852405106411 34.74999952316284, 50.06627221037178 34.74999952316284, 142.4033203125 34.74999952316284 M-142.4033203125 34.74999952316284 C-69.13545144440488 34.74999952316284, 4.132417423690242 34.74999952316284, 142.4033203125 34.74999952316284 M142.4033203125 34.74999952316284 C142.4033203125 42.8277017513158, 142.4033203125 50.90540397946876, 142.4033203125 69.49999856948853 M142.4033203125 34.74999952316284 C142.4033203125 47.342097717157664, 142.4033203125 59.934195911152486, 142.4033203125 69.49999856948853 M142.4033203125 69.49999856948853 C65.02713516603549 69.49999856948853, -12.349049980429015 69.49999856948853, -142.4033203125 69.49999856948853 M142.4033203125 69.49999856948853 C50.38265035449028 69.49999856948853, -41.63801960351944 69.49999856948853, -142.4033203125 69.49999856948853 M-142.4033203125 69.49999856948853 C-142.4033203125 56.46431596298232, -142.4033203125 43.42863335647611, -142.4033203125 34.74999952316284 M-142.4033203125 69.49999856948853 C-142.4033203125 58.427465426061914, -142.4033203125 47.3549322826353, -142.4033203125 34.74999952316284" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="label name" transform="translate(-16.34375, -60.124998569488525)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">tasks</tspan></tspan></text></g><g class="label attribute-type" transform="translate(-129.9033203125, -25.374998569488525)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">INTEGER</tspan></tspan></text></g><g class="label attribute-name" transform="translate(-42.6689453125, -25.374998569488525)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">id</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(28.2529296875, -25.374998569488525)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">PK</tspan></tspan></text></g><g class="label attribute-comment" transform="translate(72.5908203125, -25.374998569488525)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">連番</tspan></tspan></text></g><g class="label attribute-type" transform="translate(-129.9033203125, 9.375000476837158)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">INTEGER</tspan></tspan></text></g><g class="label attribute-name" transform="translate(-42.6689453125, 9.375000476837158)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">user_id</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(28.2529296875, 9.375000476837158)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">FK</tspan></tspan></text></g><g class="label attribute-comment" transform="translate(72.5908203125, 9.375000476837158)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">持ち主</tspan></tspan></text></g><g class="label attribute-type" transform="translate(-129.9033203125, 44.12499952316284)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">TEXT</tspan></tspan></text></g><g class="label attribute-name" transform="translate(-42.6689453125, 44.12499952316284)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">title</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(28.2529296875, 44.12499952316284)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-comment" transform="translate(72.5908203125, 44.12499952316284)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">タイトル</tspan></tspan></text></g><g class="divider"><path d="M-142.4033203125 -34.75004856948853 L-142.4033203125 -34.749948569488524 L142.4033203125 -34.749948569488524 L142.4033203125 -34.75004856948853" stroke="none" stroke-width="0" fill="#f6f4f0" fill-rule="evenodd"/><path d="M-142.4033203125 -34.75004856948853 C-142.4033203125 -34.75001723323517, -142.4033203125 -34.74998589698181, -142.4033203125 -34.749948569488524 M-142.4033203125 -34.75004856948853 C-142.4033203125 -34.75001735068843, -142.4033203125 -34.749986131888335, -142.4033203125 -34.749948569488524 M-142.4033203125 -34.749948569488524 C-79.39423789630513 -34.749948569488524, -16.385155480110242 -34.749948569488524, 142.4033203125 -34.749948569488524 M-142.4033203125 -34.749948569488524 C-65.95263586905091 -34.749948569488524, 10.498048574398183 -34.749948569488524, 142.4033203125 -34.749948569488524 M142.4033203125 -34.749948569488524 C142.4033203125 -34.749982633866466, 142.4033203125 -34.750016698244416, 142.4033203125 -34.75004856948853 M142.4033203125 -34.749948569488524 C142.4033203125 -34.74997197809455, 142.4033203125 -34.749995386700576, 142.4033203125 -34.75004856948853 M142.4033203125 -34.75004856948853 C83.29500379310315 -34.75004856948853, 24.186687273706298 -34.75004856948853, -142.4033203125 -34.75004856948853 M142.4033203125 -34.75004856948853 C29.22692917317893 -34.75004856948853, -83.94946196614214 -34.75004856948853, -142.4033203125 -34.75004856948853" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M-55.1689953125 -34.749998569488525 L-55.1688953125 -34.749998569488525 L-55.1688953125 69.49999856948853 L-55.1689953125 69.49999856948853" stroke="none" stroke-width="0" fill="#f6f4f0" fill-rule="evenodd"/><path d="M-55.1689953125 -34.749998569488525 C-55.16896411683913 -34.749998569488525, -55.168932921178246 -34.749998569488525, -55.1688953125 -34.749998569488525 M-55.1689953125 -34.749998569488525 C-55.168959745799725 -34.749998569488525, -55.16892417909945 -34.749998569488525, -55.1688953125 -34.749998569488525 M-55.1688953125 -34.749998569488525 C-55.1688953125 -9.938555309255651, -55.1688953125 14.872887950977223, -55.1688953125 69.49999856948853 M-55.1688953125 -34.749998569488525 C-55.1688953125 -2.5831772633652506, -55.1688953125 29.583644042758024, -55.1688953125 69.49999856948853 M-55.1688953125 69.49999856948853 C-55.16891856483408 69.49999856948853, -55.168941817168154 69.49999856948853, -55.1689953125 69.49999856948853 M-55.1688953125 69.49999856948853 C-55.16893100104708 69.49999856948853, -55.16896668959415 69.49999856948853, -55.1689953125 69.49999856948853 M-55.1689953125 69.49999856948853 C-55.1689953125 47.74830510756927, -55.1689953125 25.99661164565002, -55.1689953125 -34.749998569488525 M-55.1689953125 69.49999856948853 C-55.1689953125 40.77575156989853, -55.1689953125 12.051504570308545, -55.1689953125 -34.749998569488525" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M15.7528796875 -34.749998569488525 L15.7529796875 -34.749998569488525 L15.7529796875 69.49999856948853 L15.7528796875 69.49999856948853" stroke="none" stroke-width="0" fill="#f6f4f0" fill-rule="evenodd"/><path d="M15.7528796875 -34.749998569488525 C15.752910460565415 -34.749998569488525, 15.752941233630832 -34.749998569488525, 15.7529796875 -34.749998569488525 M15.7528796875 -34.749998569488525 C15.752907375517255 -34.749998569488525, 15.752935063534512 -34.749998569488525, 15.7529796875 -34.749998569488525 M15.7529796875 -34.749998569488525 C15.7529796875 -9.97922690040311, 15.7529796875 14.791544768682307, 15.7529796875 69.49999856948853 M15.7529796875 -34.749998569488525 C15.7529796875 1.0773029722692797, 15.7529796875 36.904604514027085, 15.7529796875 69.49999856948853 M15.7529796875 69.49999856948853 C15.752959308315626 69.49999856948853, 15.75293892913125 69.49999856948853, 15.7528796875 69.49999856948853 M15.7529796875 69.49999856948853 C15.752948340102321 69.49999856948853, 15.752916992704641 69.49999856948853, 15.7528796875 69.49999856948853 M15.7528796875 69.49999856948853 C15.7528796875 45.60745929561173, 15.7528796875 21.714920021734933, 15.7528796875 -34.749998569488525 M15.7528796875 69.49999856948853 C15.7528796875 44.79208529592443, 15.7528796875 20.084172022360335, 15.7528796875 -34.749998569488525" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M60.0907703125 -34.749998569488525 L60.0908703125 -34.749998569488525 L60.0908703125 69.49999856948853 L60.0907703125 69.49999856948853" stroke="none" stroke-width="0" fill="#f6f4f0" fill-rule="evenodd"/><path d="M60.0907703125 -34.749998569488525 C60.09079527480605 -34.749998569488525, 60.0908202371121 -34.749998569488525, 60.0908703125 -34.749998569488525 M60.0907703125 -34.749998569488525 C60.0907973659761 -34.749998569488525, 60.090824419452204 -34.749998569488525, 60.0908703125 -34.749998569488525 M60.0908703125 -34.749998569488525 C60.0908703125 1.1950682941333, 60.0908703125 37.140135157755125, 60.0908703125 69.49999856948853 M60.0908703125 -34.749998569488525 C60.0908703125 5.943804272099577, 60.0908703125 46.63760711368768, 60.0908703125 69.49999856948853 M60.0908703125 69.49999856948853 C60.090833678826144 69.49999856948853, 60.09079704515229 69.49999856948853, 60.0907703125 69.49999856948853 M60.0908703125 69.49999856948853 C60.090833257936694 69.49999856948853, 60.090796203373394 69.49999856948853, 60.0907703125 69.49999856948853 M60.0907703125 69.49999856948853 C60.0907703125 42.727851481604624, 60.0907703125 15.955704393720723, 60.0907703125 -34.749998569488525 M60.0907703125 69.49999856948853 C60.0907703125 40.11223911384326, 60.0907703125 10.724479658197993, 60.0907703125 -34.749998569488525" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M-142.4033203125 -34.75004856948853 L-142.4033203125 -34.749948569488524 L142.4033203125 -34.749948569488524 L142.4033203125 -34.75004856948853" stroke="none" stroke-width="0" fill="#f6f4f0" fill-rule="evenodd"/><path d="M-142.4033203125 -34.75004856948853 C-142.4033203125 -34.75002762917851, -142.4033203125 -34.75000668886849, -142.4033203125 -34.749948569488524 M-142.4033203125 -34.75004856948853 C-142.4033203125 -34.750024747069276, -142.4033203125 -34.750000924650024, -142.4033203125 -34.749948569488524 M-142.4033203125 -34.749948569488524 C-75.32779835690822 -34.749948569488524, -8.252276401316436 -34.749948569488524, 142.4033203125 -34.749948569488524 M-142.4033203125 -34.749948569488524 C-41.404682825721466 -34.749948569488524, 59.59395466105707 -34.749948569488524, 142.4033203125 -34.749948569488524 M142.4033203125 -34.749948569488524 C142.4033203125 -34.749972978389806, 142.4033203125 -34.749997387291096, 142.4033203125 -34.75004856948853 M142.4033203125 -34.749948569488524 C142.4033203125 -34.7499719298757, 142.4033203125 -34.74999529026287, 142.4033203125 -34.75004856948853 M142.4033203125 -34.75004856948853 C48.9679372033079 -34.75004856948853, -44.467445905884205 -34.75004856948853, -142.4033203125 -34.75004856948853 M142.4033203125 -34.75004856948853 C63.07049863976124 -34.75004856948853, -16.26232303297752 -34.75004856948853, -142.4033203125 -34.75004856948853" stroke="#3d5468" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g></g></g></g></g><defs><filter id="mermaid-50-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="mermaid-50-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><linearGradient id="mermaid-50-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#3d5468" stop-opacity="1"/><stop offset="100%" stop-color="hsl(210, 0%, 84.5098039216%)" stop-opacity="1"/></linearGradient><style>/* mermaid-cli で画像にするときのフォント（HTML 版と同じ BIZ UDPGothic） */
+@import url("https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&amp;display=swap");
+svg { -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+</style></svg></figure>
+          </section>
+          <section class="level4" aria-labelledby="-状態は持たずに計算で求める">
+            <h4 id="-状態は持たずに計算で求める">🖋 状態は持たずに計算で求める</h4>
+            <p>📚 SE基礎 8章</p>
+            <p>📒 要件メモの状態遷移図の3つの状態は、<code>done</code>・<code>due</code>・今日から決まる。期限切れを保存すると、日付が変わるたびに書き換えが要る。「4. DB に持たず計算で求める値」に、状態ごとの条件を不等号まで書く</p>
+            <ul>
+              <li>確認: 「期限の当日は期限切れか」「期限なしのタスクは期限切れになるか」に、DB設計書だけで答えられる</li>
+            </ul>
+          </section>
+          <section class="level4" aria-labelledby="-並び順を書く">
+            <h4 id="-並び順を書く">🖋 並び順を書く</h4>
+            <p>📒 「5. 並び順」に一覧の順を書く。期限なし（NULL）の位置と、期限が同じときの順まで決める（CLI の <code>sort_by_due</code> と同じ）</p>
+            <blockquote>
+              <p>座学: 計算できる値を持つと、<code>done</code> や <code>due</code> と食い違う（→ まとめ「テーブル」）</p>
+            </blockquote>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="5-システム構成図5分">
+          <h3 id="5-システム構成図5分">5. システム構成図（5分）</h3>
+          <section class="level4" aria-labelledby="-構成要素と通信経路を図にする">
+            <h4 id="-構成要素と通信経路を図にする">🖋 構成要素と通信経路を図にする</h4>
+            <p>📚 Web技術の基本 5章 Webアプリケーションの基本、7章 構築と運用</p>
+            <p>📒 Web アプリは、画面（ブラウザ）・処理（アプリ）・データ（DB）の3層に分かれる。<code>docs/design/architecture.md</code> の構成図に、uvicorn の枠と待ち受けるアドレス・ポート、Jinja2 のテンプレート、SQLite のファイル名を足す。矢印には通信の種類（HTTP・ファイル）を書く</p>
+          </section>
+          <section class="level4" aria-labelledby="-バージョンを書く">
+            <h4 id="-バージョンを書く">🖋 バージョンを書く</h4>
+            <p>📚 SE基礎 9章 ソフトウェアアーキテクチャ</p>
+            <p>📒 「3. ミドルウェアとバージョン」に、何をどのバージョンで使い、どこで固定するかを書く。Python と uv は <code>mise.toml</code>、FastAPI などのライブラリは第11回で <code>pyproject.toml</code> と <code>uv.lock</code> に入る</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">grep</span> -A3 '^\[tools\]' mise.toml</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-設定を環境変数で書く">
+            <h4 id="-設定を環境変数で書く">🖋 設定を環境変数で書く</h4>
+            <p>📒 DB の場所は環境変数 <code>TODO_DB_PATH</code> で変える。開発では <code>mise.toml</code> の <code>[env]</code>、テストでは一時ディレクトリ、本番ではサーバの設定で渡す。「4. 設定（環境変数）」に名前・意味・既定値を書く</p>
+          </section>
+          <section class="level4" aria-labelledby="-自分の版をコミットする">
+            <h4 id="-自分の版をコミットする">🖋 自分の版をコミットする</h4>
+            <p>📒 交換の前に一度コミットして、自分の版を残す。埋めきれていない節があってもよい</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">git</span> add docs/design; git commit -m "API・DB設計書とシステム構成図の自分の版を書く"</code></pre>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="6-交換して質問せずに作れるかを確かめる10分">
+          <h3 id="6-交換して質問せずに作れるかを確かめる10分">6. 交換して「質問せずに作れるか」を確かめる（10分）</h3>
+          <section class="level4" aria-labelledby="-席を替わって読む">
+            <h4 id="-席を替わって読む">🖋 席を替わって読む</h4>
+            <p>📚 SE基礎 4章</p>
+            <p>📒 隣の人の席に移り、その人の <code>docs/design/</code> を VS Code のプレビューで読む。書き手は説明しない。読み手は、この設計書だけで第11回の実装をすると考えて読む</p>
+          </section>
+          <section class="level4" aria-labelledby="-設計書だけで答える">
+            <h4 id="-設計書だけで答える">🖋 設計書だけで答える</h4>
+            <p>📒 下の問いに設計書だけで答える。答えが見つからない問いと、読んでいて迷った箇所が質問になる</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>実装者の問い</th>
+                  <th>載っているはずの場所</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1</td>
+                  <td>空白だけのタイトルで追加したら、ステータスと文言は</td>
+                  <td>API設計書 4章</td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>入力エラーのとき、入れた値はフォームに残るか</td>
+                  <td>API設計書 A-02</td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td>無い番号のタスクを完了にしたら</td>
+                  <td>API設計書 3章・4章</td>
+                </tr>
+                <tr>
+                  <td>4</td>
+                  <td>期限の当日のタスクは期限切れか</td>
+                  <td>DB設計書 4章</td>
+                </tr>
+                <tr>
+                  <td>5</td>
+                  <td>期限なしのタスクは一覧のどこに出るか</td>
+                  <td>DB設計書 5章</td>
+                </tr>
+                <tr>
+                  <td>6</td>
+                  <td>DB のファイルはどこにでき、どう変えるか</td>
+                  <td>システム構成図 4章</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+          <section class="level4" aria-labelledby="-質問を書き込む">
+            <h4 id="-質問を書き込む">🖋 質問を書き込む</h4>
+            <p>📒 相手の <code>docs/design/api.md</code> の「6. 設計レビューで出た質問」の表に、質問を1行ずつ書く。「答え」と「反映した場所」は空けておく。2件以上書いたら席に戻る</p>
+          </section>
+          <section class="level4" aria-labelledby="-質問を設計書に反映する">
+            <h4 id="-質問を設計書に反映する">🖋 質問を設計書に反映する</h4>
+            <p>📒 質問ごとに、本文に書き足すか、書かないかを決める。書き足したら「反映した場所」に節を、書かないなら「答え」に理由を書く</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">git</span> diff --stat; git commit -am "設計レビューの質問を設計書に反映する"</code></pre>
+            <blockquote>
+              <p>座学: 伝わらなかった原因の多くは「書いたつもり」（→ まとめ「設計書の確かめ方」）</p>
+            </blockquote>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="7-見本と合わせてコミットする4分">
+          <h3 id="7-見本と合わせてコミットする4分">7. 見本と合わせてコミットする（4分）</h3>
+          <section class="level4" aria-labelledby="-見本に置き換えて違いを見る">
+            <h4 id="-見本に置き換えて違いを見る">🖋 見本に置き換えて違いを見る</h4>
+            <p>📒 見本の設計書は、第9回の見本（依頼人と合わせた版）の受け入れ条件どおりに書いてある。第11回は見本の URL・エラーの文言・テーブルでテストを書くので、見本に置き換える。<code>git diff</code> で自分の版との違いを読む。自分の版と質問の反映は、履歴に残る</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cp</span> ~/handsoff/examples/todo-app-snapshots/session-10/docs/design/*.md docs/design/; git diff --stat; git diff docs/design/api.md</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-readme-とストーリーの控えも合わせてコミットする">
+            <h4 id="-readme-とストーリーの控えも合わせてコミットする">🖋 README とストーリーの控えも合わせてコミットする</h4>
+            <p>📒 見本の README はドキュメントの表に設計書の3行を足したもの、<code>docs/stories.md</code> は S-01 の関連に設計書へのリンクを足したもの。第9回で Issue の番号を直した人は、コピーした後に <code>git diff docs/stories.md</code> で番号の列を戻す</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cp</span> ~/handsoff/examples/todo-app-snapshots/session-10/README.md .; cp ~/handsoff/examples/todo-app-snapshots/session-10/docs/stories.md docs/; git add README.md docs; git commit -m "見本と合わせた設計書にする"</code></pre>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="8-pr-を出してマージする3分">
+          <h3 id="8-pr-を出してマージする3分">8. PR を出してマージする（3分）</h3>
+          <section class="level4" aria-labelledby="-push-して-pr-を作る">
+            <h4 id="-push-して-pr-を作る">🖋 push して PR を作る</h4>
+            <p>📚 Pro Git 6.2 プロジェクトへの貢献</p>
+            <p>📒 本文は<a href="../templates/pull_request.html">テンプレート</a>で書き、目的に <code>Closes #13</code>、変更点に「交換で出た質問と、どう直したか」を書く。Files changed で <code>docs/design/api.md</code> を開き、表示を切り替えて図を見る。<code>[確認]</code> の行コメントを1件以上残す</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">git</span> push -u origin issue-13-design</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-ci-が緑になってからマージする">
+            <h4 id="-ci-が緑になってからマージする">🖋 CI が緑になってからマージする</h4>
+            <p>📒 コードは変えていないが、CI が緑になるのを待ってからマージする。ストーリーの Issue #8〜#11 は、第11回の PR #16 で閉じる</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">git</span> switch main; git pull; git branch -d issue-13-design; ls docs/design</code></pre>
+            <ul>
+              <li>確認: Issue #13 が Closed、#8〜#11 は Open のまま。main に <code>docs/design/api.md</code>・<code>db.md</code>・<code>architecture.md</code> がある</li>
+            </ul>
+          </section>
+        </section>
+      </section>
+      <section class="level2" aria-labelledby="読む章">
+        <h2 id="読む章">読む章</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>区分</th>
+              <th>資料</th>
+              <th>範囲</th>
+              <th>読み方</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>参考書</td>
+              <td><a href="https://www.oreilly.co.jp/books/9784814401789/">ソフトウェアエンジニアリングの基礎</a>（SE基礎）</td>
+              <td>4章 モデル、8章 データの取り扱い、9章 ソフトウェアアーキテクチャ</td>
+              <td>通読（8章は第11回でも使う）</td>
+            </tr>
+            <tr>
+              <td>参考書</td>
+              <td><a href="https://www.maruzenjunkudo.co.jp/products/9784815625948">イラスト図解式 この一冊で全部わかるWeb技術の基本 第2版</a>（Web技術の基本）</td>
+              <td>3章 HTTPでやりとりする仕組み、5章 Webアプリケーションの基本、7章 構築と運用</td>
+              <td>該当章（3章は第3回で読んだ）</td>
+            </tr>
+            <tr>
+              <td>無料</td>
+              <td><a href="https://developer.mozilla.org/ja/">MDN Web Docs</a></td>
+              <td>HTTP リクエストメソッド、HTTP レスポンスステータスコード（303 See Other）</td>
+              <td>困ったときに引く</td>
+            </tr>
+            <tr>
+              <td>無料</td>
+              <td><a href="https://mermaid.js.org/">Mermaid 公式</a></td>
+              <td>Syntax Reference（Sequence diagrams、Entity Relationship Diagrams、Flowcharts）</td>
+              <td>図を書くときに引く</td>
+            </tr>
+            <tr>
+              <td>紹介（副読本）</td>
+              <td><a href="https://www.kinokuniya.co.jp/f/dsg-01-9784774142043">Webを支える技術</a></td>
+              <td>第2部 URI、第3部 HTTP、第5部 Web サービスの設計</td>
+              <td>持っている人は（API 設計を深める）</td>
+            </tr>
+            <tr>
+              <td>紹介（副読本）</td>
+              <td><a href="https://www.maruzenjunkudo.co.jp/products/9784798186627">達人に学ぶDB設計徹底指南書 第2版</a></td>
+              <td>3章 正規化、4章 ER図</td>
+              <td>持っている人は（テーブルが増えたとき）</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+  
+
+</body></html>

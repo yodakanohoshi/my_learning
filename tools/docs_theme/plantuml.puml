@@ -1,0 +1,43 @@
+' 資料の PlantUML の図の見た目（build_docs.py が各図の先頭に読み込む）。theme.css と同じ墨色と紺鼠
+!pragma layout smetana
+skinparam backgroundColor transparent
+skinparam defaultFontName "BIZ UDPGothic, IPAPGothic, sans-serif"
+skinparam defaultFontSize 14
+skinparam defaultFontColor #2b2b2b
+skinparam ArrowColor #6b6b6b
+skinparam shadowing false
+skinparam roundCorner 6
+skinparam rectangle {
+  BackgroundColor #f6f4f0
+  BorderColor #3d5468
+}
+skinparam package {
+  BackgroundColor #fbfaf7
+  BorderColor #c9c5bd
+}
+skinparam node {
+  BackgroundColor #f6f4f0
+  BorderColor #3d5468
+}
+skinparam component {
+  BackgroundColor #f6f4f0
+  BorderColor #3d5468
+}
+<style>
+mindmapDiagram, wbsDiagram {
+  node {
+    BackgroundColor #f6f4f0
+    LineColor #3d5468
+    FontColor #2b2b2b
+    RoundCorner 6
+    Padding 6
+  }
+  rootNode {
+    BackgroundColor #3d5468
+    FontColor #ffffff
+  }
+  arrow {
+    LineColor #6b6b6b
+  }
+}
+</style>

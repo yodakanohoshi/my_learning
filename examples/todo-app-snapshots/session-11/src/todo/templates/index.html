@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<form method="post" action="/tasks" class="add-form">
+  <label>タイトル <input name="title" value="{{ form.title }}" maxlength="100" required></label>
+  <label>期限 <input type="date" name="due" value="{{ form.due }}"></label>
+  <button type="submit">追加</button>
+</form>
+
+{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+
+<nav aria-label="絞り込み">
+  <a href="/"{% if not overdue_only %} aria-current="page"{% endif %}>すべて</a>
+  <a href="/?overdue=1"{% if overdue_only %} aria-current="page"{% endif %}>期限切れだけ</a>
+</nav>
+
+<ul id="task-list">
+  {% for task in tasks %}
+  {% set status = task.status(today) %}
+  <li id="task-{{ task.id }}" class="task status-{{ status.name.lower() }}">
+    <span class="title">{{ task.title }}</span>
+    <span class="due">{{ task.due or "" }}</span>
+    <span class="status">{{ status.value }}</span>
+    {% if not task.done %}
+    <form method="post" action="/tasks/{{ task.id }}/done"><button type="submit">完了</button></form>
+    {% endif %}
+  </li>
+  {% else %}
+  <li class="empty">タスクはありません</li>
+  {% endfor %}
+</ul>
+{% endblock %}

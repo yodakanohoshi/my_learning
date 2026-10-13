@@ -1,0 +1,68 @@
+<!doctype html>
+<!-- tools/scripts/build_overview.py で生成。手で編集しない -->
+<html lang="ja"><head><meta charset="utf-8">
+<title>研修の全体像</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing:border-box; margin:0; }
+body { background:#fff; color:#1b1b1b; font-family:"BIZ UDPGothic","Hiragino Sans","Yu Gothic UI","WenQuanYi Zen Hei",sans-serif; }
+.slide { width:1744px; padding:32px 44px 28px; }
+header { display:flex; justify-content:space-between; align-items:baseline;
+  border-bottom:2px solid #1b1b1b; padding-bottom:8px; margin-bottom:18px; }
+h1 { font-size:22px; font-weight:700; }
+header p { font-size:11px; color:#666; }
+.board { display:grid; grid-template-columns:168px repeat(12,124px); }
+.phase { border-top:3px solid #1b1b1b; margin-right:8px; padding:4px 2px 0; font-size:12px; font-weight:700; }
+.session { grid-row:2; padding:6px 6px 10px; border-left:1px solid #d6d6d6; }
+.session b { display:block; font-size:12px; }
+.session span { display:block; font-size:10.5px; color:#555; line-height:1.4; margin-top:1px; }
+.lane { grid-column:1/-1; display:grid; grid-template-columns:subgrid; border-top:1px solid #bdbdbd; padding:10px 0; }
+.lane h2 { grid-column:1; font-size:13px; font-weight:700; padding-right:12px; }
+.lane h2::before { content:""; display:inline-block; width:10px; height:10px; margin-right:6px;
+  background:var(--accent,#1b1b1b); vertical-align:-1px; }
+.track { grid-column:2/-1; display:grid; grid-template-columns:subgrid; row-gap:6px;
+  background-image:repeating-linear-gradient(90deg,#e4e4e4 0 1px,transparent 1px 124px); }
+.bar { background:var(--tint); border:1px solid var(--accent); border-radius:2px;
+  margin:0 4px; padding:5px 8px 5px; }
+.name { font-size:12.5px; font-weight:700; line-height:1.35; }
+.name code { display:inline-block; white-space:nowrap; font:400 10.5px ui-monospace,Menlo,Consolas,monospace; color:#555; }
+.marks { display:grid; margin:5px -8px 0; }
+.marks i { justify-self:center; width:7px; height:7px; background:var(--accent); }
+.themes .track { row-gap:4px; }
+.band { margin:0 4px; padding:3px 8px; background:#eeeeee; border-left:3px solid #1b1b1b; font-size:12px; font-weight:700; }
+.band small { font-weight:400; color:#555; margin-left:8px; }
+footer { margin-top:12px; padding-top:6px; border-top:1px solid #bdbdbd; font-size:10.5px; color:#555; }
+</style></head>
+<body><div class="slide">
+<header><h1>1年目エンジニア研修の全体像（全12回）</h1><p>出典: docs/curriculum.md、各回の資料の冒頭</p></header>
+<div class="board">
+<div class="corner"></div>
+<div class="phase" style="grid-column:2/4">環境</div>
+<div class="phase" style="grid-column:4/5">Web</div>
+<div class="phase" style="grid-column:5/6">環境</div>
+<div class="phase" style="grid-column:6/7">構成管理</div>
+<div class="phase" style="grid-column:7/10">Python</div>
+<div class="phase" style="grid-column:10/12">設計</div>
+<div class="phase" style="grid-column:12/13">実装</div>
+<div class="phase" style="grid-column:13/14">総括</div>
+<div class="session" style="grid-column:2"><b>第1回</b><span>知識体系の紹介＋Linux の全体像</span></div>
+<div class="session" style="grid-column:3"><b>第2回</b><span>シェル・環境変数・通信の切り分け</span></div>
+<div class="session" style="grid-column:4"><b>第3回</b><span>Web 通信の基礎（HTTP・Cookie・Web API）</span></div>
+<div class="session" style="grid-column:5"><b>第4回</b><span>実行環境の整備</span></div>
+<div class="session" style="grid-column:6"><b>第5回</b><span>Git と GitHub</span></div>
+<div class="session" style="grid-column:7"><b>第6回</b><span>Python の基本</span></div>
+<div class="session" style="grid-column:8"><b>第7回</b><span>読みやすく壊れにくい Python</span></div>
+<div class="session" style="grid-column:9"><b>第8回</b><span>テストと TDD</span></div>
+<div class="session" style="grid-column:10"><b>第9回</b><span>要件と図</span></div>
+<div class="session" style="grid-column:11"><b>第10回</b><span>設計書作成</span></div>
+<div class="session" style="grid-column:12"><b>第11回</b><span>TDD による Web バックエンド</span></div>
+<div class="session" style="grid-column:13"><b>第12回</b><span>画面の部分更新と成果発表</span></div>
+<section class="lane" style="--tint:#edf1f7;--accent:#2b4c7e"><h2>コンピュータ基盤</h2><div class="track"><div class="bar" style="grid-column:1/3;grid-row:1"><div class="name">OS（Linux） <code>linux</code></div><div class="marks" style="grid-template-columns:repeat(2,1fr)"><i style="grid-column:1"></i><i style="grid-column:2"></i></div></div><div class="bar" style="grid-column:3/4;grid-row:1"><div class="name">セキュリティ <code>sec</code></div><div class="marks" style="grid-template-columns:repeat(1,1fr)"><i style="grid-column:1"></i></div></div><div class="bar" style="grid-column:3/11;grid-row:2"><div class="name">Web通信 <code>http</code></div><div class="marks" style="grid-template-columns:repeat(8,1fr)"><i style="grid-column:1"></i><i style="grid-column:8"></i></div></div><div class="bar" style="grid-column:10/12;grid-row:1"><div class="name">データベース <code>db</code></div><div class="marks" style="grid-template-columns:repeat(2,1fr)"><i style="grid-column:1"></i><i style="grid-column:2"></i></div></div></div></section>
+<section class="lane" style="--tint:#eef4ef;--accent:#3a6b47"><h2>実装技術</h2><div class="track"><div class="bar" style="grid-column:3/13;grid-row:1"><div class="name">Webアプリケーション <code>web</code></div><div class="marks" style="grid-template-columns:repeat(10,1fr)"><i style="grid-column:1"></i><i style="grid-column:9"></i><i style="grid-column:10"></i></div></div><div class="bar" style="grid-column:6/8;grid-row:2"><div class="name">プログラミング（Python） <code>python</code></div><div class="marks" style="grid-template-columns:repeat(2,1fr)"><i style="grid-column:1"></i><i style="grid-column:2"></i></div></div></div></section>
+<section class="lane" style="--tint:#f7f1e6;--accent:#9a6b1f"><h2>ソフトウェア開発</h2><div class="track"><div class="bar" style="grid-column:4/5;grid-row:1"><div class="name">実行環境 <code>env</code></div><div class="marks" style="grid-template-columns:repeat(1,1fr)"><i style="grid-column:1"></i></div></div><div class="bar" style="grid-column:5/6;grid-row:1"><div class="name">バージョン管理（Git） <code>git</code></div><div class="marks" style="grid-template-columns:repeat(1,1fr)"><i style="grid-column:1"></i></div></div><div class="bar" style="grid-column:5/8;grid-row:2"><div class="name">開発標準 <code>標準</code></div><div class="marks" style="grid-template-columns:repeat(3,1fr)"><i style="grid-column:1"></i><i style="grid-column:3"></i></div></div><div class="bar" style="grid-column:5/13;grid-row:3"><div class="name">テストと品質 <code>test</code></div><div class="marks" style="grid-template-columns:repeat(8,1fr)"><i style="grid-column:1"></i><i style="grid-column:3"></i><i style="grid-column:4"></i><i style="grid-column:7"></i><i style="grid-column:8"></i></div></div><div class="bar" style="grid-column:9/11;grid-row:1"><div class="name">設計 <code>設計</code></div><div class="marks" style="grid-template-columns:repeat(2,1fr)"><i style="grid-column:1"></i><i style="grid-column:2"></i></div></div></div></section>
+<section class="lane" style="--tint:#f3eff6;--accent:#634a7a"><h2>その他</h2><div class="track"><div class="bar" style="grid-column:9/10;grid-row:1"><div class="name">プロジェクトマネジメント <code>pm</code></div><div class="marks" style="grid-template-columns:repeat(1,1fr)"><i style="grid-column:1"></i></div></div></div></section>
+<section class="lane themes"><h2>横断テーマ</h2><div class="track"><div class="band" style="grid-column:5/13;grid-row:1">Git<small>第5回〜</small></div><div class="band" style="grid-column:9/13;grid-row:2">ドキュメント<small>第9回〜</small></div><div class="band" style="grid-column:4/13;grid-row:3">環境の再現性<small>第4回〜</small></div><div class="band" style="grid-column:8/13;grid-row:4">TDD<small>第8回〜</small></div></div></section>
+</div>
+<footer>■ はそのジャンルを扱う回。横棒は扱う最初の回から最後の回まで。左にあるジャンルが、右の回の前提になる。</footer>
+</div></body></html>

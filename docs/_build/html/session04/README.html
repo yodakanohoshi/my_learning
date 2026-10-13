@@ -1,0 +1,557 @@
+<!DOCTYPE html><html lang="ja"><head>
+    <meta charset="utf-8">
+    <title>第4回 実行環境の整備</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../theme.css">
+<script src="../docs.js" defer></script>
+</head>
+  <body>
+<nav class="page-nav"><a href="../index.html">目次</a><a href="../README.html">全体概要</a><a href="../tags.html">タグ一覧</a></nav>
+    <section class="level1" aria-labelledby="第4回-実行環境の整備">
+      <h1 id="第4回-実行環境の整備">第4回 実行環境の整備</h1>
+      <p>tag: env-mise, env-python<br>前提タグ: linux-シェル, linux-アプリ, linux-ネットワーク<br>所要: 座学15分 / ハンズオン45分</p>
+      <section class="level2" aria-labelledby="ゴール">
+        <h2 id="ゴール">ゴール</h2>
+        <ul>
+          <li>システムの Python を直接使わない理由を、OS が使っていることとバージョンの違いから説明できる</li>
+          <li>mise で Python と uv のバージョンをディレクトリごとに固定し、<code>cd</code> で切り替わる仕組みを説明できる</li>
+          <li>uv で仮想環境を作り、<code>pyproject.toml</code> と <code>uv.lock</code> で依存パッケージを固定できる</li>
+          <li><code>mise.toml</code> に環境変数とタスクを書き、<code>mise run</code> で動かせる</li>
+          <li>渡すファイルと渡さないファイル（<code>.venv/</code>）を分け、隣の人が手順書（README）だけで再現できるように書ける</li>
+        </ul>
+      </section>
+      <section class="level2" aria-labelledby="事前準備">
+        <h2 id="事前準備">事前準備</h2>
+        <ul>
+          <li>第2回の環境設定手順書（<code>~/handsoff/workspace/session02/環境設定手順書.md</code>）の設定が済んでいること。社内ネットワークならプロキシの環境変数が <code>~/.bashrc</code> にある</li>
+          <li>講師から聞く: <code>mise.run</code>・<code>github.com</code>・<code>pypi.org</code> にプロキシ経由で届くか（<a href="../open-questions.html">open-questions.md</a> の Q1・Q5）、社内 CA 証明書が要るか（Q3）</li>
+        </ul>
+      </section>
+      <section class="level2" aria-labelledby="まとめ">
+        <h2 id="まとめ">まとめ</h2>
+        <p>冒頭の座学で使います。ハンズオンで打ったコマンドと確認は、その場で環境構築手順書（README.md）に書いていきます。</p>
+        <section class="level3" aria-labelledby="システムの-python-を使わない理由">
+          <h3 id="システムの-python-を使わない理由">システムの Python を使わない理由</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>理由</th>
+                <th>中身</th>
+                <th>参照</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>OS の持ち物</td>
+                <td><code>/usr/bin/python3</code> は apt で入り、OS のツールが使う。パッケージを入れると OS のツールが動かなくなりうるので、Ubuntu は pip で入れるのを止めている（<code>EXTERNALLY-MANAGED</code>）</td>
+                <td>モダンLinux 6.5</td>
+              </tr>
+              <tr>
+                <td>PC ごとに版が違う</td>
+                <td>版は Ubuntu の版で決まる。「自分の PC では動く」の原因になる</td>
+                <td>Python 公式 チュートリアル 12.1</td>
+              </tr>
+              <tr>
+                <td>研修の方針</td>
+                <td>プロジェクトごとに Python 3.12 に固定する。システムの Python には何も入れない</td>
+                <td>mise 公式 Getting Started</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="3つの層">
+          <h3 id="3つの層">3つの層</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>層</th>
+                <th>道具</th>
+                <th>固定するファイル</th>
+                <th>固定するもの</th>
+                <th>参照</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>OS</td>
+                <td>apt</td>
+                <td>—</td>
+                <td>システムの Python・git・curl</td>
+                <td>モダンLinux 6.5</td>
+              </tr>
+              <tr>
+                <td>ツール</td>
+                <td>mise</td>
+                <td><code>mise.toml</code></td>
+                <td>Python・uv の版、環境変数、タスク</td>
+                <td>mise 公式 Configuration</td>
+              </tr>
+              <tr>
+                <td>パッケージ</td>
+                <td>uv</td>
+                <td><code>pyproject.toml</code></td>
+                <td>直接使うパッケージ（<code>rich&gt;=15.0.0</code>）</td>
+                <td>uv 公式 Managing dependencies</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td><code>uv.lock</code></td>
+                <td>間接的に使うものも含めた全パッケージの正確な版</td>
+                <td>uv 公式 Locking and syncing</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td><code>.venv/</code></td>
+                <td>仮想環境（実物）。<code>uv.lock</code> から作り直せるので<strong>渡さない</strong></td>
+                <td>Python 公式 venv</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="mise">
+          <h3 id="mise">mise</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>コマンド・書き方</th>
+                <th>意味</th>
+                <th>参照（mise 公式）</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>eval "$(~/.local/bin/mise activate bash)"</code></td>
+                <td><code>.bashrc</code> に書く。<code>cd</code> のたびとプロンプトの前に <code>mise.toml</code> を探して PATH を変える</td>
+                <td>Getting Started</td>
+              </tr>
+              <tr>
+                <td><code>mise use --path . python@3.12</code></td>
+                <td>このディレクトリの <code>mise.toml</code> に書いて入れる。<code>--path .</code> がないと親の <code>mise.toml</code> に書く</td>
+                <td>Getting Started</td>
+              </tr>
+              <tr>
+                <td><code>mise install</code></td>
+                <td><code>mise.toml</code> に書いてある版を入れる（受け取った人が使う）</td>
+                <td>Dev Tools</td>
+              </tr>
+              <tr>
+                <td><code>mise ls --current</code>・<code>mise config ls</code></td>
+                <td>今使う版とその出どころ／読んでいる <code>mise.toml</code></td>
+                <td>Configuration</td>
+              </tr>
+              <tr>
+                <td><code>[env]</code></td>
+                <td>環境変数。<code>_.python.venv</code> で <code>cd</code> したときに <code>.venv</code> を有効にする</td>
+                <td>Environments</td>
+              </tr>
+              <tr>
+                <td><code>[tasks.名前]</code>・<code>mise tasks</code>・<code>mise run 名前</code></td>
+                <td>よく打つコマンドに名前を付ける／一覧／実行</td>
+                <td>Tasks</td>
+              </tr>
+              <tr>
+                <td><code>mise trust</code></td>
+                <td>コピー・受け取った <code>mise.toml</code> を中身を見てから信頼する。未信頼の間は <code>[env]</code> を読まない</td>
+                <td>Configuration</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="uv">
+          <h3 id="uv">uv</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>コマンド</th>
+                <th>意味</th>
+                <th>参照（uv 公式）</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>uv init --app --vcs none --no-pin-python</code></td>
+                <td><code>pyproject.toml</code> と <code>main.py</code> を作る。Git は第5回、Python の版は <code>mise.toml</code> で決める</td>
+                <td>Creating projects</td>
+              </tr>
+              <tr>
+                <td><code>uv add 名前</code></td>
+                <td><code>pyproject.toml</code> に書き、<code>uv.lock</code> を作り、<code>.venv</code> に入れるまでを一度に行う</td>
+                <td>Managing dependencies</td>
+              </tr>
+              <tr>
+                <td><code>uv tree</code></td>
+                <td>依存パッケージの木</td>
+                <td>Managing dependencies</td>
+              </tr>
+              <tr>
+                <td><code>uv lock</code></td>
+                <td><code>pyproject.toml</code> から <code>uv.lock</code> を作り直す</td>
+                <td>Locking and syncing</td>
+              </tr>
+              <tr>
+                <td><code>uv sync --locked</code></td>
+                <td><code>uv.lock</code> どおりに <code>.venv</code> を作る。<code>pyproject.toml</code> と食い違えば止まる</td>
+                <td>Locking and syncing</td>
+              </tr>
+              <tr>
+                <td><code>uv run ファイル</code></td>
+                <td><code>.venv</code> の Python で動かす</td>
+                <td>Running commands</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="level3" aria-labelledby="社内で必要な設定">
+          <h3 id="社内で必要な設定">社内で必要な設定</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>通信先・設定</th>
+                <th>中身</th>
+                <th>参照</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>mise.run</code>・<code>github.com</code></td>
+                <td>mise のインストールと、mise による Python・uv の取得</td>
+                <td>open-questions Q5</td>
+              </tr>
+              <tr>
+                <td><code>pypi.org</code>・<code>files.pythonhosted.org</code></td>
+                <td>uv によるパッケージの取得</td>
+                <td>open-questions Q5</td>
+              </tr>
+              <tr>
+                <td>プロキシ</td>
+                <td>mise・uv は <code>https_proxy</code> などの環境変数を読む（第2回で設定済み）</td>
+                <td>uv 公式 Environment variables</td>
+              </tr>
+              <tr>
+                <td>社内 CA 証明書</td>
+                <td>uv は既定では OS に登録した証明書を読まない。<code>export UV_NATIVE_TLS=1</code> を <code>~/.bashrc</code> に書く</td>
+                <td>uv 公式 Environment variables</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+      <section class="level2" aria-labelledby="ハンズオン">
+        <h2 id="ハンズオン">ハンズオン</h2>
+        <p>1ステップ1コマンド。各ステップは「🖋 やること → 📚 参考書・公式資料の節 → 📒 説明 → コマンド」。作業場所は <code>~/handsoff/workspace/session04/</code>。見本は <a href="../../../../examples/session04/README.md">examples/session04/</a>。</p>
+        <section class="level3" aria-labelledby="1-システムの-python-を確かめる4分">
+          <h3 id="1-システムの-python-を確かめる4分">1. システムの Python を確かめる（4分）</h3>
+          <section class="level4" aria-labelledby="-作業場所に移る">
+            <h4 id="-作業場所に移る">🖋 作業場所に移る</h4>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cd</span> ~/handsoff/workspace/session04</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-システムの-python-を見る">
+            <h4 id="-システムの-python-を見る">🖋 システムの Python を見る</h4>
+            <p>📚 Python 公式 チュートリアル 12.1 はじめに</p>
+            <p>📒 Ubuntu に最初から入っている Python は OS のもの。版は Ubuntu の版で決まり、隣の人と違うことがある</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">which</span> -a python3; python3 --version   <span class="token comment"># 隣の人と比べる</span></code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-誰が使っているかを見る">
+            <h4 id="-誰が使っているかを見る">🖋 誰が使っているかを見る</h4>
+            <p>📚 モダンLinux 6.5 パッケージとパッケージマネージャ</p>
+            <p>📒 apt や OS のツールが、この Python に頼っている。研修では3つの層（まとめの表）に分け、プロジェクトで使う Python とパッケージを OS から切り離す</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">dpkg</span> -S /usr/bin/python3; apt-cache rdepends --installed python3 | head</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-パッケージを入れさせない印を見る">
+            <h4 id="-パッケージを入れさせない印を見る">🖋 パッケージを入れさせない印を見る</h4>
+            <p>📒 Ubuntu はこのファイルを置いて、システムの Python に pip でパッケージを入れるのを止めている</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">head</span> -5 /usr/lib/python3*/EXTERNALLY-MANAGED</code></pre>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="2-mise-を入れる7分">
+          <h3 id="2-mise-を入れる7分">2. mise を入れる（7分）</h3>
+          <section class="level4" aria-labelledby="-環境構築手順書を用意する">
+            <h4 id="-環境構築手順書を用意する">🖋 環境構築手順書を用意する</h4>
+            <p>📒 第2回と同じく、打ったコマンドと確認をその場で書く。手順7で隣の人がこれだけを見て再現し、第5回でこのディレクトリをリポジトリにする</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cp</span> ~/handsoff/docs/session04/assets/環境構築手順書.md README.md; code README.md</code></pre>
+            <ul>
+              <li><code>code</code> が使えないときは <code>nano README.md</code></li>
+            </ul>
+          </section>
+          <section class="level4" aria-labelledby="-mise-を入れる">
+            <h4 id="-mise-を入れる">🖋 mise を入れる</h4>
+            <p>📚 mise 公式 Getting Started</p>
+            <p>📒 mise は1つのファイルとして <code>~/.local/bin/mise</code> に入る。社内で止まったら、プロキシの環境変数を確かめる（第2回）</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">curl</span> https://mise.run | sh</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-入ったことを確かめる">
+            <h4 id="-入ったことを確かめる">🖋 入ったことを確かめる</h4>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">~/.local/bin/mise</span> --version</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-bashrc-のコピーを取る">
+            <h4 id="-bashrc-のコピーを取る">🖋 .bashrc のコピーを取る</h4>
+            <p>📒 第2回の <code>~/.bashrc.bak</code> は第2回の前の状態なので、上書きせずに別の名前で取る</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cp</span> ~/.bashrc ~/.bashrc.before-mise</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-bashrc-に-activate-を書く">
+            <h4 id="-bashrc-に-activate-を書く">🖋 .bashrc に activate を書く</h4>
+            <p>📚 mise 公式 Getting Started（Activate mise）</p>
+            <p>📒 activate すると、<code>cd</code> のたびとプロンプトを出す前に mise が動く。mise は今のディレクトリから親へたどって <code>mise.toml</code> を探し、PATH を書き換える</p>
+            <figure class="mermaid"><svg id="mermaid-22" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width: 683px; background-color: transparent;" viewBox="-50 -10 683 538.5" role="graphics-document document" aria-roledescription="sequence"><g><rect x="432" y="452.5" fill="#eaeaea" stroke="#666" width="150" height="65" name="M" rx="3" ry="3" class="actor actor-bottom"/><text x="507" y="485" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="507" dy="0">mise</tspan></text></g><g><rect x="200" y="452.5" fill="#eaeaea" stroke="#666" width="150" height="65" name="B" rx="3" ry="3" class="actor actor-bottom"/><text x="275" y="485" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="275" dy="0">bash</tspan></text></g><g><rect x="0" y="452.5" fill="#eaeaea" stroke="#666" width="150" height="65" name="U" rx="3" ry="3" class="actor actor-bottom"/><text x="75" y="485" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="75" dy="0">自分</tspan></text></g><g><line id="actor2" x1="507" y1="65" x2="507" y2="452.5" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="M" data-et="life-line" data-id="M"/><g id="root-2" data-et="participant" data-type="participant" data-id="M"><rect x="432" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="M" rx="3" ry="3" class="actor actor-top"/><text x="507" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="507" dy="0">mise</tspan></text></g></g><g><line id="actor1" x1="275" y1="65" x2="275" y2="452.5" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="B" data-et="life-line" data-id="B"/><g id="root-1" data-et="participant" data-type="participant" data-id="B"><rect x="200" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="B" rx="3" ry="3" class="actor actor-top"/><text x="275" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="275" dy="0">bash</tspan></text></g></g><g><line id="actor0" x1="75" y1="65" x2="75" y2="452.5" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="U" data-et="life-line" data-id="U"/><g id="root-0" data-et="participant" data-type="participant" data-id="U"><rect x="0" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="U" rx="3" ry="3" class="actor actor-top"/><text x="75" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="75" dy="0">自分</tspan></text></g></g><style>#mermaid-22{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;fill:#2b2b2b;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-22 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-22 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-22 .error-icon{fill:#fdfcfa;}#mermaid-22 .error-text{fill:#020305;stroke:#020305;}#mermaid-22 .edge-thickness-normal{stroke-width:1px;}#mermaid-22 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-22 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-22 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-22 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-22 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-22 .marker{fill:#6b6b6b;stroke:#6b6b6b;}#mermaid-22 .marker.cross{stroke:#6b6b6b;}#mermaid-22 svg{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;}#mermaid-22 p{margin:0;}#mermaid-22 .actor{stroke:#3d5468;fill:#f6f4f0;stroke-width:1;}#mermaid-22 rect.actor.outer-path[data-look="neo"]{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-22 rect.note[data-look="neo"]{stroke:hsl(40, 0%, 84.1176470588%);fill:#f3f1ed;filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-22 text.actor&gt;tspan{fill:#2b2b2b;stroke:none;}#mermaid-22 .actor-line{stroke:#3d5468;}#mermaid-22 .innerArc{stroke-width:1.5;stroke-dasharray:none;}#mermaid-22 .messageLine0{stroke-width:1.5;stroke-dasharray:none;stroke:#2b2b2b;}#mermaid-22 .messageLine1{stroke-width:1.5;stroke-dasharray:2,2;stroke:#2b2b2b;}#mermaid-22 [id$="-arrowhead"] path{fill:#2b2b2b;stroke:#2b2b2b;}#mermaid-22 .sequenceNumber{fill:#949494;}#mermaid-22 [id$="-sequencenumber"]{fill:#2b2b2b;}#mermaid-22 [id$="-crosshead"] path{fill:#2b2b2b;stroke:#2b2b2b;}#mermaid-22 .messageText{fill:#2b2b2b;stroke:none;}#mermaid-22 .labelBox{stroke:#3d5468;fill:#f6f4f0;filter:none;}#mermaid-22 .labelText,#mermaid-22 .labelText&gt;tspan{fill:#2b2b2b;stroke:none;}#mermaid-22 .loopText,#mermaid-22 .loopText&gt;tspan{fill:#2b2b2b;stroke:none;}#mermaid-22 .sectionTitle,#mermaid-22 .sectionTitle&gt;tspan{fill:#2b2b2b;stroke:none;}#mermaid-22 .loopLine{stroke-width:2px;stroke-dasharray:2,2;stroke:#3d5468;fill:#3d5468;}#mermaid-22 .note{stroke:hsl(40, 0%, 84.1176470588%);fill:#f3f1ed;}#mermaid-22 .noteText,#mermaid-22 .noteText&gt;tspan{fill:#333;stroke:none;font-weight:normal;}#mermaid-22 .activation0{fill:#eef1f4;stroke:hsl(210, 21.4285714286%, 84.5098039216%);}#mermaid-22 .activation1{fill:#eef1f4;stroke:hsl(210, 21.4285714286%, 84.5098039216%);}#mermaid-22 .activation2{fill:#eef1f4;stroke:hsl(210, 21.4285714286%, 84.5098039216%);}#mermaid-22 .actorPopupMenu{position:absolute;}#mermaid-22 .actorPopupMenuPanel{position:absolute;fill:#f6f4f0;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);filter:drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));}#mermaid-22 .actor-man circle,#mermaid-22 line{fill:#f6f4f0;stroke-width:2px;}#mermaid-22 g rect.rect{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));stroke:#3d5468;}#mermaid-22 .node .neo-node{stroke:#3d5468;}#mermaid-22 [data-look="neo"].node rect,#mermaid-22 [data-look="neo"].cluster rect,#mermaid-22 [data-look="neo"].node polygon{stroke:url(#mermaid-22-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-22 [data-look="neo"].swimlane.cluster rect{filter:none;}#mermaid-22 [data-look="neo"].node path{stroke:url(#mermaid-22-gradient);stroke-width:1px;}#mermaid-22 [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-22 [data-look="neo"].node .neo-line path{stroke:#3d5468;filter:none;}#mermaid-22 [data-look="neo"].node circle{stroke:url(#mermaid-22-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-22 [data-look="neo"].node circle .state-start{fill:#000000;}#mermaid-22 [data-look="neo"].icon-shape .icon{fill:url(#mermaid-22-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-22 [data-look="neo"].icon-shape .icon-neo path{stroke:url(#mermaid-22-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-22 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g/><defs><symbol id="mermaid-22-computer" width="24" height="24"><path transform="scale(.5)" d="M2 2v13h20v-13h-20zm18 11h-16v-9h16v9zm-10.228 6l.466-1h3.524l.467 1h-4.457zm14.228 3h-24l2-6h2.104l-1.33 4h18.45l-1.297-4h2.073l2 6zm-5-10h-14v-7h14v7z"/></symbol></defs><defs><symbol id="mermaid-22-database" fill-rule="evenodd" clip-rule="evenodd"><path transform="scale(.5)" d="M12.258.001l.256.004.255.005.253.008.251.01.249.012.247.015.246.016.242.019.241.02.239.023.236.024.233.027.231.028.229.031.225.032.223.034.22.036.217.038.214.04.211.041.208.043.205.045.201.046.198.048.194.05.191.051.187.053.183.054.18.056.175.057.172.059.168.06.163.061.16.063.155.064.15.066.074.033.073.033.071.034.07.034.069.035.068.035.067.035.066.035.064.036.064.036.062.036.06.036.06.037.058.037.058.037.055.038.055.038.053.038.052.038.051.039.05.039.048.039.047.039.045.04.044.04.043.04.041.04.04.041.039.041.037.041.036.041.034.041.033.042.032.042.03.042.029.042.027.042.026.043.024.043.023.043.021.043.02.043.018.044.017.043.015.044.013.044.012.044.011.045.009.044.007.045.006.045.004.045.002.045.001.045v17l-.001.045-.002.045-.004.045-.006.045-.007.045-.009.044-.011.045-.012.044-.013.044-.015.044-.017.043-.018.044-.02.043-.021.043-.023.043-.024.043-.026.043-.027.042-.029.042-.03.042-.032.042-.033.042-.034.041-.036.041-.037.041-.039.041-.04.041-.041.04-.043.04-.044.04-.045.04-.047.039-.048.039-.05.039-.051.039-.052.038-.053.038-.055.038-.055.038-.058.037-.058.037-.06.037-.06.036-.062.036-.064.036-.064.036-.066.035-.067.035-.068.035-.069.035-.07.034-.071.034-.073.033-.074.033-.15.066-.155.064-.16.063-.163.061-.168.06-.172.059-.175.057-.18.056-.183.054-.187.053-.191.051-.194.05-.198.048-.201.046-.205.045-.208.043-.211.041-.214.04-.217.038-.22.036-.223.034-.225.032-.229.031-.231.028-.233.027-.236.024-.239.023-.241.02-.242.019-.246.016-.247.015-.249.012-.251.01-.253.008-.255.005-.256.004-.258.001-.258-.001-.256-.004-.255-.005-.253-.008-.251-.01-.249-.012-.247-.015-.245-.016-.243-.019-.241-.02-.238-.023-.236-.024-.234-.027-.231-.028-.228-.031-.226-.032-.223-.034-.22-.036-.217-.038-.214-.04-.211-.041-.208-.043-.204-.045-.201-.046-.198-.048-.195-.05-.19-.051-.187-.053-.184-.054-.179-.056-.176-.057-.172-.059-.167-.06-.164-.061-.159-.063-.155-.064-.151-.066-.074-.033-.072-.033-.072-.034-.07-.034-.069-.035-.068-.035-.067-.035-.066-.035-.064-.036-.063-.036-.062-.036-.061-.036-.06-.037-.058-.037-.057-.037-.056-.038-.055-.038-.053-.038-.052-.038-.051-.039-.049-.039-.049-.039-.046-.039-.046-.04-.044-.04-.043-.04-.041-.04-.04-.041-.039-.041-.037-.041-.036-.041-.034-.041-.033-.042-.032-.042-.03-.042-.029-.042-.027-.042-.026-.043-.024-.043-.023-.043-.021-.043-.02-.043-.018-.044-.017-.043-.015-.044-.013-.044-.012-.044-.011-.045-.009-.044-.007-.045-.006-.045-.004-.045-.002-.045-.001-.045v-17l.001-.045.002-.045.004-.045.006-.045.007-.045.009-.044.011-.045.012-.044.013-.044.015-.044.017-.043.018-.044.02-.043.021-.043.023-.043.024-.043.026-.043.027-.042.029-.042.03-.042.032-.042.033-.042.034-.041.036-.041.037-.041.039-.041.04-.041.041-.04.043-.04.044-.04.046-.04.046-.039.049-.039.049-.039.051-.039.052-.038.053-.038.055-.038.056-.038.057-.037.058-.037.06-.037.061-.036.062-.036.063-.036.064-.036.066-.035.067-.035.068-.035.069-.035.07-.034.072-.034.072-.033.074-.033.151-.066.155-.064.159-.063.164-.061.167-.06.172-.059.176-.057.179-.056.184-.054.187-.053.19-.051.195-.05.198-.048.201-.046.204-.045.208-.043.211-.041.214-.04.217-.038.22-.036.223-.034.226-.032.228-.031.231-.028.234-.027.236-.024.238-.023.241-.02.243-.019.245-.016.247-.015.249-.012.251-.01.253-.008.255-.005.256-.004.258-.001.258.001zm-9.258 20.499v.01l.001.021.003.021.004.022.005.021.006.022.007.022.009.023.01.022.011.023.012.023.013.023.015.023.016.024.017.023.018.024.019.024.021.024.022.025.023.024.024.025.052.049.056.05.061.051.066.051.07.051.075.051.079.052.084.052.088.052.092.052.097.052.102.051.105.052.11.052.114.051.119.051.123.051.127.05.131.05.135.05.139.048.144.049.147.047.152.047.155.047.16.045.163.045.167.043.171.043.176.041.178.041.183.039.187.039.19.037.194.035.197.035.202.033.204.031.209.03.212.029.216.027.219.025.222.024.226.021.23.02.233.018.236.016.24.015.243.012.246.01.249.008.253.005.256.004.259.001.26-.001.257-.004.254-.005.25-.008.247-.011.244-.012.241-.014.237-.016.233-.018.231-.021.226-.021.224-.024.22-.026.216-.027.212-.028.21-.031.205-.031.202-.034.198-.034.194-.036.191-.037.187-.039.183-.04.179-.04.175-.042.172-.043.168-.044.163-.045.16-.046.155-.046.152-.047.148-.048.143-.049.139-.049.136-.05.131-.05.126-.05.123-.051.118-.052.114-.051.11-.052.106-.052.101-.052.096-.052.092-.052.088-.053.083-.051.079-.052.074-.052.07-.051.065-.051.06-.051.056-.05.051-.05.023-.024.023-.025.021-.024.02-.024.019-.024.018-.024.017-.024.015-.023.014-.024.013-.023.012-.023.01-.023.01-.022.008-.022.006-.022.006-.022.004-.022.004-.021.001-.021.001-.021v-4.127l-.077.055-.08.053-.083.054-.085.053-.087.052-.09.052-.093.051-.095.05-.097.05-.1.049-.102.049-.105.048-.106.047-.109.047-.111.046-.114.045-.115.045-.118.044-.12.043-.122.042-.124.042-.126.041-.128.04-.13.04-.132.038-.134.038-.135.037-.138.037-.139.035-.142.035-.143.034-.144.033-.147.032-.148.031-.15.03-.151.03-.153.029-.154.027-.156.027-.158.026-.159.025-.161.024-.162.023-.163.022-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.011-.178.01-.179.008-.179.008-.181.006-.182.005-.182.004-.184.003-.184.002h-.37l-.184-.002-.184-.003-.182-.004-.182-.005-.181-.006-.179-.008-.179-.008-.178-.01-.176-.011-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.022-.162-.023-.161-.024-.159-.025-.157-.026-.156-.027-.155-.027-.153-.029-.151-.03-.15-.03-.148-.031-.146-.032-.145-.033-.143-.034-.141-.035-.14-.035-.137-.037-.136-.037-.134-.038-.132-.038-.13-.04-.128-.04-.126-.041-.124-.042-.122-.042-.12-.044-.117-.043-.116-.045-.113-.045-.112-.046-.109-.047-.106-.047-.105-.048-.102-.049-.1-.049-.097-.05-.095-.05-.093-.052-.09-.051-.087-.052-.085-.053-.083-.054-.08-.054-.077-.054v4.127zm0-5.654v.011l.001.021.003.021.004.021.005.022.006.022.007.022.009.022.01.022.011.023.012.023.013.023.015.024.016.023.017.024.018.024.019.024.021.024.022.024.023.025.024.024.052.05.056.05.061.05.066.051.07.051.075.052.079.051.084.052.088.052.092.052.097.052.102.052.105.052.11.051.114.051.119.052.123.05.127.051.131.05.135.049.139.049.144.048.147.048.152.047.155.046.16.045.163.045.167.044.171.042.176.042.178.04.183.04.187.038.19.037.194.036.197.034.202.033.204.032.209.03.212.028.216.027.219.025.222.024.226.022.23.02.233.018.236.016.24.014.243.012.246.01.249.008.253.006.256.003.259.001.26-.001.257-.003.254-.006.25-.008.247-.01.244-.012.241-.015.237-.016.233-.018.231-.02.226-.022.224-.024.22-.025.216-.027.212-.029.21-.03.205-.032.202-.033.198-.035.194-.036.191-.037.187-.039.183-.039.179-.041.175-.042.172-.043.168-.044.163-.045.16-.045.155-.047.152-.047.148-.048.143-.048.139-.05.136-.049.131-.05.126-.051.123-.051.118-.051.114-.052.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.051.07-.052.065-.051.06-.05.056-.051.051-.049.023-.025.023-.024.021-.025.02-.024.019-.024.018-.024.017-.024.015-.023.014-.023.013-.024.012-.022.01-.023.01-.023.008-.022.006-.022.006-.022.004-.021.004-.022.001-.021.001-.021v-4.139l-.077.054-.08.054-.083.054-.085.052-.087.053-.09.051-.093.051-.095.051-.097.05-.1.049-.102.049-.105.048-.106.047-.109.047-.111.046-.114.045-.115.044-.118.044-.12.044-.122.042-.124.042-.126.041-.128.04-.13.039-.132.039-.134.038-.135.037-.138.036-.139.036-.142.035-.143.033-.144.033-.147.033-.148.031-.15.03-.151.03-.153.028-.154.028-.156.027-.158.026-.159.025-.161.024-.162.023-.163.022-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.011-.178.009-.179.009-.179.007-.181.007-.182.005-.182.004-.184.003-.184.002h-.37l-.184-.002-.184-.003-.182-.004-.182-.005-.181-.007-.179-.007-.179-.009-.178-.009-.176-.011-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.022-.162-.023-.161-.024-.159-.025-.157-.026-.156-.027-.155-.028-.153-.028-.151-.03-.15-.03-.148-.031-.146-.033-.145-.033-.143-.033-.141-.035-.14-.036-.137-.036-.136-.037-.134-.038-.132-.039-.13-.039-.128-.04-.126-.041-.124-.042-.122-.043-.12-.043-.117-.044-.116-.044-.113-.046-.112-.046-.109-.046-.106-.047-.105-.048-.102-.049-.1-.049-.097-.05-.095-.051-.093-.051-.09-.051-.087-.053-.085-.052-.083-.054-.08-.054-.077-.054v4.139zm0-5.666v.011l.001.02.003.022.004.021.005.022.006.021.007.022.009.023.01.022.011.023.012.023.013.023.015.023.016.024.017.024.018.023.019.024.021.025.022.024.023.024.024.025.052.05.056.05.061.05.066.051.07.051.075.052.079.051.084.052.088.052.092.052.097.052.102.052.105.051.11.052.114.051.119.051.123.051.127.05.131.05.135.05.139.049.144.048.147.048.152.047.155.046.16.045.163.045.167.043.171.043.176.042.178.04.183.04.187.038.19.037.194.036.197.034.202.033.204.032.209.03.212.028.216.027.219.025.222.024.226.021.23.02.233.018.236.017.24.014.243.012.246.01.249.008.253.006.256.003.259.001.26-.001.257-.003.254-.006.25-.008.247-.01.244-.013.241-.014.237-.016.233-.018.231-.02.226-.022.224-.024.22-.025.216-.027.212-.029.21-.03.205-.032.202-.033.198-.035.194-.036.191-.037.187-.039.183-.039.179-.041.175-.042.172-.043.168-.044.163-.045.16-.045.155-.047.152-.047.148-.048.143-.049.139-.049.136-.049.131-.051.126-.05.123-.051.118-.052.114-.051.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.052.07-.051.065-.051.06-.051.056-.05.051-.049.023-.025.023-.025.021-.024.02-.024.019-.024.018-.024.017-.024.015-.023.014-.024.013-.023.012-.023.01-.022.01-.023.008-.022.006-.022.006-.022.004-.022.004-.021.001-.021.001-.021v-4.153l-.077.054-.08.054-.083.053-.085.053-.087.053-.09.051-.093.051-.095.051-.097.05-.1.049-.102.048-.105.048-.106.048-.109.046-.111.046-.114.046-.115.044-.118.044-.12.043-.122.043-.124.042-.126.041-.128.04-.13.039-.132.039-.134.038-.135.037-.138.036-.139.036-.142.034-.143.034-.144.033-.147.032-.148.032-.15.03-.151.03-.153.028-.154.028-.156.027-.158.026-.159.024-.161.024-.162.023-.163.023-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.01-.178.01-.179.009-.179.007-.181.006-.182.006-.182.004-.184.003-.184.001-.185.001-.185-.001-.184-.001-.184-.003-.182-.004-.182-.006-.181-.006-.179-.007-.179-.009-.178-.01-.176-.01-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.023-.162-.023-.161-.024-.159-.024-.157-.026-.156-.027-.155-.028-.153-.028-.151-.03-.15-.03-.148-.032-.146-.032-.145-.033-.143-.034-.141-.034-.14-.036-.137-.036-.136-.037-.134-.038-.132-.039-.13-.039-.128-.041-.126-.041-.124-.041-.122-.043-.12-.043-.117-.044-.116-.044-.113-.046-.112-.046-.109-.046-.106-.048-.105-.048-.102-.048-.1-.05-.097-.049-.095-.051-.093-.051-.09-.052-.087-.052-.085-.053-.083-.053-.08-.054-.077-.054v4.153zm8.74-8.179l-.257.004-.254.005-.25.008-.247.011-.244.012-.241.014-.237.016-.233.018-.231.021-.226.022-.224.023-.22.026-.216.027-.212.028-.21.031-.205.032-.202.033-.198.034-.194.036-.191.038-.187.038-.183.04-.179.041-.175.042-.172.043-.168.043-.163.045-.16.046-.155.046-.152.048-.148.048-.143.048-.139.049-.136.05-.131.05-.126.051-.123.051-.118.051-.114.052-.11.052-.106.052-.101.052-.096.052-.092.052-.088.052-.083.052-.079.052-.074.051-.07.052-.065.051-.06.05-.056.05-.051.05-.023.025-.023.024-.021.024-.02.025-.019.024-.018.024-.017.023-.015.024-.014.023-.013.023-.012.023-.01.023-.01.022-.008.022-.006.023-.006.021-.004.022-.004.021-.001.021-.001.021.001.021.001.021.004.021.004.022.006.021.006.023.008.022.01.022.01.023.012.023.013.023.014.023.015.024.017.023.018.024.019.024.02.025.021.024.023.024.023.025.051.05.056.05.06.05.065.051.07.052.074.051.079.052.083.052.088.052.092.052.096.052.101.052.106.052.11.052.114.052.118.051.123.051.126.051.131.05.136.05.139.049.143.048.148.048.152.048.155.046.16.046.163.045.168.043.172.043.175.042.179.041.183.04.187.038.191.038.194.036.198.034.202.033.205.032.21.031.212.028.216.027.22.026.224.023.226.022.231.021.233.018.237.016.241.014.244.012.247.011.25.008.254.005.257.004.26.001.26-.001.257-.004.254-.005.25-.008.247-.011.244-.012.241-.014.237-.016.233-.018.231-.021.226-.022.224-.023.22-.026.216-.027.212-.028.21-.031.205-.032.202-.033.198-.034.194-.036.191-.038.187-.038.183-.04.179-.041.175-.042.172-.043.168-.043.163-.045.16-.046.155-.046.152-.048.148-.048.143-.048.139-.049.136-.05.131-.05.126-.051.123-.051.118-.051.114-.052.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.051.07-.052.065-.051.06-.05.056-.05.051-.05.023-.025.023-.024.021-.024.02-.025.019-.024.018-.024.017-.023.015-.024.014-.023.013-.023.012-.023.01-.023.01-.022.008-.022.006-.023.006-.021.004-.022.004-.021.001-.021.001-.021-.001-.021-.001-.021-.004-.021-.004-.022-.006-.021-.006-.023-.008-.022-.01-.022-.01-.023-.012-.023-.013-.023-.014-.023-.015-.024-.017-.023-.018-.024-.019-.024-.02-.025-.021-.024-.023-.024-.023-.025-.051-.05-.056-.05-.06-.05-.065-.051-.07-.052-.074-.051-.079-.052-.083-.052-.088-.052-.092-.052-.096-.052-.101-.052-.106-.052-.11-.052-.114-.052-.118-.051-.123-.051-.126-.051-.131-.05-.136-.05-.139-.049-.143-.048-.148-.048-.152-.048-.155-.046-.16-.046-.163-.045-.168-.043-.172-.043-.175-.042-.179-.041-.183-.04-.187-.038-.191-.038-.194-.036-.198-.034-.202-.033-.205-.032-.21-.031-.212-.028-.216-.027-.22-.026-.224-.023-.226-.022-.231-.021-.233-.018-.237-.016-.241-.014-.244-.012-.247-.011-.25-.008-.254-.005-.257-.004-.26-.001-.26.001z"/></symbol></defs><defs><symbol id="mermaid-22-clock" width="24" height="24"><path transform="scale(.5)" d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm5.848 12.459c.202.038.202.333.001.372-1.907.361-6.045 1.111-6.547 1.111-.719 0-1.301-.582-1.301-1.301 0-.512.77-5.447 1.125-7.445.034-.192.312-.181.343.014l.985 6.238 5.394 1.011z"/></symbol></defs><defs><marker id="mermaid-22-arrowhead" refX="7.9" refY="5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M -1 0 L 10 5 L 0 10 z"/></marker></defs><defs><marker id="mermaid-22-crosshead" markerWidth="15" markerHeight="8" orient="auto" refX="4" refY="4.5"><path fill="none" stroke="#000000" stroke-width="1pt" d="M 1,2 L 6,7 M 6,2 L 1,7" style="stroke-dasharray: 0, 0;"/></marker></defs><defs><marker id="mermaid-22-filled-head" refX="15.5" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L14,7 L9,1 Z"/></marker></defs><defs><marker id="mermaid-22-sequencenumber" refX="15" refY="15" markerWidth="60" markerHeight="40" orient="auto"><circle cx="15" cy="15" r="6"/></marker></defs><defs><marker id="mermaid-22-solidTopArrowHead" refX="7.9" refY="7.25" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 10 8 L 0 8 z"/></marker></defs><defs><marker id="mermaid-22-solidBottomArrowHead" refX="7.9" refY="0.75" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 10 0 L 0 8 z"/></marker></defs><defs><marker id="mermaid-22-stickTopArrowHead" refX="7.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 0 L 7 7" stroke="black" stroke-width="1.5" fill="none"/></marker></defs><defs><marker id="mermaid-22-stickBottomArrowHead" refX="7.5" refY="0" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M 0 7 L 7 0" stroke="black" stroke-width="1.5" fill="none"/></marker></defs><text x="174" y="80" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">cd session04</text><line x1="76" y1="109" x2="271" y2="109" class="messageLine0" data-et="message" data-id="i0" data-from="U" data-to="B" stroke-width="2" stroke="none" marker-end="url(#mermaid-22-arrowhead)" style="fill: none;"/><text x="390" y="124" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">cd の後と</text><text x="390" y="141" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">プロンプトの前に</text><text x="390" y="158" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">mise hook-env</text><line x1="276" y1="187" x2="503" y2="187" class="messageLine0" data-et="message" data-id="i1" data-from="B" data-to="M" stroke-width="2" stroke="none" marker-end="url(#mermaid-22-arrowhead)" style="fill: none;"/><text x="508" y="202" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">mise.toml を</text><text x="508" y="219" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">親へたどって探す</text><path d="M 508,248 C 568,238 568,278 508,268" class="messageLine0" data-et="message" data-id="i2" data-from="M" data-to="M" stroke-width="2" stroke="none" marker-end="url(#mermaid-22-arrowhead)" style="fill: none;"/><text x="393" y="293" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">PATH の先頭に</text><text x="393" y="310" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">Python 3.12・uv を足す</text><line x1="506" y1="340.5" x2="279" y2="340.5" class="messageLine1" data-et="message" data-id="i3" data-from="M" data-to="B" stroke-width="2" stroke="none" marker-end="url(#mermaid-22-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><text x="174" y="356" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">python --version</text><line x1="76" y1="386.5" x2="271" y2="386.5" class="messageLine0" data-et="message" data-id="i4" data-from="U" data-to="B" stroke-width="2" stroke="none" marker-end="url(#mermaid-22-arrowhead)" style="fill: none;"/><text x="177" y="402" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">Python 3.12.15</text><line x1="274" y1="432.5" x2="79" y2="432.5" class="messageLine1" data-et="message" data-id="i5" data-from="B" data-to="U" stroke-width="2" stroke="none" marker-end="url(#mermaid-22-arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><style>/* mermaid-cli で画像にするときのフォント（HTML 版と同じ BIZ UDPGothic） */
+@import url("https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&amp;display=swap");
+svg { -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+</style></svg></figure>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">echo</span> 'eval "$(~/.local/bin/mise activate bash)"' &gt;&gt; ~/.bashrc; exec bash</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-mise-と-cd-が関数になったのを見る">
+            <h4 id="-mise-と-cd-が関数になったのを見る">🖋 mise と cd が関数になったのを見る</h4>
+            <p>📒 activate は <code>mise</code> と <code>cd</code> を関数にする。第2回の探す順番では、関数は組み込みの <code>cd</code> より先に見つかる</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mise</span> --version; type -t mise cd   <span class="token comment"># function が2つ</span></code></pre>
+            <ul>
+              <li>書く: 「1. mise を入れる」（インストール → コピー → 追記 → <code>exec bash</code> → 確認は <code>mise --version</code>）</li>
+            </ul>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="3-mise-で-python-と-uv-を固定する7分">
+          <h3 id="3-mise-で-python-と-uv-を固定する7分">3. mise で Python と uv を固定する（7分）</h3>
+          <section class="level4" aria-labelledby="-上の階層の-misetoml-を見る">
+            <h4 id="-上の階層の-misetoml-を見る">🖋 上の階層の mise.toml を見る</h4>
+            <p>📚 mise 公式 Configuration</p>
+            <p>📒 <code>workspace/</code> には研修用の <code>mise.toml</code> がある。mise は今のディレクトリから親へたどり、近いほうの設定を優先する</p>
+            <figure class="plantuml"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" data-diagram-type="WBS" style="width:547px;height:213px;" width="547px" height="213px" viewBox="0 0 547 213" zoomAndPan="magnify" preserveAspectRatio="none" contentStyleType="text/css"><?plantuml 1.2026.7?><defs/><g font-family="sans-serif" lengthAdjust="spacing"><line x1="68.297" y1="68.297" x2="68.297" y2="88.297" style="stroke:#6B6B6B;stroke-width:1.5;"/><rect x="20" y="88.297" width="96.595" height="44.594" fill="#F6F4F0" style="stroke:#3D5468;stroke-width:1.5;" rx="3" ry="3"/><text x="26" y="107.292" fill="#2B2B2B" font-size="14" textLength="69.467" font-family="BIZ UDPGothic, IPAPGothic, sans-serif">mise.toml</text><text x="26" y="123.589" fill="#2B2B2B" font-size="14" textLength="84.595" font-family="BIZ UDPGothic, IPAPGothic, sans-serif">python 3.12</text><line x1="177.414" y1="68.297" x2="177.414" y2="88.297" style="stroke:#6B6B6B;stroke-width:1.5;"/><rect x="136.595" y="88.297" width="81.638" height="28.297" fill="#F6F4F0" style="stroke:#3D5468;stroke-width:1.5;" rx="3" ry="3"/><text x="142.595" y="107.292" fill="#2B2B2B" font-size="14" textLength="69.638" font-family="BIZ UDPGothic, IPAPGothic, sans-serif">session02</text><line x1="321.051" y1="68.297" x2="321.051" y2="88.297" style="stroke:#6B6B6B;stroke-width:1.5;"/><rect x="238.232" y="88.297" width="165.638" height="28.297" fill="#F6F4F0" style="stroke:#3D5468;stroke-width:1.5;" rx="3" ry="3"/><text x="244.232" y="107.292" fill="#2B2B2B" font-size="14" textLength="153.638" font-family="BIZ UDPGothic, IPAPGothic, sans-serif">session04（作業場所）</text><line x1="321.051" y1="162.039" x2="331.051" y2="162.039" style="stroke:#6B6B6B;stroke-width:1.5;"/><rect x="331.051" y="131.594" width="195.107" height="60.891" fill="#F6F4F0" style="stroke:#3D5468;stroke-width:1.5;" rx="3" ry="3"/><text x="337.051" y="150.589" fill="#2B2B2B" font-size="14" textLength="183.107" font-family="BIZ UDPGothic, IPAPGothic, sans-serif">mise.toml（これから作る）</text><text x="337.051" y="166.886" fill="#2B2B2B" font-size="14" textLength="142.468" font-family="BIZ UDPGothic, IPAPGothic, sans-serif">python 3.12・uv 0.9</text><text x="337.051" y="183.183" fill="#2B2B2B" font-size="14" textLength="99.313" font-family="BIZ UDPGothic, IPAPGothic, sans-serif">近いほうを優先</text><line x1="321.051" y1="116.594" x2="321.051" y2="162.039" style="stroke:#6B6B6B;stroke-width:1.5;"/><line x1="68.297" y1="68.297" x2="321.051" y2="68.297" style="stroke:#6B6B6B;stroke-width:1.5;"/><rect x="110.153" y="20" width="169.042" height="28.297" fill="#3D5468" style="stroke:#3D5468;stroke-width:1.5;" rx="3" ry="3"/><text x="116.153" y="38.995" fill="#FFF" font-size="14" textLength="157.042" font-family="BIZ UDPGothic, IPAPGothic, sans-serif">~/handsoff/workspace</text><line x1="194.674" y1="48.297" x2="194.674" y2="68.297" style="stroke:#6B6B6B;stroke-width:1.5;"/><?plantuml-src rLDFQnGn5B_FfuXTyB3KcTtjTcfHP5kBKf2oLBn8GTvCajcmcMH8CYwh5DorbYxrebuzUF4YUFFMYXzctEAjNy6a3kriNNlGama9oVkz_DxVTBG1PGQHzgun4VCS4nGeAKtG0u6rf3GmKd8TO1dh9wP7KX9a78J9K-vdTlFgw7gjsGflNJmOIDNN6SJ4gzTHoZJnZKpvZiY6fYS5MlARBOTeeZMJeZ5pQPyU7tp_-lxau-VfXoydanUdnnCBLsWiNepU5UFNnUYm64-iRZ4-j5epzCNBe_mfQlYhE-B7jpV5QAyO7HMZ_MByThhtQVhgmEiGWLtCNkSY_4n1aWBYC9IvGJeb1WHukiz41WfI547SJvJC1RuhkLJ8A10sJ4M4gMXXGY7dvfuKPWjIWXRMDn-ZHnlT-zBqMBo8DhjhvsTj2MveeXXTcC_ma3qZgDcU3_xoejQAtAoeh2ab1oKOHcvMGDq3B0TC98W2rwI2b94fGHGAgt8IsqGadA3d7aBhbv9Geo5jquP3fC94bT8blDmERtgx5HxR47r8_iGIKQ0hbrdYrNWvmZCiGk9_TIIMQIQ5hTfVyTpMPiZ97Izb0gUGRJ18BEaYiYrKdizep_syoW923vWWinQSzFVgEkdsJ86Sf0iOkrAwswvTxjzkNM5ulWbwDaeASCrJlgyuL_QHqx4f2CeS_DzVl-ct6gtGN_a9?></g></svg></figure>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cat</span> ../mise.toml; mise config ls</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-このディレクトリに固定する">
+            <h4 id="-このディレクトリに固定する">🖋 このディレクトリに固定する</h4>
+            <p>📚 mise 公式 Getting Started（mise use）</p>
+            <p>📒 <code>mise use</code> は版を <code>mise.toml</code> に書き、まだなければ入れる。<code>--path .</code> を付けないと、いちばん近い <code>../mise.toml</code> に書き込む</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mise</span> use --path . python@3.12 uv@0.9</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-できた-misetoml-を見る">
+            <h4 id="-できた-misetoml-を見る">🖋 できた mise.toml を見る</h4>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cat</span> mise.toml; mise config ls   <span class="token comment"># session04/mise.toml が増える</span></code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-どの-python-が動くかを見る">
+            <h4 id="-どの-python-が動くかを見る">🖋 どの Python が動くかを見る</h4>
+            <p>📒 mise は PATH の先頭に、入れた Python と uv のディレクトリを足す。<code>python</code> と打つと、<code>/usr/bin</code> より先にそこが見つかる</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">which</span> python uv; python --version; mise ls --current</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-外に出て比べる">
+            <h4 id="-外に出て比べる">🖋 外に出て比べる</h4>
+            <p>📒 <code>cd</code> するだけで切り替わる。ディレクトリの外ではシステムの Python に戻り、uv は見つからない</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cd</span> ~; python3 --version; type uv; cd -</code></pre>
+            <ul>
+              <li>書く: 「2. Python と uv を入れる」。受け取った人は <code>mise use</code> ではなく、<code>mise.toml</code> に書いてある版を <code>mise install</code> で入れる。確認は <code>mise ls --current</code></li>
+            </ul>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="4-uv-でパッケージを入れる8分">
+          <h3 id="4-uv-でパッケージを入れる8分">4. uv でパッケージを入れる（8分）</h3>
+          <section class="level4" aria-labelledby="-プロジェクトを作る">
+            <h4 id="-プロジェクトを作る">🖋 プロジェクトを作る</h4>
+            <p>📚 uv 公式 Creating projects</p>
+            <p>📒 <code>pyproject.toml</code> はプロジェクトの名前と、直接使うパッケージを書くファイル。Git は第5回で自分で作り、Python の版は <code>mise.toml</code> だけで決める（<code>.python-version</code> を作らない）</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">uv</span> init --app --vcs none --no-pin-python --name hello-todo
+<span class="token function">ls</span>; cat pyproject.toml</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-パッケージを足す">
+            <h4 id="-パッケージを足す">🖋 パッケージを足す</h4>
+            <p>📚 uv 公式 Managing dependencies</p>
+            <p>📒 <code>uv add</code> は、<code>pyproject.toml</code> への追記、<code>uv.lock</code> での版の固定、<code>.venv</code> へのインストールを一度に行う</p>
+            <figure class="mermaid"><svg id="mermaid-23" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="flowchart" style="max-width: 749.842px; background-color: transparent;" viewBox="0 0 749.841796875 86.79999542236328" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#mermaid-23{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;fill:#2b2b2b;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-23 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-23 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-23 .error-icon{fill:#fdfcfa;}#mermaid-23 .error-text{fill:#020305;stroke:#020305;}#mermaid-23 .edge-thickness-normal{stroke-width:1px;}#mermaid-23 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-23 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-23 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-23 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-23 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-23 .marker{fill:#6b6b6b;stroke:#6b6b6b;}#mermaid-23 .marker.cross{stroke:#6b6b6b;}#mermaid-23 svg{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;}#mermaid-23 p{margin:0;}#mermaid-23 .label{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;color:#2b2b2b;}#mermaid-23 .cluster-label text{fill:#020305;}#mermaid-23 .cluster-label span{color:#020305;}#mermaid-23 .cluster-label span p{background-color:transparent;}#mermaid-23 .label text,#mermaid-23 span{fill:#2b2b2b;color:#2b2b2b;}#mermaid-23 .node rect,#mermaid-23 .node circle,#mermaid-23 .node ellipse,#mermaid-23 .node polygon,#mermaid-23 .node path{fill:#f6f4f0;stroke:#3d5468;stroke-width:1px;}#mermaid-23 .rough-node .label text,#mermaid-23 .node .label text,#mermaid-23 .image-shape .label,#mermaid-23 .icon-shape .label{text-anchor:middle;}#mermaid-23 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mermaid-23 .rough-node .label,#mermaid-23 .node .label,#mermaid-23 .image-shape .label,#mermaid-23 .icon-shape .label{text-align:center;}#mermaid-23 .node.clickable{cursor:pointer;}#mermaid-23 .root .anchor path{fill:#6b6b6b!important;stroke-width:0;stroke:#6b6b6b;}#mermaid-23 .arrowheadPath{fill:#0b0b0b;}#mermaid-23 .edgePaths .path{stroke:#6b6b6b;stroke-width:1px;}#mermaid-23 .flowchart-link{stroke:#6b6b6b;fill:none;}#mermaid-23 .edgeLabel{background-color:#eef1f4;text-align:center;}#mermaid-23 .edgeLabel p{background-color:#eef1f4;}#mermaid-23 .edgeLabel rect{opacity:0.5;background-color:#eef1f4;fill:#eef1f4;}#mermaid-23 .labelBkg{background-color:rgba(238, 241, 244, 0.5);}#mermaid-23 .cluster rect{fill:#fbfaf7;stroke:#c9c5bd;stroke-width:1px;}#mermaid-23 .cluster text{fill:#020305;}#mermaid-23 .cluster span{color:#020305;}#mermaid-23 .node .collapsed-indicator{fill:#c9c5bd;stroke:none;opacity:0.6;}#mermaid-23 .node .collapsed-separator{stroke:#c9c5bd;stroke-width:0.75px;}#mermaid-23 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:12px;background:#fdfcfa;border:1px solid hsl(40, 2.8571428571%, 88.6274509804%);border-radius:2px;pointer-events:none;z-index:100;}#mermaid-23 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#2b2b2b;}#mermaid-23 rect.text{fill:none;stroke-width:0;}#mermaid-23 .icon-shape,#mermaid-23 .image-shape{background-color:#eef1f4;text-align:center;}#mermaid-23 .icon-shape p,#mermaid-23 .image-shape p{background-color:#eef1f4;padding:2px;}#mermaid-23 .icon-shape .label rect,#mermaid-23 .image-shape .label rect{opacity:0.5;background-color:#eef1f4;fill:#eef1f4;}#mermaid-23 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#mermaid-23 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#mermaid-23 .node .neo-node{stroke:#3d5468;}#mermaid-23 [data-look="neo"].node rect,#mermaid-23 [data-look="neo"].cluster rect,#mermaid-23 [data-look="neo"].node polygon{stroke:url(#mermaid-23-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-23 [data-look="neo"].swimlane.cluster rect{filter:none;}#mermaid-23 [data-look="neo"].node path{stroke:url(#mermaid-23-gradient);stroke-width:1px;}#mermaid-23 [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-23 [data-look="neo"].node .neo-line path{stroke:#3d5468;filter:none;}#mermaid-23 [data-look="neo"].node circle{stroke:url(#mermaid-23-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-23 [data-look="neo"].node circle .state-start{fill:#000000;}#mermaid-23 [data-look="neo"].icon-shape .icon{fill:url(#mermaid-23-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-23 [data-look="neo"].icon-shape .icon-neo path{stroke:url(#mermaid-23-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-23 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker id="mermaid-23_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-23_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-23_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-23_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-23_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-23_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-23_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5" refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-23_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-23_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-23_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-23_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"/></marker><marker id="mermaid-23_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5; stroke-dasharray: 1, 0;"/></marker><g class="root"><g class="clusters"/><g class="edgePaths"><path d="M124.5,43.4L128.667,43.4C132.833,43.4,141.167,43.4,148.833,43.4C156.5,43.4,163.5,43.4,167,43.4L170.5,43.4" id="mermaid-23-L_add_pp_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_add_pp_0" data-points="W3sieCI6MTI0LjUsInkiOjQzLjM5OTk5NzcxMTE4MTY0fSx7IngiOjE0OS41LCJ5Ijo0My4zOTk5OTc3MTExODE2NH0seyJ4IjoxNzQuNSwieSI6NDMuMzk5OTk3NzExMTgxNjR9XQ==" data-look="classic" marker-end="url(#mermaid-23_flowchart-v2-pointEnd)"/><path d="M309.656,43.4L317.872,43.4C326.087,43.4,342.517,43.4,358.281,43.4C374.045,43.4,389.142,43.4,396.691,43.4L404.239,43.4" id="mermaid-23-L_pp_lock_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_pp_lock_0" data-points="W3sieCI6MzA5LjY1NjI1LCJ5Ijo0My4zOTk5OTc3MTExODE2NH0seyJ4IjozNTguOTQ3NzUzOTA2MjUsInkiOjQzLjM5OTk5NzcxMTE4MTY0fSx7IngiOjQwOC4yMzkyNTc4MTI1LCJ5Ijo0My4zOTk5OTc3MTExODE2NH1d" data-look="classic" marker-end="url(#mermaid-23_flowchart-v2-pointEnd)"/><path d="M554.896,43.4L563.353,43.4C571.81,43.4,588.724,43.4,604.971,43.4C621.218,43.4,636.799,43.4,644.59,43.4L652.38,43.4" id="mermaid-23-L_lock_venv_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_lock_venv_0" data-points="W3sieCI6NTU0Ljg5NTUwNzgxMjUsInkiOjQzLjM5OTk5NzcxMTE4MTY0fSx7IngiOjYwNS42Mzc2OTUzMTI1LCJ5Ijo0My4zOTk5OTc3MTExODE2NH0seyJ4Ijo2NTYuMzc5ODgyODEyNSwieSI6NDMuMzk5OTk3NzExMTgxNjR9XQ==" data-look="classic" marker-end="url(#mermaid-23_flowchart-v2-pointEnd)"/></g><g class="edgeLabels"><g class="edgeLabel"><g class="label" data-id="L_add_pp_0" transform="translate(0, 0)"><text y="-10.1" text-anchor="middle"><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"/></text></g></g><g><rect class="background" style="stroke: none"/></g><g class="edgeLabel" transform="translate(358.94775390625, 43.39999771118164)"><g class="label" data-id="L_pp_lock_0" transform="translate(-0.49462890625, -9.000000476837158)"><g><rect class="background" style="" x="-23.796875" y="-0.9999990463256836" width="48.5830078125" height="19.999999046325684"/><text y="-10.1" text-anchor="middle" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">uv</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> lock</tspan></tspan></text></g></g></g><g class="edgeLabel" transform="translate(605.6376953125, 43.39999771118164)"><g class="label" data-id="L_lock_venv_0" transform="translate(0, -9.000000476837158)"><g><rect class="background" style="" x="-25.7421875" y="-0.9999990463256836" width="51.484375" height="19.999999046325684"/><text y="-10.1" text-anchor="middle" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">uv</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> sync</tspan></tspan></text></g></g></g></g><g class="nodes"><g class="node default" id="mermaid-23-flowchart-add-0" data-look="classic" transform="translate(66.25, 43.39999771118164)"><rect class="basic label-container" style="" x="-58.25" y="-19.999999523162842" width="116.5" height="39.999999046325684"/><g class="label" style="" transform="translate(0, -7.999999523162842)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">uv</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> add</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> rich</tspan></tspan></text></g></g></g><g class="node default" id="mermaid-23-flowchart-pp-1" data-look="classic" transform="translate(242.078125, 43.39999771118164)"><rect class="basic label-container" style="" x="-67.578125" y="-35.39999961853027" width="135.15625" height="70.79999923706055"/><g class="label" style="" transform="translate(0, -23.399999618530273)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">pyproject.toml</tspan></tspan><tspan class="text-outer-tspan row" x="0" y="1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">直接使うもの</tspan></tspan><tspan class="text-outer-tspan row" x="0" y="2.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">rich&gt;=15.0.0</tspan></tspan></text></g></g></g><g class="node default" id="mermaid-23-flowchart-lock-3" data-look="classic" transform="translate(481.5673828125, 43.39999771118164)"><rect class="basic label-container" style="" x="-73.328125" y="-27.700000762939453" width="146.65625" height="55.400001525878906"/><g class="label" style="" transform="translate(0, -15.700000762939453)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">uv.lock</tspan></tspan><tspan class="text-outer-tspan row" x="0" y="1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">全部の正確な版</tspan></tspan></text></g></g></g><g class="node default" id="mermaid-23-flowchart-venv-5" data-look="classic" transform="translate(699.11083984375, 43.39999771118164)"><rect class="basic label-container" style="" x="-42.73095703125" y="-27.700000762939453" width="85.4619140625" height="55.400001525878906"/><g class="label" style="" transform="translate(0, -15.700000762939453)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">.venv/</tspan></tspan><tspan class="text-outer-tspan row" x="0" y="1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">実物</tspan></tspan></text></g></g></g></g></g></g><defs><filter id="mermaid-23-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="mermaid-23-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><linearGradient id="mermaid-23-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#3d5468" stop-opacity="1"/><stop offset="100%" stop-color="hsl(210, 0%, 84.5098039216%)" stop-opacity="1"/></linearGradient><style>/* mermaid-cli で画像にするときのフォント（HTML 版と同じ BIZ UDPGothic） */
+@import url("https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&amp;display=swap");
+svg { -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+</style></svg></figure>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">uv</span> add rich</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-何が入ったかを見る">
+            <h4 id="-何が入ったかを見る">🖋 何が入ったかを見る</h4>
+            <p>📒 rich が使うパッケージも一緒に入る。<code>uv.lock</code> は、この木にあるパッケージ全部の版を記録する</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">uv</span> tree; grep -A1 '^name' uv.lock</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-仮想環境の中を見る">
+            <h4 id="-仮想環境の中を見る">🖋 仮想環境の中を見る</h4>
+            <p>📚 Python 公式 チュートリアル 12.2 仮想環境の作成</p>
+            <p>📒 <code>.venv</code> の <code>python</code> は、mise が入れた Python へのリンク。パッケージは <code>.venv</code> の中にだけ入るので、システムの Python とほかのプロジェクトは変わらない</p>
+            <figure class="mermaid"><svg id="mermaid-24" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="flowchart" style="max-width: 578.141px; background-color: transparent;" viewBox="0 0 578.140625 336.79998779296875" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#mermaid-24{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;fill:#2b2b2b;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-24 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-24 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-24 .error-icon{fill:#fdfcfa;}#mermaid-24 .error-text{fill:#020305;stroke:#020305;}#mermaid-24 .edge-thickness-normal{stroke-width:1px;}#mermaid-24 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-24 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-24 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-24 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-24 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-24 .marker{fill:#6b6b6b;stroke:#6b6b6b;}#mermaid-24 .marker.cross{stroke:#6b6b6b;}#mermaid-24 svg{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;}#mermaid-24 p{margin:0;}#mermaid-24 .label{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;color:#2b2b2b;}#mermaid-24 .cluster-label text{fill:#020305;}#mermaid-24 .cluster-label span{color:#020305;}#mermaid-24 .cluster-label span p{background-color:transparent;}#mermaid-24 .label text,#mermaid-24 span{fill:#2b2b2b;color:#2b2b2b;}#mermaid-24 .node rect,#mermaid-24 .node circle,#mermaid-24 .node ellipse,#mermaid-24 .node polygon,#mermaid-24 .node path{fill:#f6f4f0;stroke:#3d5468;stroke-width:1px;}#mermaid-24 .rough-node .label text,#mermaid-24 .node .label text,#mermaid-24 .image-shape .label,#mermaid-24 .icon-shape .label{text-anchor:middle;}#mermaid-24 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mermaid-24 .rough-node .label,#mermaid-24 .node .label,#mermaid-24 .image-shape .label,#mermaid-24 .icon-shape .label{text-align:center;}#mermaid-24 .node.clickable{cursor:pointer;}#mermaid-24 .root .anchor path{fill:#6b6b6b!important;stroke-width:0;stroke:#6b6b6b;}#mermaid-24 .arrowheadPath{fill:#0b0b0b;}#mermaid-24 .edgePaths .path{stroke:#6b6b6b;stroke-width:1px;}#mermaid-24 .flowchart-link{stroke:#6b6b6b;fill:none;}#mermaid-24 .edgeLabel{background-color:#eef1f4;text-align:center;}#mermaid-24 .edgeLabel p{background-color:#eef1f4;}#mermaid-24 .edgeLabel rect{opacity:0.5;background-color:#eef1f4;fill:#eef1f4;}#mermaid-24 .labelBkg{background-color:rgba(238, 241, 244, 0.5);}#mermaid-24 .cluster rect{fill:#fbfaf7;stroke:#c9c5bd;stroke-width:1px;}#mermaid-24 .cluster text{fill:#020305;}#mermaid-24 .cluster span{color:#020305;}#mermaid-24 .node .collapsed-indicator{fill:#c9c5bd;stroke:none;opacity:0.6;}#mermaid-24 .node .collapsed-separator{stroke:#c9c5bd;stroke-width:0.75px;}#mermaid-24 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:12px;background:#fdfcfa;border:1px solid hsl(40, 2.8571428571%, 88.6274509804%);border-radius:2px;pointer-events:none;z-index:100;}#mermaid-24 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#2b2b2b;}#mermaid-24 rect.text{fill:none;stroke-width:0;}#mermaid-24 .icon-shape,#mermaid-24 .image-shape{background-color:#eef1f4;text-align:center;}#mermaid-24 .icon-shape p,#mermaid-24 .image-shape p{background-color:#eef1f4;padding:2px;}#mermaid-24 .icon-shape .label rect,#mermaid-24 .image-shape .label rect{opacity:0.5;background-color:#eef1f4;fill:#eef1f4;}#mermaid-24 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#mermaid-24 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#mermaid-24 .node .neo-node{stroke:#3d5468;}#mermaid-24 [data-look="neo"].node rect,#mermaid-24 [data-look="neo"].cluster rect,#mermaid-24 [data-look="neo"].node polygon{stroke:url(#mermaid-24-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-24 [data-look="neo"].swimlane.cluster rect{filter:none;}#mermaid-24 [data-look="neo"].node path{stroke:url(#mermaid-24-gradient);stroke-width:1px;}#mermaid-24 [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-24 [data-look="neo"].node .neo-line path{stroke:#3d5468;filter:none;}#mermaid-24 [data-look="neo"].node circle{stroke:url(#mermaid-24-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-24 [data-look="neo"].node circle .state-start{fill:#000000;}#mermaid-24 [data-look="neo"].icon-shape .icon{fill:url(#mermaid-24-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-24 [data-look="neo"].icon-shape .icon-neo path{stroke:url(#mermaid-24-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-24 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker id="mermaid-24_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-24_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-24_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-24_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-24_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-24_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-24_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5" refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-24_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-24_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-24_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-24_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"/></marker><marker id="mermaid-24_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5; stroke-dasharray: 1, 0;"/></marker><g class="root"><g class="clusters"><g class="cluster" id="mermaid-24-venv" data-look="classic"><rect style="" x="8" y="8" width="227.8125" height="320.7999954223633"/><g class="cluster-label" transform="translate(103.17529296875, 8)"><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">.venv/</tspan></tspan></text></g></g></g></g><g class="edgePaths"><path d="M178.211,63L187.811,63C197.411,63,216.612,63,239.017,63C261.422,63,287.031,63,319.811,75.594C352.59,88.189,392.54,113.378,412.514,125.972L432.489,138.567" id="mermaid-24-L_py_mpy_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_py_mpy_0" data-points="W3sieCI6MTc4LjIxMDkzNzUsInkiOjYzfSx7IngiOjIzNS44MTI1LCJ5Ijo2M30seyJ4IjozMTIuNjQwNjI1LCJ5Ijo2M30seyJ4Ijo0MzUuODcyNTc0MDMzNzg4NTcsInkiOjE0MC42OTk5OTY5NDgyNDIyfV0=" data-look="classic" marker-end="url(#mermaid-24_flowchart-v2-pointEnd)"/><path d="M178.852,273.8L188.345,273.8C197.839,273.8,216.826,273.8,239.124,273.8C261.422,273.8,287.031,273.8,319.811,261.206C352.59,248.611,392.54,223.422,412.514,210.828L432.489,198.233" id="mermaid-24-L_cfg_mpy_0" class="edge-thickness-normal edge-pattern-dotted edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_cfg_mpy_0" data-points="W3sieCI6MTc4Ljg1MTU2MjUsInkiOjI3My43OTk5OTU0MjIzNjMzfSx7IngiOjIzNS44MTI1LCJ5IjoyNzMuNzk5OTk1NDIyMzYzM30seyJ4IjozMTIuNjQwNjI1LCJ5IjoyNzMuNzk5OTk1NDIyMzYzM30seyJ4Ijo0MzUuODcyNTc0MDMzNzg4NTcsInkiOjE5Ni4wOTk5OTg0NzQxMjExfV0=" data-look="classic" marker-end="url(#mermaid-24_flowchart-v2-pointEnd)"/></g><g class="edgeLabels"><g class="edgeLabel" transform="translate(312.640625, 63)"><g class="label" data-id="L_py_mpy_0" transform="translate(0, -9.000000476837158)"><g><rect class="background" style="" x="-23.4921875" y="-0.9999990463256836" width="46.984375" height="19.999999046325684"/><text y="-10.1" text-anchor="middle" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">リンク</tspan></tspan></text></g></g></g><g class="edgeLabel" transform="translate(312.640625, 273.7999954223633)"><g class="label" data-id="L_cfg_mpy_0" transform="translate(-0.5, -9.000000476837158)"><g><rect class="background" style="" x="-51.328125" y="-0.9999990463256836" width="103.65625" height="19.999999046325684"/><text y="-10.1" text-anchor="middle" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">元の場所を記録</tspan></tspan></text></g></g></g></g><g class="nodes"><g class="node default" id="mermaid-24-flowchart-py-0" data-look="classic" transform="translate(121.90625, 63)"><rect class="basic label-container" style="" x="-56.3046875" y="-19.999999523162842" width="112.609375" height="39.999999046325684"/><g class="label" style="" transform="translate(0, -7.999999523162842)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">bin/python</tspan></tspan></text></g></g></g><g class="node default" id="mermaid-24-flowchart-sp-1" data-look="classic" transform="translate(121.90625, 168.39999771118164)"><rect class="basic label-container" style="" x="-88.90625" y="-35.39999961853027" width="177.8125" height="70.79999923706055"/><g class="label" style="" transform="translate(0, -23.399999618530273)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">lib/python3.12/</tspan></tspan><tspan class="text-outer-tspan row" x="0" y="1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">site-packages</tspan></tspan><tspan class="text-outer-tspan row" x="0" y="2.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">rich・pygments</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> など</tspan></tspan></text></g></g></g><g class="node default" id="mermaid-24-flowchart-cfg-2" data-look="classic" transform="translate(121.90625, 273.7999954223633)"><rect class="basic label-container" style="" x="-56.9453125" y="-19.999999523162842" width="113.890625" height="39.999999046325684"/><g class="label" style="" transform="translate(0, -7.999999523162842)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">pyvenv.cfg</tspan></tspan></text></g></g></g><g class="node default" id="mermaid-24-flowchart-mpy-3" data-look="classic" transform="translate(479.8046875, 168.39999771118164)"><rect class="basic label-container" style="" x="-90.3359375" y="-27.700000762939453" width="180.671875" height="55.400001525878906"/><g class="label" style="" transform="translate(0, -15.700000762939453)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">mise</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> の</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> Python</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> 3.12</tspan></tspan><tspan class="text-outer-tspan row" x="0" y="1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">~/.local/share/mise/...</tspan></tspan></text></g></g></g></g></g></g><defs><filter id="mermaid-24-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="mermaid-24-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><linearGradient id="mermaid-24-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#3d5468" stop-opacity="1"/><stop offset="100%" stop-color="hsl(210, 0%, 84.5098039216%)" stop-opacity="1"/></linearGradient><style>/* mermaid-cli で画像にするときのフォント（HTML 版と同じ BIZ UDPGothic） */
+@import url("https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&amp;display=swap");
+svg { -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+</style></svg></figure>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">ls</span> -l .venv/bin/python; cat .venv/pyvenv.cfg</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-動かす">
+            <h4 id="-動かす">🖋 動かす</h4>
+            <p>📚 uv 公式 Running commands</p>
+            <p>📒 見本の <code>main.py</code> は rich でタスクの表を出し、最後の行に使った Python の場所を出す。<code>uv run</code> は <code>.venv</code> の Python で動かす</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cp</span> ~/handsoff/examples/session04/main.py .; uv run main.py</code></pre>
+            <ul>
+              <li>確認: 最後の行が <code>.../session04/.venv/bin/python</code></li>
+            </ul>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="5-misetoml-に環境変数とタスクを書く8分">
+          <h3 id="5-misetoml-に環境変数とタスクを書く8分">5. mise.toml に環境変数とタスクを書く（8分）</h3>
+          <section class="level4" aria-labelledby="-環境変数を書く">
+            <h4 id="-環境変数を書く">🖋 環境変数を書く</h4>
+            <p>📚 mise 公式 Environments</p>
+            <p>📒 <code>UV_PYTHON_DOWNLOADS</code> で、uv が自分で Python を落とさないようにする（mise の Python だけを使う）。<code>_.python.venv</code> で、<code>cd</code> したときに <code>.venv</code> が有効になる</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cat</span> &gt;&gt; mise.toml &lt;&lt;'EOF'
+
+<span class="token function">[env]</span>
+<span class="token function">UV_PYTHON_DOWNLOADS</span> = "never"
+<span class="token function">_.python.venv</span> = { path = ".venv", create = true }
+<span class="token function">EOF</span></code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-タスクを書く">
+            <h4 id="-タスクを書く">🖋 タスクを書く</h4>
+            <p>📚 mise 公式 Tasks</p>
+            <p>📒 よく打つコマンドに名前を付けて <code>mise.toml</code> に残す。受け取った人は <code>mise tasks</code> で、何を打てばよいかがわかる</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cat</span> &gt;&gt; mise.toml &lt;&lt;'EOF'
+
+<span class="token function">[tasks.setup]</span>
+<span class="token function">description</span> = "依存パッケージを uv.lock どおりに入れる"
+<span class="token function">run</span> = "uv sync --locked"
+
+<span class="token function">[tasks.hello]</span>
+<span class="token function">description</span> = "タスク一覧を表示する"
+<span class="token function">run</span> = "python main.py"
+<span class="token function">EOF</span></code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-タスクを動かす">
+            <h4 id="-タスクを動かす">🖋 タスクを動かす</h4>
+            <p>📒 <code>mise run</code> は <code>mise.toml</code> の版と環境変数を設定してからコマンドを動かす。<code>python</code> は <code>.venv</code> の Python になる</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mise</span> tasks; mise run hello; which python   <span class="token comment"># .venv/bin/python</span></code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-python-の版に上限を付ける">
+            <h4 id="-python-の版に上限を付ける">🖋 Python の版に上限を付ける</h4>
+            <p>📚 uv 公式 Locking and syncing</p>
+            <p>📒 <code>&gt;=3.12</code> だけでは、mise を通さずに新しいシステムの Python で動かしても気づけない。上限を付けて 3.12 だけにする</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">sed</span> -i 's/^requires-python = "&gt;=3.12"$/requires-python = "&gt;=3.12,&lt;3.13"/' pyproject.toml; grep requires-python pyproject.toml</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-食い違ったまま-setup-する">
+            <h4 id="-食い違ったまま-setup-する">🖋 食い違ったまま setup する</h4>
+            <p>📒 <code>--locked</code> は、<code>pyproject.toml</code> と <code>uv.lock</code> が食い違うと、<code>uv.lock</code> を書き換えずに止まる。受け取った人の手元で版が勝手に変わるのを防ぐ</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mise</span> run setup   <span class="token comment"># The lockfile at `uv.lock` needs to be updated ...</span></code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-uvlock-を作り直す">
+            <h4 id="-uvlock-を作り直す">🖋 uv.lock を作り直す</h4>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">uv</span> lock; mise run setup</code></pre>
+            <ul>
+              <li>書く: 「3. 依存パッケージを入れる」（<code>mise run setup</code>）と「4. 動かす」（<code>mise run hello</code>、確認は最後の行の Python の場所）</li>
+            </ul>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="6-渡すものを決め別の場所で再現する5分">
+          <h3 id="6-渡すものを決め別の場所で再現する5分">6. 渡すものを決め、別の場所で再現する（5分）</h3>
+          <section class="level4" aria-labelledby="-渡すものと渡さないものを分ける">
+            <h4 id="-渡すものと渡さないものを分ける">🖋 渡すものと渡さないものを分ける</h4>
+            <p>📚 Python 公式 チュートリアル 12.3 pip を使ったパッケージ管理</p>
+            <p>📒 <code>.venv</code> は <code>uv.lock</code> からいつでも作り直せる。中のリンクは自分の PC のパスを指すので、渡しても相手の PC では動かない</p>
+            <figure class="mermaid"><svg id="mermaid-25" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="flowchart" style="max-width: 885.945px; background-color: transparent;" viewBox="0 0 885.9453125 246.79998779296875" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#mermaid-25{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;fill:#2b2b2b;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-25 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-25 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-25 .error-icon{fill:#fdfcfa;}#mermaid-25 .error-text{fill:#020305;stroke:#020305;}#mermaid-25 .edge-thickness-normal{stroke-width:1px;}#mermaid-25 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-25 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-25 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-25 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-25 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-25 .marker{fill:#6b6b6b;stroke:#6b6b6b;}#mermaid-25 .marker.cross{stroke:#6b6b6b;}#mermaid-25 svg{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:14px;}#mermaid-25 p{margin:0;}#mermaid-25 .label{font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;color:#2b2b2b;}#mermaid-25 .cluster-label text{fill:#020305;}#mermaid-25 .cluster-label span{color:#020305;}#mermaid-25 .cluster-label span p{background-color:transparent;}#mermaid-25 .label text,#mermaid-25 span{fill:#2b2b2b;color:#2b2b2b;}#mermaid-25 .node rect,#mermaid-25 .node circle,#mermaid-25 .node ellipse,#mermaid-25 .node polygon,#mermaid-25 .node path{fill:#f6f4f0;stroke:#3d5468;stroke-width:1px;}#mermaid-25 .rough-node .label text,#mermaid-25 .node .label text,#mermaid-25 .image-shape .label,#mermaid-25 .icon-shape .label{text-anchor:middle;}#mermaid-25 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mermaid-25 .rough-node .label,#mermaid-25 .node .label,#mermaid-25 .image-shape .label,#mermaid-25 .icon-shape .label{text-align:center;}#mermaid-25 .node.clickable{cursor:pointer;}#mermaid-25 .root .anchor path{fill:#6b6b6b!important;stroke-width:0;stroke:#6b6b6b;}#mermaid-25 .arrowheadPath{fill:#0b0b0b;}#mermaid-25 .edgePaths .path{stroke:#6b6b6b;stroke-width:1px;}#mermaid-25 .flowchart-link{stroke:#6b6b6b;fill:none;}#mermaid-25 .edgeLabel{background-color:#eef1f4;text-align:center;}#mermaid-25 .edgeLabel p{background-color:#eef1f4;}#mermaid-25 .edgeLabel rect{opacity:0.5;background-color:#eef1f4;fill:#eef1f4;}#mermaid-25 .labelBkg{background-color:rgba(238, 241, 244, 0.5);}#mermaid-25 .cluster rect{fill:#fbfaf7;stroke:#c9c5bd;stroke-width:1px;}#mermaid-25 .cluster text{fill:#020305;}#mermaid-25 .cluster span{color:#020305;}#mermaid-25 .node .collapsed-indicator{fill:#c9c5bd;stroke:none;opacity:0.6;}#mermaid-25 .node .collapsed-separator{stroke:#c9c5bd;stroke-width:0.75px;}#mermaid-25 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:BIZ UDPGothic,Hiragino Sans,sans-serif;font-size:12px;background:#fdfcfa;border:1px solid hsl(40, 2.8571428571%, 88.6274509804%);border-radius:2px;pointer-events:none;z-index:100;}#mermaid-25 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#2b2b2b;}#mermaid-25 rect.text{fill:none;stroke-width:0;}#mermaid-25 .icon-shape,#mermaid-25 .image-shape{background-color:#eef1f4;text-align:center;}#mermaid-25 .icon-shape p,#mermaid-25 .image-shape p{background-color:#eef1f4;padding:2px;}#mermaid-25 .icon-shape .label rect,#mermaid-25 .image-shape .label rect{opacity:0.5;background-color:#eef1f4;fill:#eef1f4;}#mermaid-25 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#mermaid-25 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#mermaid-25 .node .neo-node{stroke:#3d5468;}#mermaid-25 [data-look="neo"].node rect,#mermaid-25 [data-look="neo"].cluster rect,#mermaid-25 [data-look="neo"].node polygon{stroke:url(#mermaid-25-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-25 [data-look="neo"].swimlane.cluster rect{filter:none;}#mermaid-25 [data-look="neo"].node path{stroke:url(#mermaid-25-gradient);stroke-width:1px;}#mermaid-25 [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-25 [data-look="neo"].node .neo-line path{stroke:#3d5468;filter:none;}#mermaid-25 [data-look="neo"].node circle{stroke:url(#mermaid-25-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-25 [data-look="neo"].node circle .state-start{fill:#000000;}#mermaid-25 [data-look="neo"].icon-shape .icon{fill:url(#mermaid-25-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-25 [data-look="neo"].icon-shape .icon-neo path{stroke:url(#mermaid-25-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mermaid-25 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker id="mermaid-25_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-25_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-25_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-25_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-25_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-25_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-25_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5" refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-25_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-25_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-25_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-25_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"/></marker><marker id="mermaid-25_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5; stroke-dasharray: 1, 0;"/></marker><g class="root"><g class="clusters"><g class="cluster" id="mermaid-25-you" data-look="classic"><rect style="" x="335.59375" y="23.39999771118164" width="542.3515625" height="202.89999723434448"/><g class="cluster-label" transform="translate(573.43359375, 23.39999771118164)"><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">相手の</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> PC</tspan></tspan></text></g></g></g><g class="cluster" id="mermaid-25-me" data-look="classic"><rect style="" x="8" y="8" width="244.265625" height="230.79999542236328"/><g class="cluster-label" transform="translate(97.296875, 8)"><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">自分の</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> PC</tspan></tspan></text></g></g></g></g><g class="edgePaths"><path d="M227.266,78.4L231.432,78.4C235.599,78.4,243.932,78.4,255.043,78.4C266.154,78.4,280.042,78.4,293.93,78.4C307.818,78.4,321.706,78.4,332.15,78.4C342.594,78.4,349.594,78.4,353.094,78.4L356.594,78.4" id="mermaid-25-L_f1_f2_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_f1_f2_0" data-points="W3sieCI6MjI3LjI2NTYyNSwieSI6NzguMzk5OTk3NzExMTgxNjR9LHsieCI6MjUyLjI2NTYyNSwieSI6NzguMzk5OTk3NzExMTgxNjR9LHsieCI6MjkzLjkyOTY4NzUsInkiOjc4LjM5OTk5NzcxMTE4MTY0fSx7IngiOjMzNS41OTM3NSwieSI6NzguMzk5OTk3NzExMTgxNjR9LHsieCI6MzYwLjU5Mzc1LCJ5Ijo3OC4zOTk5OTc3MTExODE2NH1d" data-look="classic" marker-end="url(#mermaid-25_flowchart-v2-pointEnd)"/><path d="M536.891,78.4L549.061,78.4C561.23,78.4,585.57,78.4,613.45,83.639C641.33,88.878,672.75,99.356,688.46,104.595L704.171,109.835" id="mermaid-25-L_f2_v2_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_f2_v2_0" data-points="W3sieCI6NTM2Ljg5MDYyNSwieSI6NzguMzk5OTk3NzExMTgxNjR9LHsieCI6NjA5LjkxMDE1NjI1LCJ5Ijo3OC4zOTk5OTc3MTExODE2NH0seyJ4Ijo3MDcuOTY1MDcyMjI3MDc3OCwieSI6MTExLjA5OTk5NjU2Njc3MjQ2fV0=" data-look="classic" marker-end="url(#mermaid-25_flowchart-v2-pointEnd)"/><path d="M172.864,183.8L186.097,183.8C199.331,183.8,225.798,183.8,245.976,183.8C266.154,183.8,280.042,183.8,293.93,183.8C307.818,183.8,321.706,183.8,347.508,183.8C373.31,183.8,411.026,183.8,456.745,183.8C502.465,183.8,556.188,183.8,599.391,178.35C642.595,172.9,675.28,162,691.623,156.55L707.965,151.1" id="mermaid-25-L_v1_v2_0" class="edge-thickness-normal edge-pattern-dotted edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_v1_v2_0" data-points="W3sieCI6MTcyLjg2Mzc2OTUzMTI1LCJ5IjoxODMuNzk5OTk1NDIyMzYzMjh9LHsieCI6MjUyLjI2NTYyNSwieSI6MTgzLjc5OTk5NTQyMjM2MzI4fSx7IngiOjI5My45Mjk2ODc1LCJ5IjoxODMuNzk5OTk1NDIyMzYzMjh9LHsieCI6MzM1LjU5Mzc1LCJ5IjoxODMuNzk5OTk1NDIyMzYzMjh9LHsieCI6NDQ4Ljc0MjE4NzUsInkiOjE4My43OTk5OTU0MjIzNjMyOH0seyJ4Ijo2MDkuOTEwMTU2MjUsInkiOjE4My43OTk5OTU0MjIzNjMyOH0seyJ4Ijo3MDcuOTY1MDcyMjI3MDc3OCwieSI6MTUxLjA5OTk5NjU2Njc3MjQ2fV0=" data-look="classic" marker-end="url(#mermaid-25_flowchart-v2-crossEnd)"/></g><g class="edgeLabels"><g class="edgeLabel" transform="translate(293.9296875, 78.39999771118164)"><g class="label" data-id="L_f1_f2_0" transform="translate(0.5, -9.000000476837158)"><g><rect class="background" style="" x="-17.1640625" y="-0.9999990463256836" width="33.328125" height="19.999999046325684"/><text y="-10.1" text-anchor="middle" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">渡す</tspan></tspan></text></g></g></g><g class="edgeLabel" transform="translate(609.91015625, 78.39999771118164)"><g class="label" data-id="L_f2_v2_0" transform="translate(-0.10546875, -16.70000171661377)"><g><rect class="background" style="" x="-47.9140625" y="-0.9999990463256836" width="96.0390625" height="35.400001525878906"/><text y="-10.1" text-anchor="middle" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">mise</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> install</tspan></tspan><tspan class="text-outer-tspan row" x="0" y="1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">mise</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> run</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> setup</tspan></tspan></text></g></g></g><g class="edgeLabel" transform="translate(448.7421875, 183.79999542236328)"><g class="label" data-id="L_v1_v2_0" transform="translate(0.5, -9.000000476837158)"><g><rect class="background" style="" x="-31.4921875" y="-0.9999990463256836" width="61.984375" height="19.999999046325684"/><text y="-10.1" text-anchor="middle" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">渡さない</tspan></tspan></text></g></g></g></g><g class="nodes"><g class="node default" id="mermaid-25-flowchart-f1-0" data-look="classic" transform="translate(130.1328125, 78.39999771118164)"><rect class="basic label-container" style="" x="-97.1328125" y="-35.39999961853027" width="194.265625" height="70.79999923706055"/><g class="label" style="" transform="translate(0, -23.399999618530273)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">mise.toml</tspan></tspan><tspan class="text-outer-tspan row" x="0" y="1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">pyproject.toml・uv.lock</tspan></tspan><tspan class="text-outer-tspan row" x="0" y="2.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">main.py・README.md</tspan></tspan></text></g></g></g><g class="node default" id="mermaid-25-flowchart-v1-1" data-look="classic" transform="translate(130.1328125, 183.79999542236328)"><rect class="basic label-container" style="" x="-42.73095703125" y="-19.999999523162842" width="85.4619140625" height="39.999999046325684"/><g class="label" style="" transform="translate(0, -7.999999523162842)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">.venv/</tspan></tspan></text></g></g></g><g class="node default" id="mermaid-25-flowchart-f2-2" data-look="classic" transform="translate(448.7421875, 78.39999771118164)"><rect class="basic label-container" style="" x="-88.1484375" y="-19.999999523162842" width="176.296875" height="39.999999046325684"/><g class="label" style="" transform="translate(0, -7.999999523162842)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">受け取ったファイル</tspan></tspan></text></g></g></g><g class="node default" id="mermaid-25-flowchart-v2-3" data-look="classic" transform="translate(767.9375, 131.09999656677246)"><rect class="basic label-container" style="" x="-85.0078125" y="-19.999999523162842" width="170.015625" height="39.999999046325684"/><g class="label" style="" transform="translate(0, -7.999999523162842)"><rect/><g><rect class="background" style="stroke: none"/><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">.venv/（作り直す）</tspan></tspan></text></g></g></g></g></g></g><defs><filter id="mermaid-25-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="mermaid-25-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><linearGradient id="mermaid-25-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#3d5468" stop-opacity="1"/><stop offset="100%" stop-color="hsl(210, 0%, 84.5098039216%)" stop-opacity="1"/></linearGradient><style>/* mermaid-cli で画像にするときのフォント（HTML 版と同じ BIZ UDPGothic） */
+@import url("https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&amp;display=swap");
+svg { -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+</style></svg></figure>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">du</span> -sh .venv; ls</code></pre>
+            <ul>
+              <li>書く: 「渡すファイルと渡さないファイル」</li>
+            </ul>
+          </section>
+          <section class="level4" aria-labelledby="-別の場所にコピーする">
+            <h4 id="-別の場所にコピーする">🖋 別の場所にコピーする</h4>
+            <p>📒 <code>workspace/</code> の外にコピーするので、<code>../mise.toml</code> には頼れない。<code>.venv</code> は渡さないのでコピーしない</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mkdir</span> ~/session04-check &amp;&amp; cp mise.toml pyproject.toml uv.lock main.py README.md ~/session04-check/ &amp;&amp; cd ~/session04-check</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-中身を見て信頼する">
+            <h4 id="-中身を見て信頼する">🖋 中身を見て信頼する</h4>
+            <p>📚 mise 公式 Configuration（mise trust）</p>
+            <p>📒 <code>[env]</code> と <code>[tasks]</code> はコマンドを動かせる。コピーした <code>mise.toml</code> は信頼するまで <code>[env]</code> を読まない（<code>is not trusted</code> と出る）。<code>mise run</code> は自動で信頼するので、その前に中身を見る</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cat</span> mise.toml; mise trust</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-readme-の手順で動かす">
+            <h4 id="-readme-の手順で動かす">🖋 README の手順で動かす</h4>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mise</span> install; mise run setup; mise run hello</code></pre>
+            <ul>
+              <li>確認: 最後の行が <code>~/session04-check/.venv/bin/python</code>。終わったら <code>cd ~/handsoff/workspace/session04; rm -rf ~/session04-check</code></li>
+            </ul>
+          </section>
+        </section>
+        <section class="level3" aria-labelledby="7-隣の人の手順書で再現する6分">
+          <h3 id="7-隣の人の手順書で再現する6分">7. 隣の人の手順書で再現する（6分）</h3>
+          <section class="level4" aria-labelledby="-渡すコピーを用意して席を替わる">
+            <h4 id="-渡すコピーを用意して席を替わる">🖋 渡すコピーを用意して席を替わる</h4>
+            <p>📒 お互いに相手の PC の前に座り、相手の手順書だけを見て再現する。書いていないことは推測で補わず、止まった所と推測した所をメモして渡す。コピー先を手順6と別の名前にするので、信頼の手順も試せる</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">mkdir</span> ~/session04-try &amp;&amp; cp mise.toml pyproject.toml uv.lock main.py README.md ~/session04-try/</code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-前提を確かめる隣の人の-pc-で">
+            <h4 id="-前提を確かめる隣の人の-pc-で">🖋 前提を確かめる（隣の人の PC で）</h4>
+            <p>📒 第2回の設定は済んでいるので、隣の人の環境設定手順書の「確認」だけを打ち、前提がそろっているかを見る</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">type</span> hello; env | grep -i _proxy   <span class="token comment"># 隣の人の手順書の「確認」の行を打つ</span></code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-readme-だけで再現する隣の人の-pc-で">
+            <h4 id="-readme-だけで再現する隣の人の-pc-で">🖋 README だけで再現する（隣の人の PC で）</h4>
+            <p>📒 新しいターミナルで、README の「2. Python と uv を入れる」から順に打つ。ディレクトリは <code>~/session04-try</code> に読み替える</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">cd</span> ~/session04-try   <span class="token comment"># この後は README のとおりに</span></code></pre>
+          </section>
+          <section class="level4" aria-labelledby="-指摘を手順書に直す">
+            <h4 id="-指摘を手順書に直す">🖋 指摘を手順書に直す</h4>
+            <p>📒 自分の席に戻り、メモを受け取って README を直す。止まった所は「うまくいかないとき」に書く</p>
+            <pre class="language-sh"><code class="language-sh"><span class="token function">rm</span> -rf ~/session04-try; grep -c '（書く）' README.md   <span class="token comment"># 0 になるまで埋める</span></code></pre>
+            <ul>
+              <li>書く: 「うまくいかないとき」と「元に戻す方法」（<code>cp ~/.bashrc.before-mise ~/.bashrc</code>）</li>
+            </ul>
+          </section>
+        </section>
+      </section>
+      <section class="level2" aria-labelledby="読む章">
+        <h2 id="読む章">読む章</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>区分</th>
+              <th>資料</th>
+              <th>範囲</th>
+              <th>読み方</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>無料</td>
+              <td><a href="https://mise.jdx.dev/">mise 公式</a></td>
+              <td>Getting Started、Configuration、Environments、Tasks</td>
+              <td>主な資料（引く）</td>
+            </tr>
+            <tr>
+              <td>無料</td>
+              <td><a href="https://docs.astral.sh/uv/">uv 公式</a></td>
+              <td>Concepts の Projects（Creating projects、Managing dependencies、Locking and syncing、Running commands）、Environment variables</td>
+              <td>主な資料（引く）</td>
+            </tr>
+            <tr>
+              <td>無料</td>
+              <td><a href="https://docs.python.org/ja/3/">Python 公式ドキュメント</a></td>
+              <td>チュートリアル 12章 仮想環境とパッケージ、標準ライブラリ venv</td>
+              <td>該当章</td>
+            </tr>
+            <tr>
+              <td>参考書</td>
+              <td><a href="https://www.oreilly.co.jp/books/9784814400218/">入門 モダンLinux</a>（モダンLinux）</td>
+              <td>6章 アプリケーション、パッケージ管理、コンテナ（6.4、6.5）</td>
+              <td>該当章（第2回の続き）</td>
+            </tr>
+            <tr>
+              <td>紹介（副読本）</td>
+              <td><a href="https://www.oreilly.co.jp/books/9784873119175">Effective Python 第2版</a></td>
+              <td>10章 項目83 仮想環境</td>
+              <td>持っている人は該当章</td>
+            </tr>
+            <tr>
+              <td>紹介（副読本）</td>
+              <td><a href="https://www.hanmoto.com/bd/isbn/9784274226298">達人プログラマー 第2版</a></td>
+              <td>基本ツール（シェル、プレーンテキスト、バージョン管理）</td>
+              <td>持っている人は通読（第1〜5回で基本ツールの範囲）</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>本で補いたい人は、候補: <a href="https://gihyo.jp/book/2026/978-4-297-15489-9">改訂新版 Python実践レシピ</a></p>
+      </section>
+    </section>
+  
+
+</body></html>

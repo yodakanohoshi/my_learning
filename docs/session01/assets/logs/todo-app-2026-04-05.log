@@ -1,0 +1,25 @@
+2026-04-05 08:00:00 INFO  [app] started
+2026-04-05 09:06:17 INFO  [task] task done id=181 user=U006
+2026-04-05 09:39:46 INFO  [web] GET / 200 6ms user=U024
+2026-04-05 09:56:09 INFO  [web] GET / 200 79ms user=U019
+2026-04-05 10:32:02 INFO  [web] GET / 200 66ms user=U005
+2026-04-05 11:07:56 INFO  [task] task done id=467 user=U013
+2026-04-05 11:45:05 INFO  [web] GET /?overdue=1 200 9ms user=U010
+2026-04-05 12:24:07 INFO  [web] GET / 200 39ms user=U012
+2026-04-05 12:27:17 INFO  [web] GET /?overdue=1 200 26ms user=U016
+2026-04-05 13:05:20 INFO  [web] GET / 200 61ms user=U030
+2026-04-05 13:44:07 INFO  [web] GET / 200 46ms user=U040
+2026-04-05 13:55:08 INFO  [web] GET / 200 79ms user=U006
+2026-04-05 14:22:21 INFO  [web] GET / 200 61ms user=U034
+2026-04-05 14:51:35 INFO  [web] GET / 200 31ms user=U031
+2026-04-05 15:12:04 INFO  [web] GET /?overdue=1 200 55ms user=U023
+2026-04-05 15:43:44 INFO  [task] task done id=88 user=U009
+2026-04-05 16:01:59 INFO  [web] GET / 200 32ms user=U011
+2026-04-05 16:37:27 INFO  [task] task done id=361 user=U001
+2026-04-05 17:11:25 WARN  [task] overdue id=299 user=U005 days=5
+2026-04-05 17:14:50 INFO  [task] task done id=421 user=U017
+2026-04-05 17:18:30 INFO  [web] GET / 200 54ms user=U030
+2026-04-05 17:48:02 INFO  [task] task done id=493 user=U038
+2026-04-05 18:17:22 INFO  [task] task done id=5 user=U002
+2026-04-05 18:37:43 ERROR [db] database is locked
+2026-04-05 19:06:59 INFO  [task] task created id=157 user=U024

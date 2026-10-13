@@ -1,0 +1,43 @@
+# 見本用。模範の TODO アプリ（todo-app と各回のスナップショット）は、フォルダ単体で再現できるよう
+# それぞれ自分の mise.toml を持つ
+[tools]
+python = "3.12"
+
+[tasks.app-setup]
+description = "模範の TODO アプリ（todo-app）の Python と依存パッケージを入れる"
+dir = "{{config_root}}/todo-app"
+run = ["mise trust", "mise install", "mise run setup"]
+
+[tasks.app]
+description = "模範の TODO アプリ（最新）を起動する（http://127.0.0.1:8000）"
+dir = "{{config_root}}/todo-app"
+run = "mise run dev"
+
+[tasks.app-check]
+description = "模範の TODO アプリのリント・型チェック・テスト"
+dir = "{{config_root}}/todo-app"
+run = "mise run check"
+
+[tasks.check-all]
+description = "全スナップショットと todo-app で、依存を入れてチェックを順に実行する（作成者・講師向け）"
+dir = "{{config_root}}"
+run = '''
+set -eu
+for d in todo-app-snapshots/session-* todo-app; do
+  echo "==== $d"
+  (
+    cd "$d"
+    mise trust --quiet
+    mise install --quiet
+    mise run setup
+    if grep -q '^\[tasks\.check\]' mise.toml; then
+      mise run check
+    else
+      # 第6回はまだ ruff・mypy・pytest がないので、起動できることだけ確かめる
+      mise exec -- python todo.py --help > /dev/null
+      echo "todo.py --help: ok"
+    fi
+  )
+done
+echo "==== すべて通った"
+'''
